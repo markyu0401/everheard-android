@@ -20,6 +20,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import io.github.markyu0401.everheard.R
+import io.github.markyu0401.everheard.asr.CaptureTranscriber
+import io.github.markyu0401.everheard.asr.SpeechSegmenter
 import io.github.markyu0401.everheard.capture.audio.AudioRecordSource
 import io.github.markyu0401.everheard.capture.audio.RingBuffer
 import io.github.markyu0401.everheard.capture.audio.WavWriter
@@ -32,6 +34,7 @@ import io.github.markyu0401.everheard.capture.schedule.ScheduleRule
 import io.github.markyu0401.everheard.capture.vad.SileroVad
 import io.github.markyu0401.everheard.data.settings.captureStateStore
 import io.github.markyu0401.everheard.data.settings.scheduleStore
+import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -84,6 +87,8 @@ class CaptureService : Service() {
     private var audioSource: AudioRecordSource? = null
     private var vad: SileroVad? = null
     private var motionDetector: MotionDetector? = null
+    private var segmenter: SpeechSegmenter? = null
+    private var transcriber: CaptureTranscriber? = null
     private var recordingStartedAt: Long = 0L
     private val ringBuffer = RingBuffer(capacitySamples = 60 * 16_000)
     private val silenceTracker = SilenceTracker(clock = { SystemClock.elapsedRealtime() })
@@ -298,17 +303,32 @@ class CaptureService : Service() {
         try {
             val vadInstance = SileroVad(assets)
             val source = AudioRecordSource()
+            val segmenterInstance = SpeechSegmenter()
+            val transcriptStore = EncryptedTranscriptStore(
+                File(filesDir, "transcripts.bin")
+            )
+            val transcriberInstance = CaptureTranscriber(
+                context = this,
+                store = transcriptStore
+            )
             silenceTracker.reset()
             source.start { frame ->
                 ringBuffer.write(frame)
-                if (vadInstance.isSpeech(frame)) {
+                val speech = vadInstance.isSpeech(frame)
+                if (speech) {
                     silenceTracker.onSpeech()
+                }
+                segmenterInstance.accept(frame, speech).forEach { segment ->
+                    transcriberInstance.submit(segment)
                 }
             }
             vad = vadInstance
             audioSource = source
+            segmenter = segmenterInstance
+            transcriber = transcriberInstance
             motionDetector = MotionDetector(this).also { it.start() }
             recordingStartedAt = SystemClock.elapsedRealtime()
+            transcriberInstance.start()
         } catch (error: Exception) {
             Log.e(TAG, "Unable to open microphone", error)
             closeMicrophone()
@@ -321,6 +341,12 @@ class CaptureService : Service() {
     private fun closeMicrophone() {
         audioSource?.stop()
         audioSource = null
+        segmenter?.flush()?.let { segment ->
+            transcriber?.submit(segment)
+        }
+        segmenter = null
+        transcriber?.stop()
+        transcriber = null
         vad?.release()
         vad = null
         motionDetector?.stop()
