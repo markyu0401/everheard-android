@@ -281,7 +281,10 @@ These are not preferences; they shape the product.
 - **M0-T7 harness done:** speaker spike screen and embedding path; real-meeting precision numbers are still pending.
 - **M0-T8/T9 pending:** battery/thermal and ROM survival need a phone; the report template is in `docs/spikes/2026-11-09-spike-report.md`.
 - **M1-T1 → T6 done:** 8-state machine with 15 unit tests; schedule model + DataStore + weekly editor (day chips, time pickers, add/edit/delete); battery/thermal guards; boot “tap to resume” notification; sticky-restart fallback; pause 15 min / 1 h / until tomorrow, mark, stop, and a quick-settings tile; pause window persists across process death.
-- **M1-T4 caveat:** the silence guard currently uses screen-off as the motion proxy; sensor fusion and the 8 h false-pause measurement are still open.
+- **M1-T4 caveat:** the motion guard now uses the accelerometer (five-minute stationary window) with screen-off as the no-sensor fallback; the 8 h false-pause measurement is still open.
 - **M1-T7 pending:** 8 h soak protocol is in `docs/spikes/2026-11-23-m1-soak.md`.
-- **Verification:** `./gradlew lint testDebugUnitTest assembleDebug` is green; 49 unit tests and 6/6 instrumented tests pass on an AOSP ATD API 36 emulator. The schedule→service→notification path was exercised end to end (block end moved to 08:00 → “Paused — outside the schedule”).
-- **Next:** run the M1 soak on the Samsung and one Chinese ROM, then start M2 (ASR pipeline, transcript store, live/detail UI).
+- **Verification:** `./gradlew lint testDebugUnitTest assembleDebug` is green; 55 unit tests and 8/8 instrumented tests pass on an AOSP ATD API 36 emulator. The schedule→service→notification path was exercised end to end (block end moved to 08:00 → “Paused — outside the schedule”).
+- **Next:** run the M1 soak on the Samsung and one Chinese ROM; finish M2 by wiring the capture service to the transcript store and adding FTS/model management.
+- **M2-T2 done:** `StreamingAsrSession` + `SherpaAsr.createSession()` emit partial text while audio arrives; `LiveCaptureActivity` records and shows the live draft.
+- **M2-T5 partial:** encrypted transcript store (`AES-256-GCM`, Keystore key), session list, detail view, substring search, and “save transcript” from the live screen. The capture service is not yet feeding the store automatically; that wiring and FTS belong to the next M2 slice.
+- **M2-T1/T3/T4/T6 pending:** model manager (runtime download/license), cloud ASR provider, two-pass merge, and hotword/normalization.

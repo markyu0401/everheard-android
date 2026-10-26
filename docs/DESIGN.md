@@ -407,7 +407,7 @@ Validation rules:
 
 ## 11. Security and privacy
 
-- SQLCipher database; 256-bit key generated on first run, wrapped by Android Keystore (StrongBox when available).
+- SQLCipher database (M4+); the M2 transcript document is AES-256-GCM with a Keystore key, written atomically per update.
 - Audio temp files encrypted with AES-GCM using a derived key; deleted after transcription.
 - API keys in Keystore-wrapped encrypted preferences; never logged; redacted in exports.
 - `FLAG_SECURE` on transcript/detail screens; biometric prompt before export.
@@ -456,6 +456,7 @@ Decisions D1–D11 are in PLAN.md §8. Design-level decisions:
 - **No sync.** Export/import JSON is the escape hatch.
 - **No TTS in v1.** The phone has a screen; reading summaries aloud is a v2 candidate.
 - **Chinese-first UI**, strings externalized so an English translation can land without code changes.
+- **M2 transcript storage is an encrypted JSON document**, not Room yet: AES-256-GCM with a non-exportable Keystore key, one file in `filesDir`. M4 replaces it with Room + SQLCipher when commitments and projects need indexed queries. This keeps KSP/SQLCipher out of M2 and avoids claiming a database that does not exist.
 
 Open questions (resolve before the milestone that needs them):
 
