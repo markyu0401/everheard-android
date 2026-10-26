@@ -4,7 +4,7 @@
 
 一个 Android 端的「全天候对话记忆」应用：记录你参与的对话，在手机上转写成文字，区分说话人，把说过的话变成承诺、项目时间线和每周复盘——但不保留原始录音。
 
-> **状态：pre-alpha。** 调试版已经能构建（Compose 壳、采集核心、端侧 VAD/ASR/声纹 spike）；还没有 release APK。开发计划见 [docs/PLAN.md](docs/PLAN.md)，架构见 [docs/DESIGN.md](docs/DESIGN.md)。
+> **状态：pre-alpha。** 调试版已经能构建（Compose 壳、常驻采集核心、端侧 VAD/ASR/声纹 spike、加密转写存储、实时草稿与搜索）；还没有 release APK。开发计划见 [docs/PLAN.md](docs/PLAN.md)，架构见 [docs/DESIGN.md](docs/DESIGN.md)。
 
 ## 为什么再做一次
 
