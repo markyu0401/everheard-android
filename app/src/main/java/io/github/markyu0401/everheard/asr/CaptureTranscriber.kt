@@ -56,7 +56,7 @@ class CaptureTranscriber(
                                 TranscriptSession(
                                     id = sessionId,
                                     startedAt = startedAt,
-                                    title = ""
+                                    title = text.take(40)
                                 )
                             )
                             sessionCreated = true

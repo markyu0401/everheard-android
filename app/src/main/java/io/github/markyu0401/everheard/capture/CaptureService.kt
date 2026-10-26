@@ -24,7 +24,6 @@ import io.github.markyu0401.everheard.asr.CaptureTranscriber
 import io.github.markyu0401.everheard.asr.SpeechSegmenter
 import io.github.markyu0401.everheard.capture.audio.AudioRecordSource
 import io.github.markyu0401.everheard.capture.audio.RingBuffer
-import io.github.markyu0401.everheard.capture.audio.WavWriter
 import io.github.markyu0401.everheard.capture.guards.BatteryGuard
 import io.github.markyu0401.everheard.capture.guards.MotionDetector
 import io.github.markyu0401.everheard.capture.guards.SilenceTracker
@@ -312,6 +311,13 @@ class CaptureService : Service() {
                 store = transcriptStore
             )
             silenceTracker.reset()
+            vad = vadInstance
+            audioSource = source
+            segmenter = segmenterInstance
+            transcriber = transcriberInstance
+            motionDetector = MotionDetector(this).also { it.start() }
+            recordingStartedAt = SystemClock.elapsedRealtime()
+            transcriberInstance.start()
             source.start { frame ->
                 ringBuffer.write(frame)
                 val speech = vadInstance.isSpeech(frame)
@@ -322,13 +328,6 @@ class CaptureService : Service() {
                     transcriberInstance.submit(segment)
                 }
             }
-            vad = vadInstance
-            audioSource = source
-            segmenter = segmenterInstance
-            transcriber = transcriberInstance
-            motionDetector = MotionDetector(this).also { it.start() }
-            recordingStartedAt = SystemClock.elapsedRealtime()
-            transcriberInstance.start()
         } catch (error: Exception) {
             Log.e(TAG, "Unable to open microphone", error)
             closeMicrophone()
@@ -374,22 +373,19 @@ class CaptureService : Service() {
     private fun markLastThirtySeconds() {
         val pcm = ringBuffer.snapshotLast(MARK_SECONDS)
         if (pcm.isEmpty()) {
-            updateNotification(CaptureState.ARMED)
+            updateNotification(state)
             return
         }
 
-        serviceScope.launch(Dispatchers.IO) {
-            try {
-                val file = File(
-                    filesDir,
-                    "marks/mark-${System.currentTimeMillis()}.wav"
-                )
-                WavWriter.write(file, pcm)
-                Log.i(TAG, "Mark saved: ${file.absolutePath}")
-            } catch (error: Exception) {
-                Log.e(TAG, "Unable to save mark", error)
-            }
-        }
+        val endMs = (SystemClock.elapsedRealtime() - recordingStartedAt).coerceAtLeast(0L)
+        val startMs = (endMs - MARK_SECONDS * 1000L).coerceAtLeast(0L)
+        transcriber?.submit(
+            SpeechSegmenter.Segment(
+                pcm16 = pcm,
+                startMs = startMs,
+                endMs = endMs
+            )
+        )
 
         notifySafely(
             CaptureNotification.NOTIF_ID,
