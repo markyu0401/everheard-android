@@ -30,6 +30,10 @@
     <string name="home_title">Everheard</string>
     <string name="home_body">把说过的话留下来。</string>
     <string name="home_library">资料库</string>
+    <string name="home_today">今天</string>
+    <string name="home_recent">最近</string>
+    <string name="duration_seconds">%1$d 秒</string>
+    <string name="duration_minutes">%1$d 分 %2$02d 秒</string>
     <string name="home_chip_local">端侧</string>
     <string name="home_chip_text">只留文字</string>
     <string name="home_chip_model">你的模型</string>
@@ -62,6 +66,12 @@
     <string name="language_english">English</string>
     <string name="language_chinese">简体中文</string>
     <string name="settings_footer">修改会立即生效。</string>
+    <string name="settings_data">数据</string>
+    <string name="settings_clear_title">清空所有转写</string>
+    <string name="settings_clear_subtitle">删除本机全部转写，无法恢复。</string>
+    <string name="settings_clear_body">这会删除本机所有转写文字。密钥保留，之后录音会重新开始。</string>
+    <string name="settings_clear_confirm">全部清空</string>
+    <string name="settings_clear_done">转写已清空。</string>
 
     <string name="home_service_start">开始采集</string>
     <string name="home_service_stop">停止采集</string>

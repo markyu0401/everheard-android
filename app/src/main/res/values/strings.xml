@@ -31,6 +31,10 @@
     <string name="home_title">Everheard</string>
     <string name="home_body">Keep what was said.</string>
     <string name="home_library">Library</string>
+    <string name="home_today">Today</string>
+    <string name="home_recent">Recent</string>
+    <string name="duration_seconds">%1$ds</string>
+    <string name="duration_minutes">%1$dm %2$02ds</string>
     <string name="home_chip_local">On-device</string>
     <string name="home_chip_text">Text only</string>
     <string name="home_chip_model">Your model</string>
@@ -63,6 +67,12 @@
     <string name="language_english">English</string>
     <string name="language_chinese">简体中文</string>
     <string name="settings_footer">Changes apply immediately.</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_clear_title">Clear all transcripts</string>
+    <string name="settings_clear_subtitle">Delete every transcript on this device. This cannot be undone.</string>
+    <string name="settings_clear_body">This deletes all transcript text on this device. The encryption key stays, and new recordings start fresh.</string>
+    <string name="settings_clear_confirm">Clear all</string>
+    <string name="settings_clear_done">Transcripts cleared.</string>
 
     <string name="home_service_start">Start capture</string>
     <string name="home_service_stop">Stop capture</string>

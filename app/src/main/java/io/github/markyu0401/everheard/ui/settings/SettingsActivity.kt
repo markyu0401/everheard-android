@@ -2,6 +2,7 @@ package io.github.markyu0401.everheard.ui.settings
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -12,11 +13,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -27,13 +35,17 @@ import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.settings.AppLanguage
 import io.github.markyu0401.everheard.data.settings.ThemeMode
 import io.github.markyu0401.everheard.data.settings.appSettingsStore
+import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.components.SelectionRow
+import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
+import java.io.File
+import kotlinx.coroutines.launch
 
 class SettingsActivity : LocalizedActivity() {
 
@@ -71,6 +83,11 @@ private fun SettingsScreen(
     val context = LocalContext.current
     val store = remember(context) { context.appSettingsStore() }
     val settings by store.settings.collectAsStateWithLifecycle(initialValue = store.current)
+    val transcriptStore = remember(context) {
+        EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
+    }
+    val scope = rememberCoroutineScope()
+    var showClearDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -114,6 +131,20 @@ private fun SettingsScreen(
             }
         }
 
+        Spacer(Modifier.height(24.dp))
+
+        SectionHeader(stringResource(R.string.settings_data))
+        GroupedCard {
+            SettingsRow(
+                icon = Icons.Filled.Delete,
+                iconTint = MaterialTheme.colorScheme.error,
+                title = stringResource(R.string.settings_clear_title),
+                subtitle = stringResource(R.string.settings_clear_subtitle),
+                showDivider = false,
+                onClick = { showClearDialog = true }
+            )
+        }
+
         Spacer(Modifier.height(20.dp))
 
         Text(
@@ -121,6 +152,39 @@ private fun SettingsScreen(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
+
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title = { Text(stringResource(R.string.settings_clear_title)) },
+            text = { Text(stringResource(R.string.settings_clear_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showClearDialog = false
+                        scope.launch {
+                            transcriptStore.clear()
+                            Toast.makeText(
+                                context,
+                                R.string.settings_clear_done,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_clear_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDialog = false }) {
+                    Text(stringResource(R.string.schedule_cancel))
+                }
+            }
         )
     }
 }

@@ -28,31 +28,53 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.capture.CaptureController
 import io.github.markyu0401.everheard.capture.CaptureState
+import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
+import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
 import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.components.StatusDot
+import io.github.markyu0401.everheard.ui.components.TranscriptSessionRow
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
 import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
 import io.github.markyu0401.everheard.ui.settings.SettingsActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
+import io.github.markyu0401.everheard.ui.transcript.SessionDetailActivity
 import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
+import java.io.File
+import java.text.DateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Date
+import java.util.Locale
+import kotlinx.coroutines.launch
 
 /**
  * A calm, grouped home: one capture card, one library list, and no developer
@@ -61,8 +83,34 @@ import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val locale = LocalConfiguration.current.locales[0]
+    val scope = rememberCoroutineScope()
     val serviceState by CaptureController.state.collectAsStateWithLifecycle()
-    val serviceRunning = serviceState.isServiceAlive
+    val store = remember(context) {
+        EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
+    }
+    var sessions by remember { mutableStateOf<List<TranscriptSession>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        sessions = store.reload()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch { sessions = store.reload() }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val todaySessions = sessions.filter { isToday(it.startedAt) }
+    val timelineSessions =
+        if (todaySessions.isNotEmpty()) todaySessions.take(5) else sessions.take(3)
+    val timelineTitle =
+        if (todaySessions.isNotEmpty()) R.string.home_today else R.string.home_recent
 
     Column(
         modifier = modifier
@@ -88,6 +136,35 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 onStart = { CaptureController.start(context) },
                 onStop = { CaptureController.stop(context) }
             )
+
+            if (timelineSessions.isNotEmpty()) {
+                Spacer(Modifier.height(28.dp))
+                SectionHeader(stringResource(timelineTitle))
+                GroupedCard {
+                    timelineSessions.forEachIndexed { index, session ->
+                        val titleText = session.title.ifBlank {
+                            stringResource(R.string.transcript_session_fallback)
+                        }
+                        val preview = session.utterances
+                            .drop(1)
+                            .firstOrNull()
+                            ?.text
+                            .orEmpty()
+                        TranscriptSessionRow(
+                            title = titleText,
+                            meta = sessionMeta(session, locale),
+                            snippet = preview,
+                            showDivider = index != timelineSessions.lastIndex,
+                            onClick = {
+                                context.startActivity(
+                                    Intent(context, SessionDetailActivity::class.java)
+                                        .putExtra(SessionDetailActivity.EXTRA_SESSION_ID, session.id)
+                                )
+                            }
+                        )
+                    }
+                }
+            }
 
             Spacer(Modifier.height(28.dp))
 
@@ -141,6 +218,29 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         )
     }
+}
+
+private fun isToday(timestamp: Long): Boolean {
+    val date = Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+    return date == LocalDate.now()
+}
+
+@Composable
+private fun sessionMeta(session: TranscriptSession, locale: Locale): String {
+    val time = DateFormat.getTimeInstance(DateFormat.SHORT, locale)
+        .format(Date(session.startedAt))
+    val end = session.endedAt
+        ?: session.utterances.lastOrNull()?.let { session.startedAt + it.endMs }
+        ?: session.startedAt
+    val seconds = ((end - session.startedAt) / 1_000L).coerceAtLeast(0L).toInt()
+    val duration = if (seconds >= 60) {
+        stringResource(R.string.duration_minutes, seconds / 60, seconds % 60)
+    } else {
+        stringResource(R.string.duration_seconds, seconds)
+    }
+    return "$time · $duration"
 }
 
 @Composable

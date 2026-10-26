@@ -13,6 +13,7 @@ interface TranscriptStore {
     suspend fun createSession(session: TranscriptSession)
     suspend fun appendUtterance(sessionId: String, utterance: TranscriptUtterance)
     suspend fun search(query: String): List<TranscriptHit>
+    suspend fun clear()
 }
 
 /**
@@ -70,6 +71,16 @@ class EncryptedTranscriptStore(
             session.utterances
                 .filter { it.text.contains(needle, ignoreCase = true) }
                 .map { TranscriptHit(session.id, session.title, it) }
+        }
+    }
+
+    override suspend fun clear() {
+        mutex.withLock {
+            cache = emptyList()
+            withContext(Dispatchers.IO) {
+                file.delete()
+                File(file.parentFile, "${file.name}.tmp").delete()
+            }
         }
     }
 

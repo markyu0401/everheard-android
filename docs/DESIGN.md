@@ -390,10 +390,10 @@ Validation rules:
 | Project detail | Event timeline + insight card | Jump to source session |
 | Insight | Weekly metrics + insight cards with evidence | Drill into citations |
 | Person | Last talked, open commitments, projects | Rename; merge clusters |
-| Settings | Language (System/English/简体中文) and appearance (System/Light/Dark) | Changes apply immediately; language restarts the task |
+| Settings | Language (System/English/简体中文), appearance (System/Light/Dark), and Data > Clear all transcripts | Changes apply immediately; language restarts the task; clearing is confirmed |
 | Onboarding | Legal notice, mic permission, enrollment, schedule default | 3 steps, skippable enrollment |
 
-Implemented in the M2 UI slice: Home, Live, Transcripts, Session detail, Schedule, Settings, Onboarding, Permission gate. Today, Projects, Insight, Person, and provider settings remain planned; do not ship dead links for them.
+Implemented in the M2 UI slice: Home (with a Today/Recent timeline of session cards), Live, Transcripts, Session detail, Schedule, Settings (including Data > Clear all), Onboarding, Permission gate. Today currently shows time, duration, title, and a preview; chips, manual marks, and delete/mark gestures remain planned. Projects, Insight, Person, and provider settings remain planned; do not ship dead links for them.
 
 ### 10.2 Tokens
 

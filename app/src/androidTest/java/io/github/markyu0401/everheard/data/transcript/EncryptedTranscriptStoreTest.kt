@@ -46,4 +46,20 @@ class EncryptedTranscriptStoreTest {
             file.delete()
         }
     }
+
+    @Test
+    fun clears_all_sessions_and_deletes_the_file() {
+        runBlocking {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val file = File(context.filesDir, "transcript-test-${System.nanoTime()}.bin")
+            val store = EncryptedTranscriptStore(file)
+            store.createSession(TranscriptSession(id = "s1", startedAt = 1L, title = "test"))
+            assertThat(store.sessions()).hasSize(1)
+
+            store.clear()
+
+            assertThat(store.sessions()).isEmpty()
+            assertThat(file.exists()).isFalse()
+        }
+    }
 }
