@@ -1,5 +1,6 @@
 package io.github.markyu0401.everheard.ui.home
 
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.capture.CaptureController
+import io.github.markyu0401.everheard.spike.AudioSpikeActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 
@@ -172,6 +175,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     }
                 }
             }
+        }
+
+        TextButton(
+            onClick = {
+                context.startActivity(Intent(context, AudioSpikeActivity::class.java))
+            }
+        ) {
+            Text(
+                text = stringResource(R.string.audio_spike_open),
+                style = MaterialTheme.typography.labelLarge,
+                color = semantic.commitment
+            )
         }
 
         Spacer(Modifier.height(28.dp))

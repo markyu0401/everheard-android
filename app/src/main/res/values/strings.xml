@@ -51,4 +51,15 @@
     <string name="notification_stop">Stop</string>
     <string name="notification_resume_title">Capture needs a tap</string>
     <string name="notification_resume_body">Android refused the background start. Open Everheard to resume.</string>
+
+    <string name="audio_spike_title">Audio spike</string>
+    <string name="audio_spike_body">Records 10 seconds, writes a 16 kHz mono WAV, and shows the path. This is an M0 measurement tool.</string>
+    <string name="audio_spike_record">Record 10 s</string>
+    <string name="audio_spike_recording">Recording…</string>
+    <string name="audio_spike_frames">%1$d frames buffered</string>
+    <string name="audio_spike_saved">Saved</string>
+    <string name="audio_spike_error">Recording failed: %1$s</string>
+    <string name="audio_spike_back">Back</string>
+    <string name="audio_spike_open">Open audio spike (M0)</string>
+    <string name="audio_spike_no_permission">Microphone permission is not granted.</string>
 </resources>

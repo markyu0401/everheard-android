@@ -28,6 +28,11 @@
             android:exported="false"
             android:foregroundServiceType="microphone"
             android:stopWithTask="false" />
+
+        <activity
+            android:name=".spike.AudioSpikeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
     </application>
 
 </manifest>

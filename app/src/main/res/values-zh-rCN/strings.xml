@@ -50,4 +50,15 @@
     <string name="notification_stop">停止</string>
     <string name="notification_resume_title">需要点一下恢复采集</string>
     <string name="notification_resume_body">Android 拒绝了后台启动。打开 Everheard 恢复。</string>
+
+    <string name="audio_spike_title">音频自检</string>
+    <string name="audio_spike_body">录 10 秒，写一个 16 kHz 单声道 WAV，并显示路径。这是 M0 的测量工具。</string>
+    <string name="audio_spike_record">录 10 秒</string>
+    <string name="audio_spike_recording">录音中…</string>
+    <string name="audio_spike_frames">已缓存 %1$d 帧</string>
+    <string name="audio_spike_saved">已保存</string>
+    <string name="audio_spike_error">录音失败：%1$s</string>
+    <string name="audio_spike_back">返回</string>
+    <string name="audio_spike_open">打开音频自检（M0）</string>
+    <string name="audio_spike_no_permission">麦克风权限未授予。</string>
 </resources>
