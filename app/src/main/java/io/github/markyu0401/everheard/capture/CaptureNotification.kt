@@ -48,7 +48,7 @@ object CaptureNotification {
         manager.createNotificationChannel(resume)
     }
 
-    fun build(context: Context, stateText: String): Notification {
+    fun build(context: Context, stateText: String, detail: String? = null): Notification {
         val openApp = PendingIntent.getActivity(
             context,
             0,
@@ -65,6 +65,7 @@ object CaptureNotification {
             .setSmallIcon(R.drawable.ic_stat_everheard)
             .setContentTitle(context.getString(R.string.notification_title))
             .setContentText(stateText)
+            .setSubText(detail)
             .setContentIntent(openApp)
             .setOngoing(true)
             .setSilent(true)

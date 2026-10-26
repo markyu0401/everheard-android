@@ -3,6 +3,7 @@ package io.github.markyu0401.everheard.asr
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.common.truth.Truth.assertThat
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,5 +28,29 @@ class SherpaAsrTest {
             asr.transcribe(AsrRequest(pcm16 = ShortArray(16_000)))
         }
         assert(result.model == SherpaAsr.MODEL_ID)
+    }
+
+    @Test
+    fun streaming_session_emits_partial_and_finishes_on_silence() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val modelPresent = try {
+            context.assets.open("models/asr-small/encoder.int8.onnx").use { }
+            true
+        } catch (_: Exception) {
+            false
+        }
+        assumeTrue("ASR model not fetched; run scripts/fetch_models.sh", modelPresent)
+
+        val asr = SherpaAsr(context.assets)
+        val session = asr.createSession()
+        try {
+            session.accept(ShortArray(16_000))
+            assertThat(session.partialText()).isEmpty()
+            val result = session.finish()
+            assertThat(result.model).isEqualTo(SherpaAsr.MODEL_ID)
+            assertThat(result.text).isEmpty()
+        } finally {
+            session.close()
+        }
     }
 }

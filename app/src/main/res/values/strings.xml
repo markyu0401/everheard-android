@@ -58,6 +58,8 @@
     <string name="notification_state_paused_user">Paused by you</string>
     <string name="notification_state_error">Capture stopped — open Everheard</string>
     <string name="notification_state_marked">Marked the last 30 seconds</string>
+    <string name="notification_detail_recording">%1$d min · %2$d%% battery</string>
+    <string name="notification_detail_battery">%1$d%% battery</string>
     <string name="notification_action_pause_15">15 min</string>
     <string name="notification_action_pause_60">1 h</string>
     <string name="notification_action_pause_tomorrow">Until tomorrow</string>
@@ -87,6 +89,21 @@
     <string name="schedule_mode">Mode</string>
     <string name="schedule_empty">No rules. Capture is allowed all day.</string>
     <string name="schedule_open">Open schedule</string>
+
+    <string name="live_title">Live transcript</string>
+    <string name="live_subtitle">M2 spike: streaming partial text from the on-device Zipformer. Audio is not saved.</string>
+    <string name="live_start">Start</string>
+    <string name="live_stop">Stop</string>
+    <string name="live_loading">Loading model…</string>
+    <string name="live_recording">Recording — speak</string>
+    <string name="live_finishing">Finishing…</string>
+    <string name="live_stopped">Stopped</string>
+    <string name="live_error">Error: %1$s</string>
+    <string name="live_error_label">Error</string>
+    <string name="live_permission_missing">microphone permission missing</string>
+    <string name="live_transcript_label">TRANSCRIPT</string>
+    <string name="live_waiting">Waiting for speech…</string>
+    <string name="live_open">Open live transcript (M2)</string>
 
     <string name="audio_spike_title">Audio spike</string>
     <string name="audio_spike_body">Records 10 seconds, writes a 16 kHz mono WAV, and shows the path. This is an M0 measurement tool.</string>

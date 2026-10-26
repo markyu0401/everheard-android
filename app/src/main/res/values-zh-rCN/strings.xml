@@ -57,6 +57,8 @@
     <string name="notification_state_paused_user">已由你暂停</string>
     <string name="notification_state_error">采集已停止 — 打开 Everheard</string>
     <string name="notification_state_marked">已标记最近 30 秒</string>
+    <string name="notification_detail_recording">%1$d 分钟 · 电量 %2$d%%</string>
+    <string name="notification_detail_battery">电量 %1$d%%</string>
     <string name="notification_action_pause_15">15 分钟</string>
     <string name="notification_action_pause_60">1 小时</string>
     <string name="notification_action_pause_tomorrow">到明天</string>
@@ -86,6 +88,21 @@
     <string name="schedule_mode">模式</string>
     <string name="schedule_empty">没有规则。全天允许采集。</string>
     <string name="schedule_open">打开时间表</string>
+
+    <string name="live_title">实时转写</string>
+    <string name="live_subtitle">M2 spike：端侧 Zipformer 的流式草稿。音频不保存。</string>
+    <string name="live_start">开始</string>
+    <string name="live_stop">停止</string>
+    <string name="live_loading">加载模型…</string>
+    <string name="live_recording">正在采集 — 说话</string>
+    <string name="live_finishing">收尾…</string>
+    <string name="live_stopped">已停止</string>
+    <string name="live_error">错误：%1$s</string>
+    <string name="live_error_label">错误</string>
+    <string name="live_permission_missing">缺少麦克风权限</string>
+    <string name="live_transcript_label">转写</string>
+    <string name="live_waiting">等待说话…</string>
+    <string name="live_open">打开实时转写（M2）</string>
 
     <string name="audio_spike_title">音频自检</string>
     <string name="audio_spike_body">录 10 秒，写一个 16 kHz 单声道 WAV，并显示路径。这是 M0 的测量工具。</string>

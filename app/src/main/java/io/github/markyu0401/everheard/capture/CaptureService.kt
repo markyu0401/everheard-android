@@ -24,6 +24,7 @@ import io.github.markyu0401.everheard.capture.audio.AudioRecordSource
 import io.github.markyu0401.everheard.capture.audio.RingBuffer
 import io.github.markyu0401.everheard.capture.audio.WavWriter
 import io.github.markyu0401.everheard.capture.guards.BatteryGuard
+import io.github.markyu0401.everheard.capture.guards.MotionDetector
 import io.github.markyu0401.everheard.capture.guards.SilenceTracker
 import io.github.markyu0401.everheard.capture.guards.ThermalGuard
 import io.github.markyu0401.everheard.capture.schedule.ScheduleEvaluator
@@ -82,6 +83,8 @@ class CaptureService : Service() {
 
     private var audioSource: AudioRecordSource? = null
     private var vad: SileroVad? = null
+    private var motionDetector: MotionDetector? = null
+    private var recordingStartedAt: Long = 0L
     private val ringBuffer = RingBuffer(capacitySamples = 60 * 16_000)
     private val silenceTracker = SilenceTracker(clock = { SystemClock.elapsedRealtime() })
 
@@ -247,10 +250,13 @@ class CaptureService : Service() {
     }
 
     /**
-     * M1 proxy: screen off means the user is probably not walking. Replace with
-     * Activity Recognition when M1-T4 is measured on a device.
+     * Screen-off is the fallback when the device has no accelerometer. With a
+     * sensor, "stationary" means no significant movement for five minutes.
      */
     private fun isProbablyStationary(): Boolean {
+        motionDetector?.let { detector ->
+            if (detector.hasSensor()) return detector.isStationary()
+        }
         val power = getSystemService(PowerManager::class.java)
         return !power.isInteractive
     }
@@ -301,6 +307,8 @@ class CaptureService : Service() {
             }
             vad = vadInstance
             audioSource = source
+            motionDetector = MotionDetector(this).also { it.start() }
+            recordingStartedAt = SystemClock.elapsedRealtime()
         } catch (error: Exception) {
             Log.e(TAG, "Unable to open microphone", error)
             closeMicrophone()
@@ -315,6 +323,9 @@ class CaptureService : Service() {
         audioSource = null
         vad?.release()
         vad = null
+        motionDetector?.stop()
+        motionDetector = null
+        recordingStartedAt = 0L
         ringBuffer.clear()
     }
 
@@ -373,9 +384,15 @@ class CaptureService : Service() {
             CaptureState.PAUSED_USER -> getString(R.string.notification_state_paused_user)
             CaptureState.ERROR -> getString(R.string.notification_state_error)
         }
+        val detail = if (state.isMicrophoneOpen && recordingStartedAt > 0L) {
+            val minutes = (SystemClock.elapsedRealtime() - recordingStartedAt) / 60_000L
+            getString(R.string.notification_detail_recording, minutes, batteryLevel)
+        } else {
+            getString(R.string.notification_detail_battery, batteryLevel)
+        }
         notifySafely(
             CaptureNotification.NOTIF_ID,
-            CaptureNotification.build(this, text)
+            CaptureNotification.build(this, text, detail)
         )
     }
 

@@ -14,14 +14,14 @@ import kotlinx.coroutines.withContext
 /**
  * On-device streaming Zipformer (bilingual zh-en, int8).
  *
- * The small model is used for M0: encoder 41 MB, decoder 3.3 MB, joiner 3.1 MB.
- * It lives in assets because sherpa-onnx's Android constructor takes an
+ * The small model is used for M0/M2: encoder 41 MB, decoder 3.3 MB, joiner
+ * 3.1 MB. It lives in assets because sherpa-onnx's Android constructor takes an
  * AssetManager; scripts/fetch_models.sh populates it locally.
  */
 class SherpaAsr(
     private val assets: AssetManager,
     private val frameSamples: Int = 320
-) : AsrEngine {
+) : StreamingAsrEngine {
 
     companion object {
         const val MODEL_ID = "sherpa-onnx-streaming-zipformer-small-bilingual-zh-en-int8"
@@ -72,68 +72,114 @@ class SherpaAsr(
     override suspend fun transcribe(request: AsrRequest): AsrResult =
         withContext(Dispatchers.Default) {
             require(request.pcm16.isNotEmpty()) { "empty audio" }
-
-            val startedAt = SystemClock.elapsedRealtime()
-            val stream = recognizer.createStream()
-            val pieces = mutableListOf<String>()
-            val segments = mutableListOf<AsrSegment>()
-            var segmentStartSample = 0
-            var index = 0
-
+            val session = createSession(request.sampleRate)
             try {
-                while (index < request.pcm16.size) {
-                    val end = minOf(index + frameSamples, request.pcm16.size)
-                    val floats = FloatArray(end - index) { offset ->
-                        request.pcm16[index + offset] / 32768.0f
-                    }
+                session.accept(request.pcm16)
+                session.finish()
+            } finally {
+                session.close()
+            }
+        }
 
-                    stream.acceptWaveform(floats, request.sampleRate)
-                    while (recognizer.isReady(stream)) {
-                        recognizer.decode(stream)
-                    }
+    override fun createSession(sampleRate: Int): StreamingAsrSession =
+        SherpaSession(sampleRate)
 
-                    if (recognizer.isEndpoint(stream)) {
-                        val text = recognizer.getResult(stream).text.trim()
-                        if (text.isNotEmpty()) {
-                            pieces += text
-                            segments += AsrSegment(
-                                text = text,
-                                startMs = segmentStartSample * 1000L / request.sampleRate,
-                                endMs = end * 1000L / request.sampleRate
-                            )
-                        }
-                        recognizer.reset(stream)
-                        segmentStartSample = end
-                    }
+    private inner class SherpaSession(
+        private val sampleRate: Int
+    ) : StreamingAsrSession {
 
-                    index = end
+        private val stream = recognizer.createStream()
+        private val startedAt = SystemClock.elapsedRealtime()
+        private val pieces = mutableListOf<String>()
+        private val segments = mutableListOf<AsrSegment>()
+
+        private var index = 0
+        private var segmentStartSample = 0
+        private var finished = false
+        private var closed = false
+        private var cached: AsrResult? = null
+
+        override fun accept(pcm16: ShortArray) {
+            if (closed || finished || pcm16.isEmpty()) return
+            var cursor = 0
+            while (cursor < pcm16.size) {
+                val end = minOf(cursor + frameSamples, pcm16.size)
+                val floats = FloatArray(end - cursor) { offset ->
+                    pcm16[cursor + offset] / 32768.0f
                 }
 
-                stream.inputFinished()
+                stream.acceptWaveform(floats, sampleRate)
                 while (recognizer.isReady(stream)) {
                     recognizer.decode(stream)
                 }
 
-                val tail = recognizer.getResult(stream).text.trim()
-                if (tail.isNotEmpty()) {
-                    pieces += tail
-                    segments += AsrSegment(
-                        text = tail,
-                        startMs = segmentStartSample * 1000L / request.sampleRate,
-                        endMs = request.pcm16.size * 1000L / request.sampleRate
-                    )
+                if (recognizer.isEndpoint(stream)) {
+                    val text = recognizer.getResult(stream).text.trim()
+                    val absoluteEnd = index + end
+                    if (text.isNotEmpty()) {
+                        pieces += text
+                        segments += AsrSegment(
+                            text = text,
+                            startMs = segmentStartSample * 1000L / sampleRate,
+                            endMs = absoluteEnd * 1000L / sampleRate
+                        )
+                    }
+                    recognizer.reset(stream)
+                    segmentStartSample = absoluteEnd
                 }
-            } finally {
-                stream.release()
+
+                cursor = end
+            }
+            index += pcm16.size
+        }
+
+        override fun partialText(): String {
+            if (closed) return pieces.joinToString(" ").trim()
+            val tail = recognizer.getResult(stream).text.trim()
+            val all = if (tail.isEmpty()) pieces else pieces + tail
+            return all.joinToString(" ").trim()
+        }
+
+        override fun finish(): AsrResult {
+            cached?.let { return it }
+            if (closed) {
+                return cached ?: AsrResult("", emptyList(), id, 0L)
             }
 
-            AsrResult(
+            stream.inputFinished()
+            while (recognizer.isReady(stream)) {
+                recognizer.decode(stream)
+            }
+
+            val tail = recognizer.getResult(stream).text.trim()
+            if (tail.isNotEmpty()) {
+                pieces += tail
+                segments += AsrSegment(
+                    text = tail,
+                    startMs = segmentStartSample * 1000L / sampleRate,
+                    endMs = index * 1000L / sampleRate
+                )
+            }
+
+            finished = true
+            val result = AsrResult(
                 text = pieces.joinToString(" ").trim(),
-                segments = segments,
+                segments = segments.toList(),
                 model = id,
                 latencyMs = SystemClock.elapsedRealtime() - startedAt
             )
+            cached = result
+            stream.release()
+            closed = true
+            return result
         }
+
+        override fun close() {
+            if (closed) return
+            closed = true
+            stream.release()
+        }
+    }
 
     private fun assetExists(path: String): Boolean = try {
         assets.open(path).use { }

@@ -9,6 +9,21 @@ interface AsrEngine {
     suspend fun transcribe(request: AsrRequest): AsrResult
 }
 
+/**
+ * A recognizer that can emit partial text while audio is still arriving. The
+ * batch [AsrEngine.transcribe] path remains for short clips and cloud providers.
+ */
+interface StreamingAsrEngine : AsrEngine {
+    fun createSession(sampleRate: Int = 16_000): StreamingAsrSession
+}
+
+interface StreamingAsrSession {
+    fun accept(pcm16: ShortArray)
+    fun partialText(): String
+    fun finish(): AsrResult
+    fun close()
+}
+
 data class AsrRequest(
     val pcm16: ShortArray,
     val sampleRate: Int = 16_000,
