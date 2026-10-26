@@ -29,6 +29,7 @@ app/libs/
 *.onnx
 !app/src/main/assets/models/
 !app/src/main/assets/models/silero_vad.onnx
+app/src/main/assets/models/asr-small/
 *.bin
 *.wav
 *.opus
