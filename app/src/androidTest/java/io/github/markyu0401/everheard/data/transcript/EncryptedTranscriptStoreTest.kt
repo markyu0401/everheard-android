@@ -48,6 +48,39 @@ class EncryptedTranscriptStoreTest {
     }
 
     @Test
+    fun marks_and_deletes_a_session() {
+        runBlocking {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val file = File(context.filesDir, "transcript-test-${System.nanoTime()}.bin")
+            val store = EncryptedTranscriptStore(file)
+            store.createSession(
+                TranscriptSession(
+                    id = "s1",
+                    startedAt = 1L,
+                    title = "test",
+                    utterances = listOf(
+                        TranscriptUtterance(
+                            id = "u1",
+                            sessionId = "s1",
+                            startMs = 0,
+                            endMs = 1_000,
+                            text = "mark me"
+                        )
+                    )
+                )
+            )
+
+            store.setMarked("s1", "u1", true)
+            assertThat(store.session("s1")?.utterances?.first()?.marked).isTrue()
+
+            store.deleteSession("s1")
+            assertThat(store.sessions()).isEmpty()
+            assertThat(file.exists()).isTrue()
+            file.delete()
+        }
+    }
+
+    @Test
     fun clears_all_sessions_and_deletes_the_file() {
         runBlocking {
             val context = ApplicationProvider.getApplicationContext<Context>()

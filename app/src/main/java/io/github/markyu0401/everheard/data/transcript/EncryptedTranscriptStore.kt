@@ -12,6 +12,8 @@ interface TranscriptStore {
     suspend fun session(id: String): TranscriptSession?
     suspend fun createSession(session: TranscriptSession)
     suspend fun appendUtterance(sessionId: String, utterance: TranscriptUtterance)
+    suspend fun setMarked(sessionId: String, utteranceId: String, marked: Boolean)
+    suspend fun deleteSession(sessionId: String)
     suspend fun search(query: String): List<TranscriptHit>
     suspend fun clear()
 }
@@ -59,6 +61,34 @@ class EncryptedTranscriptStore(
         if (index >= 0) {
             val session = list[index]
             list[index] = session.copy(utterances = session.utterances + utterance)
+            persist(list)
+            cache = list
+        }
+    }
+
+    override suspend fun setMarked(
+        sessionId: String,
+        utteranceId: String,
+        marked: Boolean
+    ) = mutex.withLock {
+        val list = load().toMutableList()
+        val sessionIndex = list.indexOfFirst { it.id == sessionId }
+        if (sessionIndex >= 0) {
+            val session = list[sessionIndex]
+            val utteranceIndex = session.utterances.indexOfFirst { it.id == utteranceId }
+            if (utteranceIndex >= 0) {
+                val utterances = session.utterances.toMutableList()
+                utterances[utteranceIndex] = utterances[utteranceIndex].copy(marked = marked)
+                list[sessionIndex] = session.copy(utterances = utterances)
+                persist(list)
+                cache = list
+            }
+        }
+    }
+
+    override suspend fun deleteSession(sessionId: String) {
+        mutex.withLock {
+            val list = load().filterNot { it.id == sessionId }
             persist(list)
             cache = list
         }

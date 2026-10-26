@@ -19,7 +19,8 @@ class TranscriptCodecTest {
                     startMs = 0,
                     endMs = 4_000,
                     text = "We should ship the capture core first.",
-                    speaker = "me"
+                    speaker = "me",
+                    marked = true
                 ),
                 TranscriptUtterance(
                     id = "u2",
@@ -35,6 +36,15 @@ class TranscriptCodecTest {
         val decoded = TranscriptCodec.decode(TranscriptCodec.encode(listOf(session)))
 
         assertThat(decoded).isEqualTo(listOf(session))
+    }
+
+    @Test
+    fun old_rows_default_to_not_marked() {
+        val raw = """{"version":1,"sessions":[{"id":"s","startedAt":1,"utterances":[{"id":"u","sessionId":"s","startMs":0,"endMs":1,"text":"hello"}]}]}"""
+
+        val decoded = TranscriptCodec.decode(raw)
+
+        assertThat(decoded[0].utterances[0].marked).isFalse()
     }
 
     @Test

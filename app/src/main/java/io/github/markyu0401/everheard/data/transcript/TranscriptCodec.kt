@@ -32,6 +32,7 @@ object TranscriptCodec {
                                     put("endMs", utterance.endMs)
                                     put("text", utterance.text)
                                     utterance.speaker?.let { put("speaker", it) }
+                                    if (utterance.marked) put("marked", true)
                                 }
                             )
                         }
@@ -74,7 +75,8 @@ object TranscriptCodec {
                         utterance.optString("speaker")
                     } else {
                         null
-                    }
+                    },
+                    marked = utterance.optBoolean("marked", false)
                 )
             }
             sessions += TranscriptSession(

@@ -18,7 +18,8 @@ data class TranscriptUtterance(
     val startMs: Long,
     val endMs: Long,
     val text: String,
-    val speaker: String? = null
+    val speaker: String? = null,
+    val marked: Boolean = false
 )
 
 data class TranscriptHit(

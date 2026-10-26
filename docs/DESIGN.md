@@ -383,9 +383,9 @@ Validation rules:
 
 | Screen | Content | Key interaction |
 |---|---|---|
-| Today | Vertical timeline of sessions, chips (decisions/commitments/risks), marks | Tap → detail; long-press → delete/mark |
+| Today | Vertical timeline of session cards with time, duration, title, next-line preview, and mark count | Tap → detail; chips and summary are planned |
 | Live | Timer, waveform, live transcript with speaker colors, privacy strip | Mark; pause; stop |
-| Session detail | Tabs: Summary / Transcript / Todos; every item links to its quote | Add to calendar; "not mine" swipe; edit speaker |
+| Session detail | Transcript with star marks, share, and delete | Tap a line to mark; summary/todos tabs arrive with M4 |
 | Projects | Project cards with last activity and open commitments | Merge/split; open timeline |
 | Project detail | Event timeline + insight card | Jump to source session |
 | Insight | Weekly metrics + insight cards with evidence | Drill into citations |
@@ -393,7 +393,7 @@ Validation rules:
 | Settings | Language (System/English/简体中文), appearance (System/Light/Dark), and Data > Clear all transcripts | Changes apply immediately; language restarts the task; clearing is confirmed |
 | Onboarding | Legal notice, mic permission, enrollment, schedule default | 3 steps, skippable enrollment |
 
-Implemented in the M2 UI slice: Home (with a Today/Recent timeline of session cards), Live, Transcripts, Session detail, Schedule, Settings (including Data > Clear all), Onboarding, Permission gate. Today currently shows time, duration, title, and a preview; chips, manual marks, and delete/mark gestures remain planned. Projects, Insight, Person, and provider settings remain planned; do not ship dead links for them.
+Implemented in the M2 UI slice: Home (with a Today/Recent timeline of session cards), Live, Transcripts, Session detail (manual star marks, share, single-session delete), Schedule, Settings (including Data > Clear all), Onboarding, Permission gate. Today shows time, duration, title, preview, and mark count; summary, todos, chips, and summary/transcript tabs remain planned. Projects, Insight, Person, and provider settings remain planned; do not ship dead links for them.
 
 ### 10.2 Tokens
 

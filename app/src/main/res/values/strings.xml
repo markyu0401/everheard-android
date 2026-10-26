@@ -152,6 +152,13 @@
         <item quantity="other">%1$d lines</item>
     </plurals>
     <string name="transcript_session_fallback">Session</string>
+    <string name="transcript_marked_count">%1$d marked</string>
+    <string name="transcript_mark">Mark this line</string>
+    <string name="transcript_unmark">Remove mark</string>
+    <string name="transcript_share">Share transcript</string>
+    <string name="transcript_delete_title">Delete transcript</string>
+    <string name="transcript_delete_body">Delete this transcript from this device? This cannot be undone.</string>
+    <string name="transcript_delete_done">Transcript deleted.</string>
     <string name="transcript_detail_empty">No utterances.</string>
     <string name="transcript_speaker_unknown">Speaker</string>
     <string name="live_save">Save transcript</string>

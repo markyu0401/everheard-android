@@ -150,9 +150,22 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             .firstOrNull()
                             ?.text
                             .orEmpty()
+                        val markedCount = session.utterances.count { it.marked }
+                        val meta = buildString {
+                            append(sessionMeta(session, locale))
+                            if (markedCount > 0) {
+                                append(" · ")
+                                append(
+                                    stringResource(
+                                        R.string.transcript_marked_count,
+                                        markedCount
+                                    )
+                                )
+                            }
+                        }
                         TranscriptSessionRow(
                             title = titleText,
-                            meta = sessionMeta(session, locale),
+                            meta = meta,
                             snippet = preview,
                             showDivider = index != timelineSessions.lastIndex,
                             onClick = {

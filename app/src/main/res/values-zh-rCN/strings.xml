@@ -151,6 +151,13 @@
         <item quantity="other">%1$d 句</item>
     </plurals>
     <string name="transcript_session_fallback">会话</string>
+    <string name="transcript_marked_count">%1$d 处标记</string>
+    <string name="transcript_mark">标记这一句</string>
+    <string name="transcript_unmark">取消标记</string>
+    <string name="transcript_share">分享转写</string>
+    <string name="transcript_delete_title">删除转写</string>
+    <string name="transcript_delete_body">从本机删除这条转写？无法恢复。</string>
+    <string name="transcript_delete_done">转写已删除。</string>
     <string name="transcript_detail_empty">没有句子。</string>
     <string name="transcript_speaker_unknown">说话人</string>
     <string name="live_save">保存转写</string>
