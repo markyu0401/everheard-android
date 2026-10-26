@@ -41,6 +41,8 @@
     <string name="home_service_start">启动服务</string>
     <string name="home_service_stop">停止服务</string>
     <string name="home_service_running">服务运行中 — 麦克风未开</string>
+    <string name="home_service_recording">服务运行中 — 正在采集</string>
+    <string name="home_service_armed">服务运行中 — 待命</string>
     <string name="home_service_stopped">服务已停止</string>
 
     <string name="notification_channel_name">采集</string>

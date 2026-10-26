@@ -42,6 +42,8 @@
     <string name="home_service_start">Start service</string>
     <string name="home_service_stop">Stop service</string>
     <string name="home_service_running">Service running — microphone off</string>
+    <string name="home_service_recording">Service running — recording</string>
+    <string name="home_service_armed">Service running — armed</string>
     <string name="home_service_stopped">Service stopped</string>
 
     <string name="notification_channel_name">Capture</string>

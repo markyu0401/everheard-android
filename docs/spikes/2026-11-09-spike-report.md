@@ -2,6 +2,8 @@
 
 **Status:** pending device measurements. The harnesses and the in-app spike screens are implemented; the numbers below must be filled on real hardware.
 
+**Emulator smoke (AOSP ATD API 36, arm64):** 6/6 instrumented tests pass — service start + foreground notification, `AudioRecord` frame size, Silero VAD initialization, streaming ASR model load + silence, speaker embedding, and the onboarding permission gate. UI flows for onboarding, schedule editing (day chips, time pickers), and live schedule gating were exercised with `uiautomator`; changing the block end time to 08:00 flipped the notification to “Paused — outside the schedule” without restarting the service. These are correctness checks, not battery/accuracy numbers.
+
 **Device / ROM:** <model, Android version, build>
 **Build:** <git sha, debug/release>
 **Conditions:** screen off, 50 % brightness, unplugged, <network>

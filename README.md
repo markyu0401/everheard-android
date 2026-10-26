@@ -4,11 +4,11 @@
 
 Always-on conversation memory for Android. Everheard records the conversations you are part of, transcribes them on-device, attributes speakers, and turns what was said into commitments, project timelines, and a weekly review — without keeping the audio.
 
-> **Status: pre-alpha / planning.** No APK yet. The development plan is in [docs/PLAN.md](docs/PLAN.md); the architecture is in [docs/DESIGN.md](docs/DESIGN.md). The first milestone is a two-week measurement spike, not a UI.
+> **Status: pre-alpha.** Debug builds work (Compose shell, capture core, on-device VAD/ASR/speaker spikes); no release APK yet. The development plan is in [docs/PLAN.md](docs/PLAN.md); the architecture is in [docs/DESIGN.md](docs/DESIGN.md).
 
 ## Why another recorder
 
-The reference product (OPPO AI 心力球) proved the shape: a always-on capture device + an app that turns talk into memory. Its own users found the weak points:
+The reference product (OPPO AI 心力球) proved the shape: an always-on capture device + an app that turns talk into memory. Its own users found the weak points:
 
 - Bystanders' conversations get filed as *your* progress.
 - Small, time-bound promises are missed unless you press a button.
@@ -53,7 +53,31 @@ The capture service is a single `microphone` foreground service that stays armed
 
 ## Build
 
-Build instructions land with M0-T1. Requirements will be pinned in `gradle/libs.versions.toml`; models are downloaded at runtime, never committed.
+Requirements: JDK 21, Android SDK with platform 37, and the Gradle wrapper (AGP 9.4.1, Gradle 9.8.2, built-in Kotlin).
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21   # macOS Homebrew
+./gradlew lint testDebugUnitTest assembleDebug
+# debug APK: app/build/outputs/apk/debug/app-debug.apk
+```
+
+Models are not committed. Fetch them with SHA-256 verification:
+
+```bash
+scripts/fetch_models.sh   # streaming ASR (~437 MB tarball) + speaker embedding (27 MB)
+```
+
+Silero VAD (629 KB, MIT) is committed so the app can boot without a download. The ASR and speaker models live under `app/src/main/assets/models/` and are gitignored.
+
+Instrumented tests (service, AudioRecord, VAD, ASR, speaker) run on a device or emulator:
+
+```bash
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+sdkmanager "emulator" "system-images;android-36;aosp_atd;arm64-v8a"
+avdmanager create avd -n everheard_atd -k "system-images;android-36;aosp_atd;arm64-v8a" --device pixel_7
+emulator -avd everheard_atd -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
+./gradlew connectedDebugAndroidTest
+```
 
 ## Documentation
 

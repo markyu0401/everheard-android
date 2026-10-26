@@ -274,3 +274,14 @@ These are not preferences; they shape the product.
 - A milestone gate is not waived silently: write the waiver and the reason in DESIGN.md § Decisions, and update this table.
 - New features go to `docs/BACKLOG.md` (created when the first one appears), not into the current milestone.
 - If a spike invalidates a hard constraint (e.g. on-device ASR is unusable), stop and rewrite the affected phase before proceeding.
+
+## 11. Implementation progress (2026-10-26)
+
+- **M0-T1 → T6 done:** Gradle scaffold, onboarding/legal/permission gates, capture service skeleton, `AudioRecord` + ring buffer + WAV writer, Silero VAD, streaming sherpa-onnx ASR, and speaker embedding. The ASR model is the 2023-02-16 bilingual small Zipformer; `modelType` is left empty so sherpa detects it (forcing `zipformer2` aborts on the missing `query_head_dims` metadata).
+- **M0-T7 harness done:** speaker spike screen and embedding path; real-meeting precision numbers are still pending.
+- **M0-T8/T9 pending:** battery/thermal and ROM survival need a phone; the report template is in `docs/spikes/2026-11-09-spike-report.md`.
+- **M1-T1 → T6 done:** 8-state machine with 15 unit tests; schedule model + DataStore + weekly editor (day chips, time pickers, add/edit/delete); battery/thermal guards; boot “tap to resume” notification; sticky-restart fallback; pause 15 min / 1 h / until tomorrow, mark, stop, and a quick-settings tile; pause window persists across process death.
+- **M1-T4 caveat:** the silence guard currently uses screen-off as the motion proxy; sensor fusion and the 8 h false-pause measurement are still open.
+- **M1-T7 pending:** 8 h soak protocol is in `docs/spikes/2026-11-23-m1-soak.md`.
+- **Verification:** `./gradlew lint testDebugUnitTest assembleDebug` is green; 49 unit tests and 6/6 instrumented tests pass on an AOSP ATD API 36 emulator. The schedule→service→notification path was exercised end to end (block end moved to 08:00 → “Paused — outside the schedule”).
+- **Next:** run the M1 soak on the Samsung and one Chinese ROM, then start M2 (ASR pipeline, transcript store, live/detail UI).

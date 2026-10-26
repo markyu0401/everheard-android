@@ -28,9 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,8 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.capture.CaptureController
+import io.github.markyu0401.everheard.capture.CaptureState
 import io.github.markyu0401.everheard.spike.AudioSpikeActivity
 import io.github.markyu0401.everheard.spike.VadSpikeActivity
 import io.github.markyu0401.everheard.spike.AsrSpikeActivity
@@ -58,7 +57,8 @@ import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 fun HomeScreen(modifier: Modifier = Modifier) {
     val semantic = LocalSemanticColors.current
     val context = LocalContext.current
-    var serviceRunning by remember { mutableStateOf(CaptureController.isRunning()) }
+    val serviceState by CaptureController.state.collectAsStateWithLifecycle()
+    val serviceRunning = serviceState.isServiceAlive
 
     Column(
         modifier = modifier
@@ -131,10 +131,15 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             )
                     )
                     Text(
-                        text = if (serviceRunning) {
-                            stringResource(R.string.home_service_running)
-                        } else {
-                            stringResource(R.string.home_service_stopped)
+                        text = when {
+                            serviceState == CaptureState.RECORDING ->
+                                stringResource(R.string.home_service_recording)
+                            serviceState == CaptureState.ARMED ->
+                                stringResource(R.string.home_service_armed)
+                            serviceRunning ->
+                                stringResource(R.string.home_service_running)
+                            else ->
+                                stringResource(R.string.home_service_stopped)
                         },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -158,7 +163,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     Button(
                         onClick = {
                             CaptureController.start(context)
-                            serviceRunning = true
                         },
                         enabled = !serviceRunning,
                         shape = RoundedCornerShape(14.dp),
@@ -169,7 +173,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     OutlinedButton(
                         onClick = {
                             CaptureController.stop(context)
-                            serviceRunning = false
                         },
                         enabled = serviceRunning,
                         shape = RoundedCornerShape(14.dp),

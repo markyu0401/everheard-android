@@ -270,6 +270,7 @@ class CaptureService : Service() {
 
         state = newState
         isRunning = state.isServiceAlive
+        CaptureController.updateState(newState)
         serviceScope.launch { stateStore.setLastState(state.name) }
         updateNotification(newState)
 
@@ -408,6 +409,7 @@ class CaptureService : Service() {
 
     override fun onDestroy() {
         isRunning = false
+        CaptureController.updateState(CaptureState.STOPPED)
         tickJob?.cancel()
         tickJob = null
         scheduleJob?.cancel()

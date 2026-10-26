@@ -4,7 +4,7 @@
 
 一个 Android 端的「全天候对话记忆」应用：记录你参与的对话，在手机上转写成文字，区分说话人，把说过的话变成承诺、项目时间线和每周复盘——但不保留原始录音。
 
-> **状态：pre-alpha / 规划中。** 还没有 APK。开发计划见 [docs/PLAN.md](docs/PLAN.md)，架构见 [docs/DESIGN.md](docs/DESIGN.md)。第一个里程碑是两周的测量 spike，不是 UI。
+> **状态：pre-alpha。** 调试版已经能构建（Compose 壳、采集核心、端侧 VAD/ASR/声纹 spike）；还没有 release APK。开发计划见 [docs/PLAN.md](docs/PLAN.md)，架构见 [docs/DESIGN.md](docs/DESIGN.md)。
 
 ## 为什么再做一次
 
@@ -53,7 +53,31 @@ AudioRecord（16 kHz 单声道 PCM16）
 
 ## 构建
 
-构建说明随 M0-T1 落地。版本会固定在 `gradle/libs.versions.toml`；模型运行时下载，不进仓库。
+需要 JDK 21、Android SDK platform 37 和 Gradle wrapper（AGP 9.4.1、Gradle 9.8.2、内置 Kotlin）。
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21   # macOS Homebrew
+./gradlew lint testDebugUnitTest assembleDebug
+# 调试 APK：app/build/outputs/apk/debug/app-debug.apk
+```
+
+模型不进仓库，用脚本下载并校验 SHA-256：
+
+```bash
+scripts/fetch_models.sh   # 流式 ASR（约 437 MB 压缩包）+ 声纹模型（27 MB）
+```
+
+Silero VAD（629 KB，MIT）已提交，保证首次启动不依赖下载。ASR 和声纹模型位于 `app/src/main/assets/models/`，已被 gitignore。
+
+仪器测试（服务、AudioRecord、VAD、ASR、声纹）在真机或模拟器上运行：
+
+```bash
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+sdkmanager "emulator" "system-images;android-36;aosp_atd;arm64-v8a"
+avdmanager create avd -n everheard_atd -k "system-images;android-36;aosp_atd;arm64-v8a" --device pixel_7
+emulator -avd everheard_atd -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
+./gradlew connectedDebugAndroidTest
+```
 
 ## 文档
 
