@@ -79,4 +79,11 @@
     <string name="asr_spike_latency">Latency %1$d ms</string>
     <string name="asr_spike_empty">(no speech detected)</string>
     <string name="asr_spike_open">Open ASR spike (M0)</string>
+
+    <string name="speaker_spike_title">Speaker spike</string>
+    <string name="speaker_spike_body">Records 10 seconds, embeds 1.5 s windows with a 0.75 s hop, and clusters speakers online.</string>
+    <string name="speaker_spike_record">Record 10 s &amp; cluster</string>
+    <string name="speaker_spike_windows">%1$d windows</string>
+    <string name="speaker_spike_clusters">Clusters: %1$d</string>
+    <string name="speaker_spike_open">Open speaker spike (M0)</string>
 </resources>

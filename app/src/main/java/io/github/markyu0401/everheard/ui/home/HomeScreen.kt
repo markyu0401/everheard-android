@@ -44,6 +44,7 @@ import io.github.markyu0401.everheard.capture.CaptureController
 import io.github.markyu0401.everheard.spike.AudioSpikeActivity
 import io.github.markyu0401.everheard.spike.VadSpikeActivity
 import io.github.markyu0401.everheard.spike.AsrSpikeActivity
+import io.github.markyu0401.everheard.spike.DiarizationSpikeActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 
@@ -210,6 +211,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         ) {
             Text(
                 text = stringResource(R.string.asr_spike_open),
+                style = MaterialTheme.typography.labelLarge,
+                color = semantic.commitment
+            )
+        }
+
+        TextButton(
+            onClick = {
+                context.startActivity(Intent(context, DiarizationSpikeActivity::class.java))
+            }
+        ) {
+            Text(
+                text = stringResource(R.string.speaker_spike_open),
                 style = MaterialTheme.typography.labelLarge,
                 color = semantic.commitment
             )

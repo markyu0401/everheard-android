@@ -43,6 +43,11 @@
             android:name=".spike.AsrSpikeActivity"
             android:exported="false"
             android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".spike.DiarizationSpikeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
     </application>
 
 </manifest>

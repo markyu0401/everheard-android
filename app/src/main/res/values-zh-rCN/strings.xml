@@ -78,4 +78,11 @@
     <string name="asr_spike_latency">延迟 %1$d ms</string>
     <string name="asr_spike_empty">（没有检测到语音）</string>
     <string name="asr_spike_open">打开 ASR 自检（M0）</string>
+
+    <string name="speaker_spike_title">声纹自检</string>
+    <string name="speaker_spike_body">录 10 秒，按 1.5 秒窗口 / 0.75 秒步长提取 embedding，并在线聚类说话人。</string>
+    <string name="speaker_spike_record">录 10 秒并聚类</string>
+    <string name="speaker_spike_windows">%1$d 个窗口</string>
+    <string name="speaker_spike_clusters">聚类数：%1$d</string>
+    <string name="speaker_spike_open">打开声纹自检（M0）</string>
 </resources>

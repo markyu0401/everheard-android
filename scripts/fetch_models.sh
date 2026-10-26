@@ -47,3 +47,10 @@ else
   cp "$tmp_dir/extracted/bpe.model" "$ASR_DIR/bpe.model"
   echo "installed ASR model into $ASR_DIR"
 fi
+
+# CAM++ bilingual zh-en speaker embedding (27 MB).
+SPK_DEST="$ROOT/app/src/main/assets/models/speaker/campplus_zh_en.onnx"
+SPK_URL="https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx"
+SPK_SHA256="aa3cfc16963a10586a9393f5035d6d6b57e98d358b347f80c2a30bf4f00ceba2"
+
+verify_or_download "$SPK_DEST" "$SPK_URL" "$SPK_SHA256"
