@@ -47,9 +47,42 @@
     <string name="notification_channel_description">显示 Everheard 的待命或录制状态。</string>
     <string name="notification_title">Everheard 采集</string>
     <string name="notification_state_armed">待命中 — 麦克风关闭</string>
+    <string name="notification_state_recording">录制中 — 只留文字</string>
+    <string name="notification_state_paused_schedule">已暂停 — 不在允许时段</string>
+    <string name="notification_state_paused_battery">已暂停 — 电量过低</string>
+    <string name="notification_state_paused_thermal">已暂停 — 设备过热</string>
+    <string name="notification_state_paused_silence">已暂停 — 15 分钟无语音</string>
+    <string name="notification_state_paused_user">已由你暂停</string>
+    <string name="notification_state_error">采集已停止 — 打开 Everheard</string>
+    <string name="notification_state_marked">已标记最近 30 秒</string>
+    <string name="notification_action_pause_15">15 分钟</string>
+    <string name="notification_action_pause_60">1 小时</string>
+    <string name="notification_action_mark">标记</string>
     <string name="notification_stop">停止</string>
+    <string name="notification_resume_channel_name">采集提醒</string>
+    <string name="notification_resume_channel_description">重启或后台启动被拒后，点一下恢复采集。</string>
     <string name="notification_resume_title">需要点一下恢复采集</string>
     <string name="notification_resume_body">Android 拒绝了后台启动。打开 Everheard 恢复。</string>
+
+    <string name="quick_tile_label">Everheard 采集</string>
+
+    <string name="schedule_title">时间表</string>
+    <string name="schedule_subtitle">全天待命；这些时段决定麦克风什么时候打开。</string>
+    <string name="schedule_add_block">添加排除</string>
+    <string name="schedule_add_allow">添加允许</string>
+    <string name="schedule_every_day">每天</string>
+    <string name="schedule_block">排除</string>
+    <string name="schedule_allow">允许</string>
+    <string name="schedule_edit">编辑</string>
+    <string name="schedule_delete">删除</string>
+    <string name="schedule_save">保存</string>
+    <string name="schedule_cancel">取消</string>
+    <string name="schedule_start">开始</string>
+    <string name="schedule_end">结束</string>
+    <string name="schedule_days">星期</string>
+    <string name="schedule_mode">模式</string>
+    <string name="schedule_empty">没有规则。全天允许采集。</string>
+    <string name="schedule_open">打开时间表</string>
 
     <string name="audio_spike_title">音频自检</string>
     <string name="audio_spike_body">录 10 秒，写一个 16 kHz 单声道 WAV，并显示路径。这是 M0 的测量工具。</string>

@@ -5,14 +5,22 @@ import android.content.Context
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.GrantPermissionRule
 import io.github.markyu0401.everheard.MainActivity
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CaptureServiceTest {
+
+    @get:Rule
+    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
+        android.Manifest.permission.RECORD_AUDIO,
+        android.Manifest.permission.POST_NOTIFICATIONS
+    )
 
     @Test
     fun start_from_visible_activity_shows_foreground_notification() {

@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".EverheardApp"
@@ -28,6 +29,32 @@
             android:exported="false"
             android:foregroundServiceType="microphone"
             android:stopWithTask="false" />
+
+        <receiver
+            android:name=".capture.BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".capture.CaptureTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_stat_everheard"
+            android:label="@string/quick_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".ui.schedule.ScheduleActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
 
         <activity
             android:name=".spike.AudioSpikeActivity"

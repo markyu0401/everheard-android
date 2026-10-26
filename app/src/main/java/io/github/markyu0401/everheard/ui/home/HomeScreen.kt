@@ -45,6 +45,7 @@ import io.github.markyu0401.everheard.spike.AudioSpikeActivity
 import io.github.markyu0401.everheard.spike.VadSpikeActivity
 import io.github.markyu0401.everheard.spike.AsrSpikeActivity
 import io.github.markyu0401.everheard.spike.DiarizationSpikeActivity
+import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 
@@ -178,6 +179,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     }
                 }
             }
+        }
+
+        TextButton(
+            onClick = {
+                context.startActivity(Intent(context, ScheduleActivity::class.java))
+            }
+        ) {
+            Text(
+                text = stringResource(R.string.schedule_open),
+                style = MaterialTheme.typography.labelLarge,
+                color = semantic.commitment
+            )
         }
 
         TextButton(

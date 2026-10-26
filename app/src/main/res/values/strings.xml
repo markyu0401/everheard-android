@@ -48,9 +48,42 @@
     <string name="notification_channel_description">Shows when Everheard is armed or recording.</string>
     <string name="notification_title">Everheard capture</string>
     <string name="notification_state_armed">Armed — microphone off</string>
+    <string name="notification_state_recording">Recording — transcript only</string>
+    <string name="notification_state_paused_schedule">Paused — outside the schedule</string>
+    <string name="notification_state_paused_battery">Paused — battery low</string>
+    <string name="notification_state_paused_thermal">Paused — device is hot</string>
+    <string name="notification_state_paused_silence">Paused — no speech for 15 min</string>
+    <string name="notification_state_paused_user">Paused by you</string>
+    <string name="notification_state_error">Capture stopped — open Everheard</string>
+    <string name="notification_state_marked">Marked the last 30 seconds</string>
+    <string name="notification_action_pause_15">15 min</string>
+    <string name="notification_action_pause_60">1 h</string>
+    <string name="notification_action_mark">Mark</string>
     <string name="notification_stop">Stop</string>
+    <string name="notification_resume_channel_name">Capture reminders</string>
+    <string name="notification_resume_channel_description">Tap-to-resume reminders after a reboot or a refused background start.</string>
     <string name="notification_resume_title">Capture needs a tap</string>
     <string name="notification_resume_body">Android refused the background start. Open Everheard to resume.</string>
+
+    <string name="quick_tile_label">Everheard capture</string>
+
+    <string name="schedule_title">Schedule</string>
+    <string name="schedule_subtitle">Capture is armed all day; these windows decide when the microphone is open.</string>
+    <string name="schedule_add_block">Add block</string>
+    <string name="schedule_add_allow">Add allow</string>
+    <string name="schedule_every_day">Every day</string>
+    <string name="schedule_block">Block</string>
+    <string name="schedule_allow">Allow</string>
+    <string name="schedule_edit">Edit</string>
+    <string name="schedule_delete">Delete</string>
+    <string name="schedule_save">Save</string>
+    <string name="schedule_cancel">Cancel</string>
+    <string name="schedule_start">Start</string>
+    <string name="schedule_end">End</string>
+    <string name="schedule_days">Days</string>
+    <string name="schedule_mode">Mode</string>
+    <string name="schedule_empty">No rules. Capture is allowed all day.</string>
+    <string name="schedule_open">Open schedule</string>
 
     <string name="audio_spike_title">Audio spike</string>
     <string name="audio_spike_body">Records 10 seconds, writes a 16 kHz mono WAV, and shows the path. This is an M0 measurement tool.</string>
