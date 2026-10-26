@@ -42,20 +42,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.capture.schedule.ScheduleMode
 import io.github.markyu0401.everheard.capture.schedule.ScheduleRule
+import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.SettingsRow
-import io.github.markyu0401.everheard.ui.theme.EverheardTheme
+import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 
-class ScheduleActivity : ComponentActivity() {
+class ScheduleActivity : LocalizedActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            EverheardTheme {
+            EverheardAppTheme {
                 val viewModel: ScheduleViewModel = viewModel()
                 val rules by viewModel.rules.collectAsStateWithLifecycle()
                 ScheduleScreen(

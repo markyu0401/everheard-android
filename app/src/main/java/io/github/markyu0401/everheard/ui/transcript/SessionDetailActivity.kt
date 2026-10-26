@@ -35,16 +35,17 @@ import androidx.compose.ui.unit.dp
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
-import io.github.markyu0401.everheard.ui.theme.EverheardTheme
+import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import java.io.File
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 
-class SessionDetailActivity : ComponentActivity() {
+class SessionDetailActivity : LocalizedActivity() {
 
     companion object {
         const val EXTRA_SESSION_ID = "session_id"
@@ -55,7 +56,7 @@ class SessionDetailActivity : ComponentActivity() {
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         val sessionId = intent.getStringExtra(EXTRA_SESSION_ID).orEmpty()
         setContent {
-            EverheardTheme {
+            EverheardAppTheme {
                 SessionDetailScreen(
                     sessionId = sessionId,
                     onBack = { finish() }

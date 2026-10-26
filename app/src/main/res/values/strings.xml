@@ -49,6 +49,20 @@
     <string name="home_schedule_subtitle">Sleep window and allowed hours</string>
     <string name="home_live_subtitle">Watch words appear as you speak</string>
     <string name="home_footer">Audio is deleted after transcription. Only text stays.</string>
+    <string name="settings_open">Settings</string>
+    <string name="home_settings_subtitle">Language and appearance</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Language and appearance</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_language">Language</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="language_system">System</string>
+    <string name="language_english">English</string>
+    <string name="language_chinese">简体中文</string>
+    <string name="settings_footer">Changes apply immediately.</string>
 
     <string name="home_service_start">Start capture</string>
     <string name="home_service_stop">Stop capture</string>

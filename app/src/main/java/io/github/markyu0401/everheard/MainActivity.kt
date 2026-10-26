@@ -10,7 +10,6 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,20 +27,20 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.MainViewModel
 import io.github.markyu0401.everheard.ui.StartupState
 import io.github.markyu0401.everheard.ui.home.HomeScreen
 import io.github.markyu0401.everheard.ui.onboarding.OnboardingScreen
 import io.github.markyu0401.everheard.ui.onboarding.PermissionGate
 import io.github.markyu0401.everheard.ui.onboarding.PermissionKind
-import io.github.markyu0401.everheard.ui.theme.EverheardTheme
+import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : LocalizedActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            EverheardTheme {
+            EverheardAppTheme {
                 EverheardRoot()
             }
         }

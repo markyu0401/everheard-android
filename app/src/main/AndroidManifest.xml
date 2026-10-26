@@ -76,6 +76,11 @@
             android:theme="@style/Theme.Everheard" />
 
         <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
             android:name=".spike.AudioSpikeActivity"
             android:exported="false"
             android:theme="@style/Theme.Everheard" />

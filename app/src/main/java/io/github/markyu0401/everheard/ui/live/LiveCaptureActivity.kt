@@ -61,11 +61,12 @@ import io.github.markyu0401.everheard.capture.vad.SileroVad
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
+import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
-import io.github.markyu0401.everheard.ui.theme.EverheardTheme
+import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 import java.io.File
 import java.util.UUID
@@ -73,12 +74,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class LiveCaptureActivity : ComponentActivity() {
+class LiveCaptureActivity : LocalizedActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         setContent {
-            EverheardTheme {
+            EverheardAppTheme {
                 LiveCaptureScreen(onBack = { finish() })
             }
         }

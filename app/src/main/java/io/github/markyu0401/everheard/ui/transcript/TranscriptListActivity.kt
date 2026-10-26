@@ -57,25 +57,26 @@ import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptHit
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
 import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
-import io.github.markyu0401.everheard.ui.theme.EverheardTheme
+import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import java.io.File
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 
-class TranscriptListActivity : ComponentActivity() {
+class TranscriptListActivity : LocalizedActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         setContent {
-            EverheardTheme {
+            EverheardAppTheme {
                 TranscriptListScreen(
                     onBack = { finish() },
                     onOpen = { id ->

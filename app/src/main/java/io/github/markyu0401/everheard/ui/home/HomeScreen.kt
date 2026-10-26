@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -48,6 +49,7 @@ import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.components.StatusDot
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
 import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
+import io.github.markyu0401.everheard.ui.settings.SettingsActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
@@ -111,9 +113,17 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     iconPainter = painterResource(R.drawable.ic_stat_everheard),
                     title = stringResource(R.string.live_open),
                     subtitle = stringResource(R.string.home_live_subtitle),
-                    showDivider = false,
                     onClick = {
                         context.startActivity(Intent(context, LiveCaptureActivity::class.java))
+                    }
+                )
+                SettingsRow(
+                    icon = Icons.Filled.Settings,
+                    title = stringResource(R.string.settings_open),
+                    subtitle = stringResource(R.string.home_settings_subtitle),
+                    showDivider = false,
+                    onClick = {
+                        context.startActivity(Intent(context, SettingsActivity::class.java))
                     }
                 )
             }
