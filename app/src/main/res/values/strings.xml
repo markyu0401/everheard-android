@@ -1,8 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Everheard</string>
-    <string name="scaffold_subtitle">Your conversations, remembered.</string>
-    <string name="scaffold_status_title">M0 scaffold</string>
-    <string name="scaffold_status_body">The project builds and runs. Capture, VAD, and on-device ASR land in the next tasks.</string>
-    <string name="scaffold_footer">Local-first · text only · bring your own model</string>
+
+    <string name="onboarding_kicker">EVERHEARD · FIRST RUN</string>
+    <string name="onboarding_title">Remember what was said.</string>
+    <string name="onboarding_body">Everheard turns the conversations you are part of into text, commitments, and a project timeline. It does not keep the audio.</string>
+    <string name="onboarding_visible_title">Visible capture</string>
+    <string name="onboarding_visible_body">A persistent notification and a start tone. There is no covert mode.</string>
+    <string name="onboarding_text_title">Text, not audio</string>
+    <string name="onboarding_text_body">Audio is deleted after transcription. The database is encrypted with a key in Android Keystore.</string>
+    <string name="onboarding_sleep_title">A sleep window</string>
+    <string name="onboarding_sleep_body">Capture is armed all day, but paused 23:30–07:00 by default. You can edit the schedule later.</string>
+    <string name="onboarding_consent">I understand that I may only record conversations I am legally allowed to record.</string>
+    <string name="onboarding_legal_button">Read the legal notes</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_footer">You can change all of this later in Settings.</string>
+
+    <string name="legal_title">Recording and consent</string>
+    <string name="legal_body">In one-party-consent places you may record conversations you are part of. Recording bystanders who are not part of your conversation is not covered, and some places require everyone to agree. Everheard shows a notification and plays a tone while capturing. You are responsible for consent.</string>
+    <string name="legal_confirm">I understand</string>
+
+    <string name="permission_microphone_title">Microphone access is required</string>
+    <string name="permission_microphone_body">Everheard needs the microphone to turn speech into text. Capture stays visible in the notification shade.</string>
+    <string name="permission_microphone_action">Allow microphone</string>
+    <string name="permission_notifications_title">Keep capture visible</string>
+    <string name="permission_notifications_body">Android requires a notification for a foreground recording service. It is also how the people around you can see that capture is on.</string>
+    <string name="permission_notifications_action">Allow notifications</string>
+    <string name="permission_open_settings">Open system settings</string>
+
+    <string name="home_kicker">EVERHEARD</string>
+    <string name="home_title">Ready when you are.</string>
+    <string name="home_body">The setup is complete. Capture, transcription, and the timeline are being built in the next milestones.</string>
+    <string name="home_next_title">Next: the capture service</string>
+    <string name="home_next_body">A foreground service that stays armed, gates the microphone by schedule, and releases it during sleep. It lands in M0-T3.</string>
+    <string name="home_chip_local">Local-first</string>
+    <string name="home_chip_text">Text only</string>
+    <string name="home_chip_model">BYO model</string>
 </resources>

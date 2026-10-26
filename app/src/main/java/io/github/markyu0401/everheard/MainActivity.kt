@@ -1,34 +1,42 @@
 package io.github.markyu0401.everheard
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.markyu0401.everheard.ui.MainViewModel
+import io.github.markyu0401.everheard.ui.StartupState
+import io.github.markyu0401.everheard.ui.home.HomeScreen
+import io.github.markyu0401.everheard.ui.onboarding.OnboardingScreen
+import io.github.markyu0401.everheard.ui.onboarding.PermissionGate
+import io.github.markyu0401.everheard.ui.onboarding.PermissionKind
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
-import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,98 +47,80 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             EverheardTheme {
-                ScaffoldHome()
+                EverheardRoot()
             }
         }
     }
 }
 
 @Composable
-private fun ScaffoldHome() {
-    val semantic = LocalSemanticColors.current
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp)
-                .padding(top = 72.dp, bottom = 32.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = stringResource(R.string.scaffold_subtitle),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+private fun EverheardRoot() {
+    val viewModel: MainViewModel = viewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
-            Column {
-                StatusCard(
-                    title = stringResource(R.string.scaffold_status_title),
-                    body = stringResource(R.string.scaffold_status_body),
-                    accent = semantic.commitment
-                )
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = stringResource(R.string.scaffold_footer),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+    val microphoneLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { viewModel.refreshPermissions() }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { viewModel.refreshPermissions() }
+
+    // Returning from system settings must re-evaluate the gate.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.refreshPermissions()
         }
     }
-}
 
-@Composable
-private fun StatusCard(
-    title: String,
-    body: String,
-    accent: androidx.compose.ui.graphics.Color
-) {
-    val shape = RoundedCornerShape(18.dp)
-    Column(
-        modifier = Modifier
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(18.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = accent
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = body,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.height(14.dp))
-        Spacer(
-            Modifier
-                .fillMaxWidth(0.34f)
-                .height(3.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(accent, MaterialTheme.colorScheme.secondary)
-                    )
-                )
-        )
+        when (state) {
+            StartupState.Loading -> LoadingScreen()
+
+            StartupState.Onboarding -> OnboardingScreen(
+                onContinue = viewModel::completeOnboarding
+            )
+
+            StartupState.NeedsMicrophone -> PermissionGate(
+                kind = PermissionKind.Microphone,
+                onRequest = { microphoneLauncher.launch(Manifest.permission.RECORD_AUDIO) },
+                onOpenSettings = { openAppSettings(context) }
+            )
+
+            StartupState.NeedsNotifications -> PermissionGate(
+                kind = PermissionKind.Notifications,
+                onRequest = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                },
+                onOpenSettings = { openAppSettings(context) }
+            )
+
+            StartupState.Ready -> HomeScreen()
+        }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0A0B0D)
 @Composable
-private fun ScaffoldHomePreview() {
-    EverheardTheme {
-        ScaffoldHome()
+private fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
+}
+
+private fun openAppSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", context.packageName, null)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
 }
