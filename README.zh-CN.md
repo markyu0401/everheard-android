@@ -1,4 +1,4 @@
-# Everheard（留迹）
+# Everheard
 
 [English](README.md) | **简体中文**
 
@@ -71,4 +71,4 @@ AudioRecord（16 kHz 单声道 PCM16）
 
 ## 许可证
 
-代码：Apache-2.0。模型和第三方二进制保留各自许可证，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。「Everheard」和「留迹」是工作名，v1.0 前可能更换。
+代码：Apache-2.0。模型和第三方二进制保留各自许可证，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。「Everheard」是工作名，v1.0 前可能更换。

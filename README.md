@@ -1,4 +1,4 @@
-# Everheard (留迹)
+# Everheard
 
 **English** | [简体中文](README.zh-CN.md)
 
@@ -71,4 +71,4 @@ Recording law depends on where you are and who is in the room. Everheard default
 
 ## License
 
-Code: Apache-2.0. Models and third-party binaries keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). "Everheard" and "留迹" are working names and may change before v1.0.
+Code: Apache-2.0. Models and third-party binaries keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). "Everheard" is a working name and may change before v1.0.

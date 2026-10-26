@@ -24,6 +24,8 @@ Thumbs.db
 
 # Models and audio (downloaded at runtime, never committed)
 models/
+app/libs/
+*.aar
 *.onnx
 *.bin
 *.wav

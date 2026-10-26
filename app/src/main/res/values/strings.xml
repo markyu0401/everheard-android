@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Everheard</string>
+    <string name="scaffold_subtitle">Your conversations, remembered.</string>
+    <string name="scaffold_status_title">M0 scaffold</string>
+    <string name="scaffold_status_body">The project builds and runs. Capture, VAD, and on-device ASR land in the next tasks.</string>
+    <string name="scaffold_footer">Local-first · text only · bring your own model</string>
+</resources>

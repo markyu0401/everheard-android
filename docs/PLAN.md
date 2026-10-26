@@ -1,6 +1,6 @@
 # Everheard — Development Plan
 
-> **Working title:** Everheard（留迹）. Repository: `everheard-android`.
+> **Working title:** Everheard. Repository: `everheard-android`.
 > **Status:** approved for execution, 2026-10-26. Owner: markyu0401.
 > **Scope:** Android-only, open source (Apache-2.0), self-use first. No hardware, no account system, no Play Store release in v0.x.
 > **Companion documents:** [DESIGN.md](DESIGN.md) (architecture), [plans/2026-10-26-m0-spikes.md](plans/2026-10-26-m0-spikes.md) (the executable plan for the next two weeks).
@@ -53,7 +53,7 @@ The reference product (OPPO AI 心力球 + 白鲸 AI) validated the loop but lef
 
 These are not preferences; they shape the product.
 
-1. **targetSdk 36 (Android 16), minSdk 26.** Play's API-36 requirement is irrelevant (no Play release), but OEM ROMs behave closest to current rules when targeting 36.
+1. **compileSdk 37, targetSdk 36 (Android 16), minSdk 26.** AGP 9.4 supports API 37; current AndroidX (core 1.19, lifecycle 2.11, Compose 1.12) requires compileSdk 37 and AGP 9.1+. targetSdk stays 36 until the Android 17 behaviour changes are audited.
 2. **A microphone foreground service cannot be created while the app is in the background.** Capture starts from a visible screen or a notification tap. No silent autostart.
 3. **`BOOT_COMPLETED` cannot launch a microphone foreground service.** After reboot the app posts a "tap to resume" notification.
 4. **`microphone` foreground services have no 6-hour timeout** (only `dataSync` and `mediaProcessing` do). A started service may run indefinitely, subject to OEM kills and battery.
@@ -194,8 +194,8 @@ These are not preferences; they shape the product.
 ### Version policy
 
 - Pin every dependency in `gradle/libs.versions.toml`; no dynamic versions.
-- Starting set: **AGP 8.13.2, Kotlin 2.4.21, Gradle 8.14.x, Compose BOM 2026.09.00, Room 2.8.5, minSdk 26, compile/target 36, JVM 17.**
-- Deliberately not AGP 9.x for v0.1: AGP 9's built-in Kotlin migration adds risk to a new project. Revisit at v1.0.
+- Starting set: **AGP 9.4.1, Gradle 9.8.2, built-in Kotlin (no `org.jetbrains.kotlin.android` plugin), Compose BOM 2026.09.00, Room 2.8.5, minSdk 26, compileSdk 37, targetSdk 36, JVM 17.**
+- AGP 9.4.1 is required by current AndroidX artifacts (core 1.19.1, lifecycle 2.11.0, Compose 1.12.1) and supports API 37. Built-in Kotlin replaces the Kotlin Android plugin; kapt is not used.
 - sherpa-onnx: `sherpa-onnx-2.0.0.aar` from the official release, SHA-256 pinned; fallback `1.13.8` if the 2.0 API breaks.
 
 ### Repository workflow
@@ -249,7 +249,7 @@ These are not preferences; they shape the product.
 | ID | Decision | Rationale |
 |---|---|---|
 | D1 | Single Gradle module with packages, not 4 modules | Solo project; build time and refactor cost outweigh boundaries until v1.0 |
-| D2 | AGP 8.13.2 + classic Kotlin plugin | Avoid AGP 9 built-in-Kotlin migration in a greenfield project |
+| D2 | AGP 9.4.1 + Gradle 9.8.2 + built-in Kotlin, compileSdk 37 | Current AndroidX requires AGP 9.1+ and compileSdk 37; built-in Kotlin removes the Kotlin Android plugin and its version-coupling risk |
 | D3 | targetSdk 36, minSdk 26 | Current rules + broad Chinese ROM coverage |
 | D4 | On-device ASR is the default; cloud is opt-in | Privacy and offline use; cloud is the accuracy escape hatch |
 | D5 | One long-lived armed FGS; schedule gates `AudioRecord` | Background FGS creation is forbidden; stop/start cannot be scheduled |
@@ -258,7 +258,7 @@ These are not preferences; they shape the product.
 | D8 | Apache-2.0 | Patent grant; compatible with sherpa-onnx and AndroidX |
 | D9 | No backend, no account, no sync in v1 | Removes the largest privacy and operational surface |
 | D10 | BYO API is a first-class feature, not an advanced setting | The reference product's closed model is its main limitation |
-| D11 | "Everheard / 留迹" is a working name | Trademark check before v1.0; rename is a repo setting + string change |
+| D11 | "Everheard" is a working name | Trademark check before v1.0; rename is a repo setting + string change |
 
 ## 9. Out of scope for v1
 
