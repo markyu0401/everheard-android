@@ -29,9 +29,9 @@
 
     <string name="home_kicker">EVERHEARD</string>
     <string name="home_title">准备好了。</string>
-    <string name="home_body">初始化完成。采集、转写和时间线会在接下来的里程碑里落地。</string>
-    <string name="home_next_title">下一步：采集服务</string>
-    <string name="home_next_body">一个常驻的前台服务：按时间表开关麦克风，睡眠时段释放麦克风。将在 M0-T3 落地。</string>
+    <string name="home_body">采集、转写和加密文字已经就位。下一步是时间线与承诺。</string>
+    <string name="home_next_title">采集核心</string>
+    <string name="home_next_body">常驻服务、时段规则、电量/温度/静音守卫和加密转写已经就位。下一步：说话人归属与承诺抽取。</string>
     <string name="home_chip_local">本地优先</string>
     <string name="home_chip_text">只留文字</string>
     <string name="home_chip_model">自带模型</string>

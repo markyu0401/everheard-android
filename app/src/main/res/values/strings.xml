@@ -30,9 +30,9 @@
 
     <string name="home_kicker">EVERHEARD</string>
     <string name="home_title">Ready when you are.</string>
-    <string name="home_body">The setup is complete. Capture, transcription, and the timeline are being built in the next milestones.</string>
-    <string name="home_next_title">Next: the capture service</string>
-    <string name="home_next_body">A foreground service that stays armed, gates the microphone by schedule, and releases it during sleep. It lands in M0-T3.</string>
+    <string name="home_body">Capture, transcription, and encrypted transcripts are in place. Timeline and commitments are next.</string>
+    <string name="home_next_title">Capture core</string>
+    <string name="home_next_body">Armed service, schedule windows, battery/thermal/silence guards, and encrypted transcripts are in place. Next: speaker attribution and commitments.</string>
     <string name="home_chip_local">Local-first</string>
     <string name="home_chip_text">Text only</string>
     <string name="home_chip_model">BYO model</string>
