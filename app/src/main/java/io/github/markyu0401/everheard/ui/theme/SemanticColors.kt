@@ -5,8 +5,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Semantic colors. Color carries meaning only: decision, commitment, risk, insight, mark.
- * Do not use these for decoration.
+ * Semantic colors. Color carries meaning only: decision, commitment, risk,
+ * insight, mark. They are tuned for the light and dark grouped surfaces.
  */
 @Immutable
 data class SemanticColors(
@@ -17,12 +17,20 @@ data class SemanticColors(
     val mark: Color
 )
 
-val EverheardSemanticColors = SemanticColors(
-    decision = Color(0xFF5FD3C4),
-    commitment = Color(0xFFE8B45A),
-    risk = Color(0xFFE88A8A),
-    insight = Color(0xFFA99CF5),
-    mark = Color(0xFFF2F3F5)
+val EverheardSemanticColorsLight = SemanticColors(
+    decision = Color(0xFF0A84FF),
+    commitment = Color(0xFFFF9F0A),
+    risk = Color(0xFFFF3B30),
+    insight = Color(0xFFBF5AF2),
+    mark = Color(0xFF1C1C1E)
 )
 
-val LocalSemanticColors = staticCompositionLocalOf { EverheardSemanticColors }
+val EverheardSemanticColorsDark = SemanticColors(
+    decision = Color(0xFF64D2FF),
+    commitment = Color(0xFFFFD60A),
+    risk = Color(0xFFFF6961),
+    insight = Color(0xFFBF5AF2),
+    mark = Color(0xFFFFFFFF)
+)
+
+val LocalSemanticColors = staticCompositionLocalOf { EverheardSemanticColorsLight }

@@ -4,7 +4,7 @@
 
 Always-on conversation memory for Android. Everheard records the conversations you are part of, transcribes them on-device, attributes speakers, and turns what was said into commitments, project timelines, and a weekly review — without keeping the audio.
 
-> **Status: pre-alpha.** Debug builds work (Compose shell, armed capture core, on-device VAD/ASR/speaker spikes, encrypted transcript store with live partials and search); no release APK yet. The development plan is in [docs/PLAN.md](docs/PLAN.md); the architecture is in [docs/DESIGN.md](docs/DESIGN.md).
+> **Status: pre-alpha.** Debug builds work (Compose shell, a restrained grouped light/dark interface, armed capture core, on-device VAD/ASR/speaker spikes, encrypted transcript store with live partials and search); no release APK yet. The development plan is in [docs/PLAN.md](docs/PLAN.md); the architecture is in [docs/DESIGN.md](docs/DESIGN.md).
 
 ## Why another recorder
 

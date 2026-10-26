@@ -390,20 +390,23 @@ Validation rules:
 | Settings | Capture mode, schedule grid, providers, retention, reliability, export/delete | Test connection; ROM checklist |
 | Onboarding | Legal notice, mic permission, enrollment, schedule default | 3 steps, skippable enrollment |
 
+Implemented in the M2 UI slice: Home, Live, Transcripts, Session detail, Schedule, Onboarding, Permission gate. Today, Projects, Insight, Person, and Settings remain planned; do not ship dead links for them.
+
 ### 10.2 Tokens
 
-- Dark-first; near-black background `#0A0B0D`, panel `#141619`, line `rgba(255,255,255,.08)`.
-- Semantic colors only: decision `#5FD3C4`, commitment `#E8B45A`, risk `#E88A8A`, mark white, insight `#A99CF5`.
-- Type: system font (PingFang SC / Noto Sans CJK), tabular numerals for timestamps.
-- Spacing: 4/8/12/16; cards 18 dp radius; 48 dp touch targets.
-- Motion: 150–250 ms; timeline cards spring in; no decorative animation during recording.
+- Follow the system light/dark setting. Light: grouped background `#F2F2F7`, white cards, black primary text. Dark: background `#000000`, cards `#1C1C1E`.
+- One interaction blue (`#0A84FF`); semantic colors only where they carry meaning: decision `#0A84FF` / `#64D2FF`, commitment `#FF9F0A` / `#FFD60A`, risk `#FF3B30` / `#FF6961`, insight `#BF5AF2`, mark `#1C1C1E` / white.
+- Type: platform system font; large title 34/38 with negative tracking, body 17/24, secondary 15/21, label 13/18. Tighten tracking as size grows; tabular numerals for timestamps.
+- Spacing: 20 dp screen gutter, 16 dp card inset, 8 dp grid; grouped cards 16 dp radius, hero capture card 20 dp; 50 dp primary buttons with 14 dp radius; 60 dp list rows.
+- Motion: system ripples and a restrained recording pulse; no decorative motion during capture.
 
 ### 10.3 Rules
 
-- Every AI conclusion is tappable and opens its source sentence.
-- Confidence is visible: a dot (high/medium/low), not a false precision number.
-- Empty states explain what will appear and how to trigger capture.
-- Recording state is always one glance away: persistent notification + a red/amber dot in the app bar.
+- No developer instrumentation, model names, spike links, or milestone labels on the main surface. Debug tools remain reachable only from `adb` or a debug build.
+- The capture card answers three questions at a glance: is it on, what is it doing, and what will happen next. A dot plus one sentence, not a status dashboard.
+- Empty states explain what will appear and offer one primary action.
+- Every screen has one large title, one primary action, and grouped rows; destructive actions are red text, never a red filled button.
+- Recording state is always one glance away: persistent notification plus a red dot and "Listening" on Home.
 
 ## 11. Security and privacy
 

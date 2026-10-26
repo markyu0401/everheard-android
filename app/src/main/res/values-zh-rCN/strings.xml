@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Everheard</string>
-    <string name="onboarding_kicker">EVERHEARD · 首次启动</string>
+    <string name="common_back">返回</string>
     <string name="onboarding_title">把说过的话，留下来。</string>
-    <string name="onboarding_body">Everheard 把你参与的对话变成文字、承诺和项目时间线。它不保留原始录音。</string>
+    <string name="onboarding_body">Everheard 把你参与的对话留成文字，不保留原始录音。</string>
     <string name="onboarding_visible_title">可见的采集</string>
     <string name="onboarding_visible_body">常驻通知 + 开始提示音。没有隐蔽模式。</string>
     <string name="onboarding_text_title">只留文字，不留声音</string>
-    <string name="onboarding_text_body">转写完成后删除音频。数据库用 Android Keystore 中的密钥加密。</string>
+    <string name="onboarding_text_body">转写完成后删除音频。文字用 Android Keystore 中的密钥加密。</string>
     <string name="onboarding_sleep_title">睡眠时段</string>
-    <string name="onboarding_sleep_body">全天待命，但默认 23:30–07:00 暂停。之后可以随时修改时段。</string>
+    <string name="onboarding_sleep_body">默认 23:30–07:00 暂停。之后可以随时修改。</string>
     <string name="onboarding_consent">我明白：我只能录制法律允许我录制的对话。</string>
     <string name="onboarding_legal_button">阅读法律说明</string>
     <string name="onboarding_continue">继续</string>
-    <string name="onboarding_footer">这些设置之后都可以在「设置」里修改。</string>
+    <string name="onboarding_footer">之后可以在「时间表」里修改。</string>
 
     <string name="legal_title">录音与同意</string>
     <string name="legal_body">在一方同意地区，你可以录制自己参与的对话。录制不属于你的旁人对话不受这条保护；有些地区要求所有参与者同意。采集期间 Everheard 会显示通知并播放提示音。同意责任由你承担。</string>
@@ -23,27 +23,38 @@
     <string name="permission_microphone_body">Everheard 需要麦克风把语音转成文字。采集状态会一直显示在通知栏。</string>
     <string name="permission_microphone_action">允许麦克风</string>
     <string name="permission_notifications_title">让采集保持可见</string>
-    <string name="permission_notifications_body">Android 要求前台录音服务必须挂通知。这也是周围的人知道你正在采集的方式。</string>
+    <string name="permission_notifications_body">采集开启时，Android 会显示一条常驻通知。身边的人也能借此看到采集正在进行。</string>
     <string name="permission_notifications_action">允许通知</string>
     <string name="permission_open_settings">打开系统设置</string>
 
-    <string name="home_kicker">EVERHEARD</string>
-    <string name="home_title">准备好了。</string>
-    <string name="home_body">采集、转写和加密文字已经就位。下一步是时间线与承诺。</string>
-    <string name="home_next_title">采集核心</string>
-    <string name="home_next_body">常驻服务、时段规则、电量/温度/静音守卫和加密转写已经就位。下一步：说话人归属与承诺抽取。</string>
-    <string name="home_chip_local">本地优先</string>
+    <string name="home_title">Everheard</string>
+    <string name="home_body">把说过的话留下来。</string>
+    <string name="home_library">资料库</string>
+    <string name="home_chip_local">端侧</string>
     <string name="home_chip_text">只留文字</string>
-    <string name="home_chip_model">自带模型</string>
+    <string name="home_chip_model">你的模型</string>
 
-    <string name="home_service_title">M0 服务自检</string>
-    <string name="home_service_body">启动麦克风前台服务，验证通知、息屏存活和停止行为。</string>
-    <string name="home_service_start">启动服务</string>
-    <string name="home_service_stop">停止服务</string>
-    <string name="home_service_running">服务运行中 — 麦克风未开</string>
-    <string name="home_service_recording">服务运行中 — 正在采集</string>
-    <string name="home_service_armed">服务运行中 — 待命</string>
-    <string name="home_service_stopped">服务已停止</string>
+    <string name="home_capture_title">采集</string>
+    <string name="home_capture_body_recording">麦克风已打开。语音会变成文字，音频随后删除。</string>
+    <string name="home_capture_body_armed">麦克风关闭，等待允许的时段。</string>
+    <string name="home_capture_body_schedule">不在允许时段。到点会自动恢复采集。</string>
+    <string name="home_capture_body_user">你暂停了采集。</string>
+    <string name="home_capture_body_battery">电量过低。充电后恢复。</string>
+    <string name="home_capture_body_thermal">手机温度偏高，采集暂停。</string>
+    <string name="home_capture_body_silence">一段时间没有语音，采集暂停。</string>
+    <string name="home_capture_body_error">采集已停止。打开 Everheard 重试。</string>
+    <string name="home_capture_body_stopped">开始采集，把对话变成文字。</string>
+    <string name="home_transcript_subtitle">本机加密的文字</string>
+    <string name="home_schedule_subtitle">睡眠时段与允许时段</string>
+    <string name="home_live_subtitle">说话时实时看到文字</string>
+    <string name="home_footer">音频在转写后删除，只留下文字。</string>
+
+    <string name="home_service_start">开始采集</string>
+    <string name="home_service_stop">停止采集</string>
+    <string name="home_service_running">麦克风关闭</string>
+    <string name="home_service_recording">正在聆听</string>
+    <string name="home_service_armed">待命</string>
+    <string name="home_service_stopped">未在录制</string>
 
     <string name="notification_channel_name">采集</string>
     <string name="notification_channel_description">显示 Everheard 的待命或录制状态。</string>
@@ -72,13 +83,9 @@
     <string name="quick_tile_label">Everheard 采集</string>
 
     <string name="schedule_title">时间表</string>
-    <string name="schedule_subtitle">全天待命；这些时段决定麦克风什么时候打开。</string>
-    <string name="schedule_add_block">添加排除</string>
-    <string name="schedule_add_allow">添加允许</string>
-    <string name="schedule_every_day">每天</string>
+    <string name="schedule_subtitle">全天待命。这些时段决定麦克风什么时候打开。</string>
     <string name="schedule_block">排除</string>
     <string name="schedule_allow">允许</string>
-    <string name="schedule_edit">编辑</string>
     <string name="schedule_delete">删除</string>
     <string name="schedule_save">保存</string>
     <string name="schedule_cancel">取消</string>
@@ -86,29 +93,34 @@
     <string name="schedule_end">结束</string>
     <string name="schedule_days">星期</string>
     <string name="schedule_mode">模式</string>
-    <string name="schedule_empty">没有规则。全天允许采集。</string>
-    <string name="schedule_open">打开时间表</string>
+    <string name="schedule_every_day">每天</string>
+    <string name="schedule_empty_title">没有规则</string>
+    <string name="schedule_empty">全天允许采集。</string>
+    <string name="schedule_add_rule">添加规则</string>
+    <string name="schedule_new_rule">新规则</string>
+    <string name="schedule_edit_rule">编辑规则</string>
+    <string name="schedule_open">时间表</string>
 
     <string name="live_title">实时转写</string>
-    <string name="live_subtitle">M2 spike：端侧 Zipformer 的流式草稿。音频不保存。</string>
-    <string name="live_start">开始</string>
-    <string name="live_stop">停止</string>
+    <string name="live_subtitle">自然说话，文字会跟着出现。</string>
     <string name="live_loading">加载模型…</string>
-    <string name="live_recording">正在采集 — 说话</string>
+    <string name="live_recording">正在聆听</string>
     <string name="live_finishing">收尾…</string>
-    <string name="live_stopped">已停止</string>
+    <string name="live_stopped">就绪</string>
     <string name="live_error_label">错误</string>
     <string name="live_permission_missing">缺少麦克风权限</string>
     <string name="live_transcript_label">转写</string>
-    <string name="live_waiting">等待说话…</string>
-    <string name="live_open">打开实时转写（M2）</string>
+    <string name="live_waiting">文字会显示在这里。</string>
+    <string name="live_record_start">开始录制</string>
+    <string name="live_record_stop">停止录制</string>
+    <string name="live_open">实时转写</string>
 
     <string name="transcript_title">转写</string>
     <string name="transcript_subtitle">在本机加密保存。音频已删除，只留文字。</string>
-    <string name="transcript_search">搜索转写</string>
-    <string name="transcript_empty">还没有转写。去「实时转写」录一段。</string>
+    <string name="transcript_search">搜索</string>
+    <string name="transcript_empty">还没有转写。</string>
     <string name="transcript_no_results">没有匹配。</string>
-    <string name="transcript_open">打开转写</string>
+    <string name="transcript_open">转写</string>
     <plurals name="transcript_utterance_count">
         <item quantity="one">%1$d 句</item>
         <item quantity="other">%1$d 句</item>
