@@ -22,7 +22,21 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools"
+
+      - name: Install SDK platform and build tools
+        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Cache models and native AAR
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/libs/sherpa-onnx-2.0.0.aar
+            app/src/main/assets/models/asr-small
+            app/src/main/assets/models/speaker
+          key: models-${{ hashFiles('scripts/fetch_models.sh', 'scripts/fetch_sherpa.sh') }}
 
       - name: Fetch native dependencies
         run: |
