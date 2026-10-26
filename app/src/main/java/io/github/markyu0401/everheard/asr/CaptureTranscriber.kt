@@ -56,13 +56,22 @@ class CaptureTranscriber(
         if (consumerJob != null) return
         consumerJob = scope.launch {
             var sessionCreated = false
+            var lastUtterance: TranscriptUtterance? = null
             for (segment in queue) {
                 if (segment.pcm16.isEmpty()) continue
                 try {
                     val text = engineMutex.withLock {
-                        val asr = engine ?: asrFactory().also { engine = it }
+                        val asr = engine ?: asrFactory().also {
+                            engine = it
+                            Log.i(TAG, "ASR model loaded: ${it.id}")
+                        }
                         asr.transcribe(AsrRequest(pcm16 = segment.pcm16)).text.trim()
                     }
+                    Log.i(
+                        TAG,
+                        "segment ${segment.startMs}-${segment.endMs} " +
+                            "samples=${segment.pcm16.size} textLength=${text.length}"
+                    )
                     if (text.isNotEmpty()) {
                         if (!sessionCreated) {
                             store.createSession(
@@ -74,16 +83,32 @@ class CaptureTranscriber(
                             )
                             sessionCreated = true
                         }
-                        store.appendUtterance(
-                            sessionId,
-                            TranscriptUtterance(
-                                id = UUID.randomUUID().toString(),
-                                sessionId = sessionId,
-                                startMs = segment.startMs,
-                                endMs = segment.endMs,
-                                text = text
-                            )
+                        val utterance = TranscriptUtterance(
+                            id = UUID.randomUUID().toString(),
+                            sessionId = sessionId,
+                            startMs = segment.startMs,
+                            endMs = segment.endMs,
+                            text = text
                         )
+                        val previous = lastUtterance
+                        if (previous != null &&
+                            TranscriptMerger.shouldMerge(previous, segment.startMs)
+                        ) {
+                            val merged = TranscriptMerger.merge(previous, utterance)
+                            val existing = store.session(sessionId)
+                            if (existing != null) {
+                                store.createSession(
+                                    existing.copy(
+                                        utterances = existing.utterances.dropLast(1) + merged
+                                    )
+                                )
+                                lastUtterance = merged
+                                Log.i(TAG, "merged segment into previous utterance")
+                                continue
+                            }
+                        }
+                        store.appendUtterance(sessionId, utterance)
+                        lastUtterance = utterance
                     }
                 } catch (error: Exception) {
                     // A missing model or a native failure must not kill capture,

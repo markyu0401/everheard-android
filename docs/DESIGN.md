@@ -90,15 +90,16 @@ AudioRecord(
 ### 3.2 VAD and segmentation
 
 - Silero VAD v5 via sherpa-onnx; threshold 0.5; min speech 250 ms; hangover 500 ms.
-- Only speech frames go to ASR; silence frames are dropped after VAD.
-- Endpoint on ~500 ms silence; hard cap 30 s; emit `SegmentPcm(startMs, endMs, samples)`.
+- Keep a **500 ms pre-roll** of audio before the VAD fires; the segment starts there, so a late VAD decision does not clip the first syllable.
+- Endpoint on ~600 ms silence; hard cap 30 s; emit `SegmentPcm(startMs, endMs, samples)`.
+- The streaming recognizer has endpointing disabled; VAD owns segmentation, so ASR cannot cut a segment a second time.
+- Adjacent utterances with a gap ≤ 1.2 s are merged into one transcript row; this keeps poems and breath-paused sentences coherent.
 - Speech ratio is logged per hour (not content) to drive the battery report.
 
 ### 3.3 Storage during capture
 
-- Segments are written to app-private storage as Opus/FLAC temp files, encrypted with the same data key.
-- A `segment` row is created immediately with `state = PENDING`; after ASR it becomes `TRANSCRIBED` and the audio file is deleted (default).
-- Crash recovery: on service start, any `PENDING` segment with a file is re-queued; any `RECORDING` session is closed at its last known timestamp.
+- In M2, VAD segments are held in memory only; the final text is written to the AES-256-GCM transcript document. No audio temp file is created.
+- The M4 design keeps encrypted segment files for crash recovery; that path is not implemented yet.
 
 ## 4. Service and state machine
 
