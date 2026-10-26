@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local config
+local.properties
+keystore.properties
+*.jks
+*.keystore
+*.apk
+*.aab
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models and audio (downloaded at runtime, never committed)
+models/
+*.onnx
+*.bin
+*.wav
+*.opus
+*.flac
+
+# Logs and reports
+*.log
+spike-results/
