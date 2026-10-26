@@ -35,4 +35,19 @@
     <string name="home_chip_local">本地优先</string>
     <string name="home_chip_text">只留文字</string>
     <string name="home_chip_model">自带模型</string>
+
+    <string name="home_service_title">M0 服务自检</string>
+    <string name="home_service_body">启动麦克风前台服务，验证通知、息屏存活和停止行为。</string>
+    <string name="home_service_start">启动服务</string>
+    <string name="home_service_stop">停止服务</string>
+    <string name="home_service_running">服务运行中 — 麦克风未开</string>
+    <string name="home_service_stopped">服务已停止</string>
+
+    <string name="notification_channel_name">采集</string>
+    <string name="notification_channel_description">显示 Everheard 的待命或录制状态。</string>
+    <string name="notification_title">Everheard 采集</string>
+    <string name="notification_state_armed">待命中 — 麦克风关闭</string>
+    <string name="notification_stop">停止</string>
+    <string name="notification_resume_title">需要点一下恢复采集</string>
+    <string name="notification_resume_body">Android 拒绝了后台启动。打开 Everheard 恢复。</string>
 </resources>

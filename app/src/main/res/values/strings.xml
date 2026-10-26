@@ -36,4 +36,19 @@
     <string name="home_chip_local">Local-first</string>
     <string name="home_chip_text">Text only</string>
     <string name="home_chip_model">BYO model</string>
+
+    <string name="home_service_title">M0 service check</string>
+    <string name="home_service_body">Start the microphone foreground service to verify the notification, screen-off survival, and stop behaviour on this phone.</string>
+    <string name="home_service_start">Start service</string>
+    <string name="home_service_stop">Stop service</string>
+    <string name="home_service_running">Service running — microphone off</string>
+    <string name="home_service_stopped">Service stopped</string>
+
+    <string name="notification_channel_name">Capture</string>
+    <string name="notification_channel_description">Shows when Everheard is armed or recording.</string>
+    <string name="notification_title">Everheard capture</string>
+    <string name="notification_state_armed">Armed — microphone off</string>
+    <string name="notification_stop">Stop</string>
+    <string name="notification_resume_title">Capture needs a tap</string>
+    <string name="notification_resume_body">Android refused the background start. Open Everheard to resume.</string>
 </resources>
