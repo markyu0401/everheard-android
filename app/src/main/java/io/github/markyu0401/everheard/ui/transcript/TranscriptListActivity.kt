@@ -1,6 +1,7 @@
 package io.github.markyu0401.everheard.ui.transcript
 
 import android.content.Intent
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -57,6 +58,7 @@ import kotlinx.coroutines.launch
 class TranscriptListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         setContent {
             EverheardTheme {
                 TranscriptListScreen(

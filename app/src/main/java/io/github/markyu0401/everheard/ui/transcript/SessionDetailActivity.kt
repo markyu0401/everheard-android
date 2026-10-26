@@ -49,6 +49,7 @@ class SessionDetailActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         val sessionId = intent.getStringExtra(EXTRA_SESSION_ID).orEmpty()
         setContent {
             EverheardTheme {

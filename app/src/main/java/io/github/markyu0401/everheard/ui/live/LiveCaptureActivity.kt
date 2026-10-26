@@ -56,6 +56,7 @@ import kotlinx.coroutines.withContext
 class LiveCaptureActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         setContent {
             EverheardTheme {
                 LiveCaptureScreen(onBack = { finish() })
