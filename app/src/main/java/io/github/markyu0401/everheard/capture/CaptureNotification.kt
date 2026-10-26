@@ -57,6 +57,7 @@ object CaptureNotification {
         )
         val pause15 = serviceAction(context, 1, CaptureService.ACTION_PAUSE_15)
         val pause60 = serviceAction(context, 2, CaptureService.ACTION_PAUSE_60)
+        val pauseTomorrow = serviceAction(context, 6, CaptureService.ACTION_PAUSE_TOMORROW)
         val mark = serviceAction(context, 3, CaptureService.ACTION_MARK)
         val stop = serviceAction(context, 4, CaptureService.ACTION_STOP)
 
@@ -73,6 +74,7 @@ object CaptureNotification {
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .addAction(0, context.getString(R.string.notification_action_pause_15), pause15)
             .addAction(0, context.getString(R.string.notification_action_pause_60), pause60)
+            .addAction(0, context.getString(R.string.notification_action_pause_tomorrow), pauseTomorrow)
             .addAction(0, context.getString(R.string.notification_action_mark), mark)
             .addAction(0, context.getString(R.string.notification_stop), stop)
             .build()

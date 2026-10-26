@@ -58,6 +58,7 @@
     <string name="notification_state_marked">Marked the last 30 seconds</string>
     <string name="notification_action_pause_15">15 min</string>
     <string name="notification_action_pause_60">1 h</string>
+    <string name="notification_action_pause_tomorrow">Until tomorrow</string>
     <string name="notification_action_mark">Mark</string>
     <string name="notification_stop">Stop</string>
     <string name="notification_resume_channel_name">Capture reminders</string>

@@ -29,9 +29,12 @@ import io.github.markyu0401.everheard.capture.guards.ThermalGuard
 import io.github.markyu0401.everheard.capture.schedule.ScheduleEvaluator
 import io.github.markyu0401.everheard.capture.schedule.ScheduleRule
 import io.github.markyu0401.everheard.capture.vad.SileroVad
+import io.github.markyu0401.everheard.data.settings.captureStateStore
 import io.github.markyu0401.everheard.data.settings.scheduleStore
 import java.io.File
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,6 +58,7 @@ class CaptureService : Service() {
         const val ACTION_STOP = "io.github.markyu0401.everheard.action.STOP"
         const val ACTION_PAUSE_15 = "io.github.markyu0401.everheard.action.PAUSE_15"
         const val ACTION_PAUSE_60 = "io.github.markyu0401.everheard.action.PAUSE_60"
+        const val ACTION_PAUSE_TOMORROW = "io.github.markyu0401.everheard.action.PAUSE_TOMORROW"
         const val ACTION_MARK = "io.github.markyu0401.everheard.action.MARK"
 
         private const val TAG = "CaptureService"
@@ -67,6 +71,7 @@ class CaptureService : Service() {
     }
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val stateStore by lazy { captureStateStore() }
     private var tickJob: Job? = null
     private var scheduleJob: Job? = null
     private var scheduleRules: List<ScheduleRule> = ScheduleEvaluator.defaultRules()
@@ -105,6 +110,12 @@ class CaptureService : Service() {
                 evaluate()
             }
         }
+        serviceScope.launch {
+            stateStore.pauseUntilMillis.collect { millis ->
+                pauseUntilMillis = millis
+                evaluate()
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -121,16 +132,24 @@ class CaptureService : Service() {
                 pauseFor(minutes = 60)
                 return START_STICKY
             }
+            ACTION_PAUSE_TOMORROW -> {
+                pauseUntilTomorrow()
+                return START_STICKY
+            }
             ACTION_MARK -> {
                 markLastThirtySeconds()
                 return START_STICKY
             }
-            else -> startCapture()
+            else -> startCapture(clearPause = intent?.action == ACTION_START)
         }
         return START_STICKY
     }
 
-    private fun startCapture() {
+    private fun startCapture(clearPause: Boolean) {
+        if (clearPause) {
+            pauseUntilMillis = 0L
+            serviceScope.launch { stateStore.clearPauseUntil() }
+        }
         val notification = CaptureNotification.build(
             this,
             getString(R.string.notification_state_armed)
@@ -188,6 +207,14 @@ class CaptureService : Service() {
 
         var next = state
 
+        if (pauseUntilMillis > now && state != CaptureState.PAUSED_USER) {
+            next = CaptureStateMachine.transition(
+                next,
+                CaptureEvent.UserPause(minutes = 0),
+                context
+            )
+        }
+
         if (state == CaptureState.PAUSED_USER && now >= pauseUntilMillis) {
             next = CaptureStateMachine.transition(next, CaptureEvent.UserStart, context)
         }
@@ -243,6 +270,7 @@ class CaptureService : Service() {
 
         state = newState
         isRunning = state.isServiceAlive
+        serviceScope.launch { stateStore.setLastState(state.name) }
         updateNotification(newState)
 
         if (state == CaptureState.ERROR) {
@@ -291,6 +319,17 @@ class CaptureService : Service() {
 
     private fun pauseFor(minutes: Int) {
         pauseUntilMillis = System.currentTimeMillis() + minutes * 60_000L
+        serviceScope.launch { stateStore.setPauseUntil(pauseUntilMillis) }
+        applyState(CaptureState.PAUSED_USER)
+    }
+
+    private fun pauseUntilTomorrow() {
+        pauseUntilMillis = LocalDate.now()
+            .plusDays(1)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+        serviceScope.launch { stateStore.setPauseUntil(pauseUntilMillis) }
         applyState(CaptureState.PAUSED_USER)
     }
 

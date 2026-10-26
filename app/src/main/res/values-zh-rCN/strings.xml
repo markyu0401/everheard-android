@@ -57,6 +57,7 @@
     <string name="notification_state_marked">已标记最近 30 秒</string>
     <string name="notification_action_pause_15">15 分钟</string>
     <string name="notification_action_pause_60">1 小时</string>
+    <string name="notification_action_pause_tomorrow">到明天</string>
     <string name="notification_action_mark">标记</string>
     <string name="notification_stop">停止</string>
     <string name="notification_resume_channel_name">采集提醒</string>
