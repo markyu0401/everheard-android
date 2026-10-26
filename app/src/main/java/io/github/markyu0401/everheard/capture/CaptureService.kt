@@ -159,7 +159,7 @@ class CaptureService : Service() {
         )
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 startForeground(
                     CaptureNotification.NOTIF_ID,
                     notification,

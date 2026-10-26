@@ -97,7 +97,6 @@
     <string name="live_recording">正在采集 — 说话</string>
     <string name="live_finishing">收尾…</string>
     <string name="live_stopped">已停止</string>
-    <string name="live_error">错误：%1$s</string>
     <string name="live_error_label">错误</string>
     <string name="live_permission_missing">缺少麦克风权限</string>
     <string name="live_transcript_label">转写</string>
@@ -110,7 +109,10 @@
     <string name="transcript_empty">还没有转写。去「实时转写」录一段。</string>
     <string name="transcript_no_results">没有匹配。</string>
     <string name="transcript_open">打开转写</string>
-    <string name="transcript_utterance_count">%1$d 句</string>
+    <plurals name="transcript_utterance_count">
+        <item quantity="one">%1$d 句</item>
+        <item quantity="other">%1$d 句</item>
+    </plurals>
     <string name="transcript_session_fallback">会话</string>
     <string name="transcript_detail_empty">没有句子。</string>
     <string name="transcript_speaker_unknown">说话人</string>

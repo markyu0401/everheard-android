@@ -98,7 +98,6 @@
     <string name="live_recording">Recording — speak</string>
     <string name="live_finishing">Finishing…</string>
     <string name="live_stopped">Stopped</string>
-    <string name="live_error">Error: %1$s</string>
     <string name="live_error_label">Error</string>
     <string name="live_permission_missing">microphone permission missing</string>
     <string name="live_transcript_label">TRANSCRIPT</string>
@@ -111,7 +110,10 @@
     <string name="transcript_empty">No transcripts yet. Record one from Live transcript.</string>
     <string name="transcript_no_results">No matches.</string>
     <string name="transcript_open">Open transcripts</string>
-    <string name="transcript_utterance_count">%1$d lines</string>
+    <plurals name="transcript_utterance_count">
+        <item quantity="one">%1$d line</item>
+        <item quantity="other">%1$d lines</item>
+    </plurals>
     <string name="transcript_session_fallback">Session</string>
     <string name="transcript_detail_empty">No utterances.</string>
     <string name="transcript_speaker_unknown">Speaker</string>

@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.markyu0401.everheard.R
@@ -211,8 +212,9 @@ private fun TranscriptSessionCard(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = stringResource(
-                    R.string.transcript_utterance_count,
+                text = pluralStringResource(
+                    R.plurals.transcript_utterance_count,
+                    session.utterances.size,
                     session.utterances.size
                 ),
                 style = MaterialTheme.typography.bodySmall,
