@@ -25,10 +25,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -36,6 +38,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptHit
@@ -47,6 +52,7 @@ import java.io.File
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 class TranscriptListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
@@ -79,6 +85,8 @@ fun TranscriptListScreen(
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
     val semantic = LocalSemanticColors.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     val store = remember {
         EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
     }
@@ -89,8 +97,21 @@ fun TranscriptListScreen(
     var loaded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        sessions = store.sessions()
+        sessions = store.reload()
         loaded = true
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch {
+                    sessions = store.reload()
+                    if (query.isNotBlank()) hits = store.search(query)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(query) {
@@ -144,7 +165,7 @@ fun TranscriptListScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(hits, key = { it.utterance.id }) { hit ->
-                        TranscriptHitCard(hit = hit, locale = locale, onClick = {
+                        TranscriptHitCard(hit = hit, onClick = {
                             onOpen(hit.sessionId)
                         })
                     }
@@ -227,7 +248,6 @@ private fun TranscriptSessionCard(
 @Composable
 private fun TranscriptHitCard(
     hit: TranscriptHit,
-    locale: Locale,
     onClick: () -> Unit
 ) {
     Surface(

@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 
 interface TranscriptStore {
     suspend fun sessions(): List<TranscriptSession>
+    suspend fun reload(): List<TranscriptSession>
     suspend fun session(id: String): TranscriptSession?
     suspend fun createSession(session: TranscriptSession)
     suspend fun appendUtterance(sessionId: String, utterance: TranscriptUtterance)
@@ -28,6 +29,11 @@ class EncryptedTranscriptStore(
     private var cache: List<TranscriptSession>? = null
 
     override suspend fun sessions(): List<TranscriptSession> = mutex.withLock {
+        load()
+    }
+
+    override suspend fun reload(): List<TranscriptSession> = mutex.withLock {
+        cache = null
         load()
     }
 
@@ -84,7 +90,13 @@ class EncryptedTranscriptStore(
         withContext(Dispatchers.IO) {
             file.parentFile?.mkdirs()
             val plain = TranscriptCodec.encode(sessions).toByteArray(Charsets.UTF_8)
-            file.writeBytes(cipher.encrypt(plain))
+            val encrypted = cipher.encrypt(plain)
+            val temp = File(file.parentFile, "${file.name}.tmp")
+            temp.writeBytes(encrypted)
+            if (!temp.renameTo(file)) {
+                file.delete()
+                check(temp.renameTo(file)) { "unable to replace transcript file" }
+            }
         }
     }
 }
