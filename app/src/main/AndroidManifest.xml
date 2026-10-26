@@ -52,6 +52,16 @@
         </service>
 
         <activity
+            android:name=".ui.transcript.TranscriptListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.transcript.SessionDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
             android:name=".ui.live.LiveCaptureActivity"
             android:exported="false"
             android:theme="@style/Theme.Everheard" />

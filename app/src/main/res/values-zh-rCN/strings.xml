@@ -104,6 +104,19 @@
     <string name="live_waiting">等待说话…</string>
     <string name="live_open">打开实时转写（M2）</string>
 
+    <string name="transcript_title">转写</string>
+    <string name="transcript_subtitle">在本机加密保存。音频已删除，只留文字。</string>
+    <string name="transcript_search">搜索转写</string>
+    <string name="transcript_empty">还没有转写。去「实时转写」录一段。</string>
+    <string name="transcript_no_results">没有匹配。</string>
+    <string name="transcript_open">打开转写</string>
+    <string name="transcript_utterance_count">%1$d 句</string>
+    <string name="transcript_session_fallback">会话</string>
+    <string name="transcript_detail_empty">没有句子。</string>
+    <string name="transcript_speaker_unknown">说话人</string>
+    <string name="live_save">保存转写</string>
+    <string name="live_saved">已保存到「转写」</string>
+
     <string name="audio_spike_title">音频自检</string>
     <string name="audio_spike_body">录 10 秒，写一个 16 kHz 单声道 WAV，并显示路径。这是 M0 的测量工具。</string>
     <string name="audio_spike_record">录 10 秒</string>

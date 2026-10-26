@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,8 +42,13 @@ import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.asr.SherpaAsr
 import io.github.markyu0401.everheard.asr.StreamingAsrSession
 import io.github.markyu0401.everheard.capture.audio.AudioRecordSource
+import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
+import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
+import java.io.File
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,17 +77,25 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
     var recording by remember { mutableStateOf(false) }
     var session by remember { mutableStateOf<StreamingAsrSession?>(null) }
     var source by remember { mutableStateOf<AudioRecordSource?>(null) }
+    var sessionStartedAt by remember { mutableLongStateOf(0L) }
+    var saved by remember { mutableStateOf(false) }
+    val store = remember {
+        EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
+    }
 
     val loadingText = stringResource(R.string.live_loading)
     val recordingText = stringResource(R.string.live_recording)
     val finishingText = stringResource(R.string.live_finishing)
     val stoppedText = stringResource(R.string.live_stopped)
+    val savedText = stringResource(R.string.live_saved)
     val errorLabel = stringResource(R.string.live_error_label)
     val permissionMissing = stringResource(R.string.live_permission_missing)
 
     fun start() {
         if (recording) return
         recording = true
+        saved = false
+        sessionStartedAt = System.currentTimeMillis()
         finalText = null
         partial = ""
         status = loadingText
@@ -139,6 +153,38 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
             partial = result?.text ?: partial
             finalText = result?.text
             status = stoppedText
+        }
+    }
+
+    fun save() {
+        val text = finalText?.trim().orEmpty()
+        if (text.isEmpty() || saved || recording) return
+        saved = true
+        val endedAt = System.currentTimeMillis()
+        val id = UUID.randomUUID().toString()
+        val session = TranscriptSession(
+            id = id,
+            startedAt = sessionStartedAt,
+            endedAt = endedAt,
+            title = text.take(40),
+            utterances = listOf(
+                TranscriptUtterance(
+                    id = UUID.randomUUID().toString(),
+                    sessionId = id,
+                    startMs = 0,
+                    endMs = (endedAt - sessionStartedAt).coerceAtLeast(0),
+                    text = text
+                )
+            )
+        )
+        scope.launch {
+            try {
+                store.createSession(session)
+                status = savedText
+            } catch (error: Exception) {
+                saved = false
+                status = "$errorLabel: ${error.message ?: ""}"
+            }
         }
     }
 
@@ -219,6 +265,15 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
+        }
+
+        Spacer(Modifier.height(12.dp))
+        Button(
+            onClick = ::save,
+            enabled = finalText?.isNotBlank() == true && !saved && !recording,
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Text(stringResource(R.string.live_save))
         }
     }
 }

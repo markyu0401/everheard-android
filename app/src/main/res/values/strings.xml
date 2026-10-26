@@ -105,6 +105,19 @@
     <string name="live_waiting">Waiting for speech…</string>
     <string name="live_open">Open live transcript (M2)</string>
 
+    <string name="transcript_title">Transcripts</string>
+    <string name="transcript_subtitle">Encrypted on this device. Audio is deleted; only text is kept.</string>
+    <string name="transcript_search">Search transcripts</string>
+    <string name="transcript_empty">No transcripts yet. Record one from Live transcript.</string>
+    <string name="transcript_no_results">No matches.</string>
+    <string name="transcript_open">Open transcripts</string>
+    <string name="transcript_utterance_count">%1$d lines</string>
+    <string name="transcript_session_fallback">Session</string>
+    <string name="transcript_detail_empty">No utterances.</string>
+    <string name="transcript_speaker_unknown">Speaker</string>
+    <string name="live_save">Save transcript</string>
+    <string name="live_saved">Saved to Transcripts</string>
+
     <string name="audio_spike_title">Audio spike</string>
     <string name="audio_spike_body">Records 10 seconds, writes a 16 kHz mono WAV, and shows the path. This is an M0 measurement tool.</string>
     <string name="audio_spike_record">Record 10 s</string>

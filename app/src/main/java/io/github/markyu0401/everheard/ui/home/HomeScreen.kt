@@ -46,6 +46,7 @@ import io.github.markyu0401.everheard.spike.AsrSpikeActivity
 import io.github.markyu0401.everheard.spike.DiarizationSpikeActivity
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
 import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
+import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 
@@ -194,6 +195,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 text = stringResource(R.string.schedule_open),
                 style = MaterialTheme.typography.labelLarge,
                 color = semantic.commitment
+            )
+        }
+
+        TextButton(
+            onClick = {
+                context.startActivity(Intent(context, TranscriptListActivity::class.java))
+            }
+        ) {
+            Text(
+                text = stringResource(R.string.transcript_open),
+                style = MaterialTheme.typography.labelLarge,
+                color = semantic.decision
             )
         }
 
