@@ -33,6 +33,16 @@
             android:name=".spike.AudioSpikeActivity"
             android:exported="false"
             android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".spike.VadSpikeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".spike.AsrSpikeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
     </application>
 
 </manifest>

@@ -61,4 +61,21 @@
     <string name="audio_spike_back">返回</string>
     <string name="audio_spike_open">打开音频自检（M0）</string>
     <string name="audio_spike_no_permission">麦克风权限未授予。</string>
+
+    <string name="vad_spike_title">VAD 自检</string>
+    <string name="vad_spike_body">录 10 秒，对每个 20 ms 帧跑 Silero VAD，并写一份语音判定 CSV。</string>
+    <string name="vad_spike_frames">%1$d 帧 · %2$d 帧语音</string>
+    <string name="vad_spike_ratio">语音占比 %1$.1f%%</string>
+    <string name="vad_spike_open">打开 VAD 自检（M0）</string>
+
+    <string name="asr_spike_title">ASR 自检</string>
+    <string name="asr_spike_body">录 10 秒，用端侧流式 Zipformer 转写，测量 RTF 和延迟。</string>
+    <string name="asr_spike_record">录 10 秒并转写</string>
+    <string name="asr_spike_transcribing">转写中…</string>
+    <string name="asr_spike_transcript">转写结果</string>
+    <string name="asr_spike_model">模型：%1$s</string>
+    <string name="asr_spike_rtf">RTF %1$.2f</string>
+    <string name="asr_spike_latency">延迟 %1$d ms</string>
+    <string name="asr_spike_empty">（没有检测到语音）</string>
+    <string name="asr_spike_open">打开 ASR 自检（M0）</string>
 </resources>

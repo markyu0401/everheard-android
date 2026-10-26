@@ -27,6 +27,8 @@ models/
 app/libs/
 *.aar
 *.onnx
+!app/src/main/assets/models/
+!app/src/main/assets/models/silero_vad.onnx
 *.bin
 *.wav
 *.opus

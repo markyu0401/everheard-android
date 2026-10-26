@@ -62,4 +62,21 @@
     <string name="audio_spike_back">Back</string>
     <string name="audio_spike_open">Open audio spike (M0)</string>
     <string name="audio_spike_no_permission">Microphone permission is not granted.</string>
+
+    <string name="vad_spike_title">VAD spike</string>
+    <string name="vad_spike_body">Records 10 seconds, runs Silero VAD on every 20 ms frame, and writes a CSV of speech decisions.</string>
+    <string name="vad_spike_frames">%1$d frames · %2$d speech</string>
+    <string name="vad_spike_ratio">%1$.1f%% speech</string>
+    <string name="vad_spike_open">Open VAD spike (M0)</string>
+
+    <string name="asr_spike_title">ASR spike</string>
+    <string name="asr_spike_body">Records 10 seconds and transcribes it on-device with the streaming Zipformer model. Measures RTF and latency.</string>
+    <string name="asr_spike_record">Record 10 s &amp; transcribe</string>
+    <string name="asr_spike_transcribing">Transcribing…</string>
+    <string name="asr_spike_transcript">Transcript</string>
+    <string name="asr_spike_model">Model: %1$s</string>
+    <string name="asr_spike_rtf">RTF %1$.2f</string>
+    <string name="asr_spike_latency">Latency %1$d ms</string>
+    <string name="asr_spike_empty">(no speech detected)</string>
+    <string name="asr_spike_open">Open ASR spike (M0)</string>
 </resources>
