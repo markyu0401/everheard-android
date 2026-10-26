@@ -56,7 +56,11 @@ class SherpaAsr(
                 numThreads = 2,
                 debug = false,
                 provider = "cpu",
-                modelType = "zipformer2"
+                // The 2023-02-16 bilingual model is a first-generation streaming
+                // Zipformer; forcing "zipformer2" makes sherpa-onnx abort because
+                // the encoder metadata has no query_head_dims. Leave it empty so
+                // the runtime detects the model type from the metadata.
+                modelType = ""
             ),
             enableEndpoint = true,
             decodingMethod = "greedy_search",
