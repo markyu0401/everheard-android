@@ -35,6 +35,7 @@ jobs:
           path: |
             app/libs/sherpa-onnx-2.0.0.aar
             app/src/main/assets/models/asr-small
+            app/src/main/assets/models/sense-voice
             app/src/main/assets/models/speaker
           key: models-${{ hashFiles('scripts/fetch_models.sh', 'scripts/fetch_sherpa.sh') }}
 

@@ -24,7 +24,8 @@ class SpeechSegmenterTest {
         val segments = segmenter.accept(frame(100, speech = false), false)
 
         assertThat(segments).hasSize(1)
-        assertThat(segments[0].startMs).isEqualTo(100L)
+        assertThat(segments[0].startMs).isEqualTo(0L)
+        assertThat(segments[0].endMs).isEqualTo(600L)
         assertThat(segments[0].pcm16.size).isGreaterThan(0)
     }
 

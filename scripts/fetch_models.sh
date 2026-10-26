@@ -48,6 +48,16 @@ else
   echo "installed ASR model into $ASR_DIR"
 fi
 
+# SenseVoice small int8: final-pass Mandarin/multilingual ASR (228 MB).
+SENSE_DIR="$ROOT/app/src/main/assets/models/sense-voice"
+SENSE_MODEL_URL="https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/model.int8.onnx"
+SENSE_MODEL_SHA256="c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51"
+SENSE_TOKENS_URL="https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/tokens.txt"
+SENSE_TOKENS_SHA256="f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc"
+
+verify_or_download "$SENSE_DIR/model.int8.onnx" "$SENSE_MODEL_URL" "$SENSE_MODEL_SHA256"
+verify_or_download "$SENSE_DIR/tokens.txt" "$SENSE_TOKENS_URL" "$SENSE_TOKENS_SHA256"
+
 # CAM++ bilingual zh-en speaker embedding (27 MB).
 SPK_DEST="$ROOT/app/src/main/assets/models/speaker/campplus_zh_en.onnx"
 SPK_URL="https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx"

@@ -20,24 +20,26 @@ import kotlinx.coroutines.withContext
  */
 class SherpaAsr(
     private val assets: AssetManager,
-    private val frameSamples: Int = 320
+    private val frameSamples: Int = 320,
+    private val modelDir: String = "models/asr-small",
+    override val id: String = MODEL_ID,
+    private val decodingMethod: String = "greedy_search"
 ) : StreamingAsrEngine {
 
     companion object {
         const val MODEL_ID = "sherpa-onnx-streaming-zipformer-small-bilingual-zh-en-int8"
-        private const val DIR = "models/asr-small"
-        private const val ENCODER = "$DIR/encoder.int8.onnx"
-        private const val DECODER = "$DIR/decoder.int8.onnx"
-        private const val JOINER = "$DIR/joiner.int8.onnx"
-        private const val TOKENS = "$DIR/tokens.txt"
+        const val LARGE_MODEL_ID = "sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20-int8"
     }
 
-    override val id: String = MODEL_ID
+    private val encoder = "$modelDir/encoder.int8.onnx"
+    private val decoder = "$modelDir/decoder.int8.onnx"
+    private val joiner = "$modelDir/joiner.int8.onnx"
+    private val tokens = "$modelDir/tokens.txt"
 
     private val recognizer: OnlineRecognizer
 
     init {
-        val missing = listOf(ENCODER, DECODER, JOINER, TOKENS).filterNot(::assetExists)
+        val missing = listOf(encoder, decoder, joiner, tokens).filterNot(::assetExists)
         if (missing.isNotEmpty()) {
             throw AsrModelMissingException(
                 "ASR model missing (${missing.joinToString()}). Run scripts/fetch_models.sh."
@@ -48,11 +50,11 @@ class SherpaAsr(
             featConfig = FeatureConfig(16_000, 80, 0.0f),
             modelConfig = OnlineModelConfig(
                 transducer = OnlineTransducerModelConfig(
-                    encoder = ENCODER,
-                    decoder = DECODER,
-                    joiner = JOINER
+                    encoder = encoder,
+                    decoder = decoder,
+                    joiner = joiner
                 ),
-                tokens = TOKENS,
+                tokens = tokens,
                 numThreads = 2,
                 debug = false,
                 provider = "cpu",
@@ -62,8 +64,8 @@ class SherpaAsr(
                 // the runtime detects the model type from the metadata.
                 modelType = ""
             ),
-            enableEndpoint = true,
-            decodingMethod = "greedy_search",
+            enableEndpoint = false,
+            decodingMethod = decodingMethod,
             maxActivePaths = 4
         )
         recognizer = OnlineRecognizer(assets, config)

@@ -10,7 +10,8 @@ class SpeechSegmenter(
     private val sampleRate: Int = 16_000,
     private val minSpeechMs: Long = 800,
     private val endSilenceMs: Long = 600,
-    private val maxSegmentMs: Long = 30_000
+    private val maxSegmentMs: Long = 30_000,
+    private val preRollMs: Long = 500
 ) {
 
     data class Segment(
@@ -20,7 +21,10 @@ class SpeechSegmenter(
     )
 
     private val maxSamples = (maxSegmentMs * sampleRate / 1000).toInt()
+    private val preRollSamples = (preRollMs * sampleRate / 1000).toInt()
     private val buffer = ShortArray(maxSamples)
+    private val preRoll = ShortArray(preRollSamples)
+    private var preRollCount = 0
     private var size = 0
     private var speechMs = 0L
     private var silenceMs = 0L
@@ -33,18 +37,25 @@ class SpeechSegmenter(
         val frameMs = frame.size * 1000L / sampleRate
         val emitted = mutableListOf<Segment>()
 
-        if (isSpeech) {
-            if (!active) {
+        if (!active) {
+            appendPreRoll(frame)
+            if (isSpeech) {
                 active = true
                 size = 0
-                speechMs = 0L
+                speechMs = frameMs
                 silenceMs = 0L
-                segmentStartMs = elapsedMs
+                // Keep the frames just before the VAD fired so the first
+                // syllable is not clipped. The current frame is already in
+                // the pre-roll buffer.
+                preRoll.copyInto(buffer, 0, 0, preRollCount)
+                size = preRollCount
+                segmentStartMs = maxOf(0L, elapsedMs - preRollCount * 1000L / sampleRate)
             }
+        } else if (isSpeech) {
             append(frame)
             speechMs += frameMs
             silenceMs = 0L
-        } else if (active) {
+        } else {
             append(frame)
             silenceMs += frameMs
             if (silenceMs >= endSilenceMs) {
@@ -78,13 +89,28 @@ class SpeechSegmenter(
         size += count
     }
 
+    private fun appendPreRoll(frame: ShortArray) {
+        if (preRollSamples == 0) return
+        if (frame.size >= preRollSamples) {
+            frame.copyInto(preRoll, 0, frame.size - preRollSamples, frame.size)
+            preRollCount = preRollSamples
+            return
+        }
+        val overflow = preRollCount + frame.size - preRollSamples
+        if (overflow > 0) {
+            preRoll.copyInto(preRoll, 0, overflow, preRollCount)
+            preRollCount -= overflow
+        }
+        frame.copyInto(preRoll, preRollCount)
+        preRollCount += frame.size
+    }
+
     private fun emitIfLongEnough(emitted: MutableList<Segment>) {
         if (speechMs < minSpeechMs || size == 0) return
-        val endMs = elapsedMs + (size * 1000L / sampleRate) - speechMs
         emitted += Segment(
             pcm16 = buffer.copyOf(size),
             startMs = segmentStartMs,
-            endMs = maxOf(endMs, segmentStartMs)
+            endMs = segmentStartMs + size * 1000L / sampleRate
         )
     }
 
@@ -93,5 +119,6 @@ class SpeechSegmenter(
         size = 0
         speechMs = 0L
         silenceMs = 0L
+        preRollCount = 0
     }
 }

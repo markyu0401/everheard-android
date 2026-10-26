@@ -117,9 +117,9 @@ These are not preferences; they shape the product.
 | Task | Work |
 |---|---|
 | M2-T1 | `AsrEngine` interface + model manager (pinned URL, SHA-256, license screen, disk check) |
-| M2-T2 | Local streaming provider (sherpa-onnx Zipformer bilingual int8) with partial results |
+| M2-T2 | Local streaming provider (sherpa-onnx Zipformer bilingual int8) for live partials + SenseVoice int8 final decode for capture segments |
 | M2-T3 | Cloud provider: OpenAI-compatible `/v1/audio/transcriptions`; per-session consent |
-| M2-T4 | Two-pass merge: live draft + cloud re-decode by timestamp |
+| M2-T4 | Two-pass merge: live streaming draft + local SenseVoice final decode per VAD segment; cloud re-decode later |
 | M2-T5 | Live capture screen + session detail (summary/transcript/todos tabs) + FTS search |
 | M2-T6 | Hotword list (people, projects), punctuation, number/date normalization |
 
@@ -285,6 +285,7 @@ These are not preferences; they shape the product.
 - **M1-T7 pending:** 8 h soak protocol is in `docs/spikes/2026-11-23-m1-soak.md`.
 - **Verification:** `./gradlew lint testDebugUnitTest assembleDebug` is green; 59 unit tests and 10/10 instrumented tests pass on an AOSP ATD API 36 emulator, and 10/10 pass on a Samsung SM-S948U1 (Galaxy S26 Ultra, Android 17/API 37) via `adb shell am instrument` (`OK (10 tests)`). Gradle's `connectedDebugAndroidTest` exits 1 on that Samsung build despite 0 test failures and `am instrument` returning OK; the manual result is authoritative. The schedule→service→notification path was exercised end to end (block end moved to 08:00 → “Paused — outside the schedule”; block deleted → “Recording — transcript only”, mic active).
 - **Next:** run the M1 soak on the Samsung and one Chinese ROM; finish M2 by adding model management, cloud re-decode, and FTS.
-- **M2-T2 done:** `StreamingAsrSession` + `SherpaAsr.createSession()` emit partial text while audio arrives; `LiveCaptureActivity` records and shows the live draft.
+- **M2-T2 done:** `StreamingAsrSession` + `SherpaAsr.createSession()` emit partial text while audio arrives; `LiveCaptureActivity` records and shows the live draft. Capture segments are finalized with **SenseVoice small int8** (`SenseVoiceAsr`), because the small streaming Zipformer is not accurate enough for a durable Mandarin transcript; the streaming recognizer has endpointing disabled so VAD segmentation is the only endpoint authority.
+- **M2-T4 partial:** `SpeechSegmenter` keeps a 500 ms pre-roll so the first syllable survives a late VAD decision, and `CaptureTranscriber` writes the SenseVoice final text per segment. Cloud re-decode is still pending.
 - **M2-T5 partial:** encrypted transcript store (`AES-256-GCM`, Keystore key), session list, detail view, substring search, and “save transcript” from the live screen. The capture service now feeds VAD segments through `SpeechSegmenter` into `CaptureTranscriber`, which lazily loads the ASR model and appends text to the encrypted store; empty sessions are not created. FTS and the cloud re-decode pass remain for the next M2 slice.
-- **M2-T1/T3/T4/T6 pending:** model manager (runtime download/license), cloud ASR provider, two-pass merge, and hotword/normalization.
+- **M2-T1/T3/T6 pending:** model manager (runtime download/license), cloud ASR provider, and hotword/normalization. **M2-T4** has the local two-pass path; cloud re-decode remains.

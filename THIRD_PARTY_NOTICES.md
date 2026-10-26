@@ -21,7 +21,7 @@ Everheard's own code is Apache-2.0. The following components keep their own lice
 |---|---|---|---|---|
 | streaming Zipformer bilingual zh-en int8 (2023-02-20) | encoder 174 MB + decoder 13 MB + joiner 3.1 MB | Verify model card (k2-fsa) | Live draft | ~190 MB total |
 | streaming Zipformer **small** bilingual zh-en int8 (2023-02-16) | encoder 41 MB + decoder 3.3 MB + joiner 3.1 MB | Verify model card (k2-fsa) | M0 default, live draft | Downloaded by `scripts/fetch_models.sh`; not committed |
-| SenseVoice int8 | 239 MB | Verify (FunAudioLLM) | Batch re-decode option | 600–700 MB RAM peak on Android; not resident |
+| SenseVoice small int8 (zh/en/ja/ko/yue) | 228 MB | MIT (model card; verify) | Final-pass transcript on capture | Loaded lazily; ~600–700 MB RAM peak; downloaded by `scripts/fetch_models.sh`; not committed |
 | Silero VAD v5 | 629 KB | MIT (verify) | Speech gating | Committed at `app/src/main/assets/models/silero_vad.onnx` |
 | 3D-Speaker CAM++ zh-en 16k | 27 MB | Verify model card (3D-Speaker) | Speaker embedding | Downloaded by `scripts/fetch_models.sh`; not committed |
 | WeSpeaker / 3D-Speaker embedding | ~20–40 MB | Apache-2.0 (verify) | Speaker embedding | |

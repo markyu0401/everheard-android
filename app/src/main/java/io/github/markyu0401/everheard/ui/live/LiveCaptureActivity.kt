@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.RepeatMode
@@ -50,9 +51,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import io.github.markyu0401.everheard.R
+import io.github.markyu0401.everheard.asr.AsrRequest
+import io.github.markyu0401.everheard.asr.SenseVoiceAsr
 import io.github.markyu0401.everheard.asr.SherpaAsr
+import io.github.markyu0401.everheard.asr.SpeechSegmenter
 import io.github.markyu0401.everheard.asr.StreamingAsrSession
 import io.github.markyu0401.everheard.capture.audio.AudioRecordSource
+import io.github.markyu0401.everheard.capture.vad.SileroVad
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
@@ -93,8 +98,13 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
     var recording by remember { mutableStateOf(false) }
     var session by remember { mutableStateOf<StreamingAsrSession?>(null) }
     var source by remember { mutableStateOf<AudioRecordSource?>(null) }
+    var vad by remember { mutableStateOf<SileroVad?>(null) }
+    var segmenter by remember { mutableStateOf<SpeechSegmenter?>(null) }
+    val speechSegments = remember { mutableListOf<SpeechSegmenter.Segment>() }
+    val speechLock = remember { Any() }
     var sessionStartedAt by remember { mutableLongStateOf(0L) }
     var saved by remember { mutableStateOf(false) }
+    var refining by remember { mutableStateOf(false) }
     val store = remember {
         EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
     }
@@ -102,6 +112,7 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
     val loadingText = stringResource(R.string.live_loading)
     val recordingText = stringResource(R.string.live_recording)
     val finishingText = stringResource(R.string.live_finishing)
+    val refiningText = stringResource(R.string.live_refining)
     val stoppedText = stringResource(R.string.live_stopped)
     val savedText = stringResource(R.string.live_saved)
     val errorLabel = stringResource(R.string.live_error_label)
@@ -119,14 +130,18 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
         if (recording) return
         recording = true
         saved = false
+        refining = false
         sessionStartedAt = System.currentTimeMillis()
         finalText = null
         partial = ""
         status = loadingText
+        synchronized(speechLock) { speechSegments.clear() }
         scope.launch {
             try {
                 val engine = withContext(Dispatchers.Default) { SherpaAsr(context.assets) }
+                val newVad = withContext(Dispatchers.Default) { SileroVad(context.assets) }
                 if (!recording) {
+                    newVad.release()
                     status = stoppedText
                     return@launch
                 }
@@ -135,19 +150,30 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
                         Manifest.permission.RECORD_AUDIO
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
+                    newVad.release()
                     recording = false
                     status = "$errorLabel: $permissionMissing"
                     return@launch
                 }
                 val newSession = engine.createSession()
+                val newSegmenter = SpeechSegmenter(minSpeechMs = 300, endSilenceMs = 500)
                 val newSource = AudioRecordSource()
                 session = newSession
                 source = newSource
+                vad = newVad
+                segmenter = newSegmenter
                 newSource.start { frame ->
                     try {
+                        val speech = newVad.isSpeech(frame)
+                        val emitted = newSegmenter.accept(frame, speech)
+                        if (emitted.isNotEmpty()) {
+                            synchronized(speechLock) { speechSegments.addAll(emitted) }
+                        }
                         newSession.accept(frame)
-                        val text = newSession.partialText()
-                        mainHandler.post { partial = text }
+                        if (speech) {
+                            val text = newSession.partialText()
+                            mainHandler.post { partial = text }
+                        }
                     } catch (_: Exception) {
                         // A native recognizer failure is surfaced by the stop path.
                     }
@@ -166,17 +192,65 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
         status = finishingText
         val currentSource = source
         val currentSession = session
+        val currentSegmenter = segmenter
+        val currentVad = vad
         source = null
         session = null
+        segmenter = null
+        vad = null
         scope.launch {
             currentSource?.stop()
+            currentSegmenter?.flush()?.let { segment ->
+                synchronized(speechLock) { speechSegments.add(segment) }
+            }
+            currentVad?.release()
             val result = withContext(Dispatchers.Default) {
                 currentSession?.finish()
             }
             currentSession?.close()
+
+            val recorded = synchronized(speechLock) {
+                val segments = speechSegments.toList()
+                speechSegments.clear()
+                val total = segments.sumOf { it.pcm16.size }
+                val pcm = ShortArray(total)
+                var offset = 0
+                segments.forEach { segment ->
+                    segment.pcm16.copyInto(pcm, offset)
+                    offset += segment.pcm16.size
+                }
+                pcm
+            }
+
             partial = result?.text ?: partial
             finalText = result?.text
             status = stoppedText
+
+            if (recorded.isNotEmpty()) {
+                status = refiningText
+                refining = true
+                val refined = withContext(Dispatchers.Default) {
+                    runCatching {
+                        SenseVoiceAsr(context.assets)
+                            .transcribe(AsrRequest(pcm16 = recorded))
+                            .text
+                            .trim()
+                    }.onFailure {
+                        Log.w("LiveCapture", "SenseVoice refinement failed", it)
+                    }.getOrNull()
+                }
+                if (!refined.isNullOrBlank()) {
+                    partial = refined
+                    finalText = refined
+                }
+                refining = false
+                status = stoppedText
+            } else {
+                // No VAD-confirmed speech: never keep a hallucinated silence
+                // transcript such as "我." from the offline model.
+                partial = ""
+                finalText = ""
+            }
         }
     }
 
@@ -216,6 +290,7 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
         onDispose {
             source?.stop()
             session?.close()
+            vad?.release()
         }
     }
 
@@ -280,7 +355,7 @@ fun LiveCaptureScreen(onBack: () -> Unit) {
         PrimaryButton(
             text = stringResource(R.string.live_save),
             onClick = ::save,
-            enabled = finalText?.isNotBlank() == true && !saved && !recording
+            enabled = finalText?.isNotBlank() == true && !saved && !recording && !refining
         )
     }
 }

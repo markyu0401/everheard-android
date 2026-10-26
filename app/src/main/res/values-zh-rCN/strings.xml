@@ -106,6 +106,7 @@
     <string name="live_loading">加载模型…</string>
     <string name="live_recording">正在聆听</string>
     <string name="live_finishing">收尾…</string>
+    <string name="live_refining">正在精修文字…</string>
     <string name="live_stopped">就绪</string>
     <string name="live_error_label">错误</string>
     <string name="live_permission_missing">缺少麦克风权限</string>

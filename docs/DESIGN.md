@@ -191,10 +191,12 @@ data class AsrResult(
 ### 5.2 Local provider
 
 - sherpa-onnx 2.0.0 AAR (SHA-256 pinned; fallback 1.13.8).
-- Model: streaming Zipformer bilingual zh-en int8, encoder 174 MB + decoder 13 MB + joiner 3.1 MB (~190 MB total).
-- Streaming partials for the live screen; final decode on segment end.
+- **Live draft:** streaming Zipformer **small** bilingual zh-en int8 (encoder 41 MB + decoder 3.3 MB + joiner 3.1 MB) for immediate partials. It is not accurate enough to be the durable transcript.
+- **Final transcript:** **SenseVoice small int8** (zh/en/ja/ko/yue, 228 MB) decoded per VAD segment. It is offline/non-autoregressive, much more accurate on Mandarin, and supports inverse text normalization. Load lazily on the first speech segment and keep it for the capture session; peak RAM is ~600–700 MB.
+- The streaming recognizer has `enableEndpoint=false`; segmentation is owned by Silero VAD + `SpeechSegmenter`, so a VAD segment is never cut again by a second endpoint detector.
+- `SpeechSegmenter` keeps a **500 ms pre-roll** so the first syllable is not clipped when the VAD fires late; segment timestamps start at the pre-roll.
+- On devices with < 6 GB RAM, fall back to the streaming-only path or cloud ASR; do not load SenseVoice while another large model is resident.
 - Model manager: download on first run, verify SHA-256, show license + size, refuse to start if free space < 1 GB.
-- Do **not** keep SenseVoice resident: 239 MB file, 600–700 MB RAM peak on Android. It is a batch option only.
 
 ### 5.3 Cloud provider
 
@@ -205,15 +207,15 @@ data class AsrResult(
 ### 5.4 Two-pass merge
 
 1. Live draft from the local streaming model (fast, lower accuracy).
-2. After session end, send segments to the cloud or a local GPU host (faster-whisper large-v3) for a final decode.
+2. Capture path: each VAD segment is decoded with SenseVoice for the durable transcript.
 3. Merge by timestamp: final text wins inside its segment; keep the draft's word timings for the UI.
 4. If the final decode fails, keep the draft and mark `refined = false`.
 
 ### 5.5 Text post-processing
 
-- Punctuation model (sherpa-onnx) or LLM punctuation; numbers/dates normalized to a canonical form for extraction (`2026-10-30`, `15:00`).
+- SenseVoice already emits punctuation and inverse-normalized numbers; keep a light normalizer for dates/times used by extraction.
 - Hotword list: people, projects, product names; applied as context bias where supported, and as a post-hoc re-rank (edit distance) otherwise.
-- Language: zh default; code-switch zh-en handled by the bilingual model; per-session override.
+- Language: auto by default; SenseVoice covers zh/en/ja/ko/yue. Per-session override.
 
 ## 6. Speaker attribution
 

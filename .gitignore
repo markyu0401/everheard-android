@@ -30,6 +30,7 @@ app/libs/
 !app/src/main/assets/models/
 !app/src/main/assets/models/silero_vad.onnx
 app/src/main/assets/models/asr-small/
+app/src/main/assets/models/sense-voice/
 *.bin
 *.wav
 *.opus

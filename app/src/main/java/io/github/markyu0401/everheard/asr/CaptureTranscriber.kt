@@ -1,6 +1,7 @@
 package io.github.markyu0401.everheard.asr
 
 import android.content.Context
+import android.util.Log
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
@@ -29,8 +30,20 @@ class CaptureTranscriber(
     private val store: TranscriptStore,
     private val sessionId: String = UUID.randomUUID().toString(),
     private val startedAt: Long = System.currentTimeMillis(),
-    private val asrFactory: () -> AsrEngine = { SherpaAsr(context.applicationContext.assets) }
+    private val appContext: Context = context.applicationContext,
+    private val asrFactory: () -> AsrEngine = {
+        try {
+            SenseVoiceAsr(appContext.assets)
+        } catch (error: Throwable) {
+            Log.e(TAG, "SenseVoice unavailable; falling back to streaming ASR", error)
+            SherpaAsr(appContext.assets)
+        }
+    }
 ) {
+
+    private companion object {
+        const val TAG = "CaptureTranscriber"
+    }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val queue = Channel<SpeechSegmenter.Segment>(Channel.UNLIMITED)
@@ -72,8 +85,10 @@ class CaptureTranscriber(
                             )
                         )
                     }
-                } catch (_: Exception) {
-                    // A missing model or a native failure must not kill capture.
+                } catch (error: Exception) {
+                    // A missing model or a native failure must not kill capture,
+                    // but it must be visible in logcat while diagnosing.
+                    Log.e(TAG, "Segment transcription failed", error)
                 }
             }
             if (sessionCreated) {

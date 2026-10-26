@@ -20,7 +20,7 @@ Everheard 是纯手机、开源的答案：本地优先的文字、可纠正的�
 ## v1 目标
 
 - **24 小时待命采集**，支持允许/排除时段（睡觉、上课、不想录的会议）。
-- **端侧 ASR**（sherpa-onnx），可选云端二次解码。
+- **端侧 ASR**（sherpa-onnx）：流式实时草稿 + SenseVoice 最终转写，可选云端二次解码。
 - **说话人归属**：自己录一次声纹；其他人自动聚类；滑一下「不是我的事」教它过滤。
 - **承诺抽取**：带原句证据，一键进系统日历。
 - **项目时间线**：同一主题的多场对话自动归集，每周复盘带证据。
@@ -41,7 +41,7 @@ Everheard 是纯手机、开源的答案：本地优先的文字、可纠正的�
 AudioRecord（16 kHz 单声道 PCM16）
   → 60 秒环形缓冲
   → Silero VAD → 5–30 秒片段（200 ms 重叠）
-  → 端侧 ASR（流式草稿）→ 可选云端二次解码
+  → 端侧 ASR（流式草稿 + SenseVoice 最终转写）→ 可选云端二次解码
   → 声纹 embedding + 在线聚类 → 「我」/ A / B / 背景
   → SQLCipher（Room）：session、segment、utterance、commitment、project、insight
   → LLM（JSON schema）：摘要、承诺、周复盘
@@ -64,10 +64,10 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21   # macOS Homebrew
 模型不进仓库，用脚本下载并校验 SHA-256：
 
 ```bash
-scripts/fetch_models.sh   # 流式 ASR（约 437 MB 压缩包）+ 声纹模型（27 MB）
+scripts/fetch_models.sh   # 流式 ASR（约 437 MB 压缩包）+ SenseVoice（228 MB）+ 声纹模型（27 MB）
 ```
 
-Silero VAD（629 KB，MIT）已提交，保证首次启动不依赖下载。ASR 和声纹模型位于 `app/src/main/assets/models/`，已被 gitignore。
+Silero VAD（629 KB，MIT）已提交，保证首次启动不依赖下载。流式 ASR、SenseVoice 和声纹模型位于 `app/src/main/assets/models/`，已被 gitignore。
 
 仪器测试（服务、AudioRecord、VAD、ASR、声纹）在真机或模拟器上运行：
 

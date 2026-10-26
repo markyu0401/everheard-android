@@ -20,7 +20,7 @@ Everheard is the phone-only, open-source answer: local-first text, correctable a
 ## What v1 targets
 
 - **24 h armed capture** with allow/block windows (sleep, classes, meetings you don't want recorded).
-- **On-device ASR** (sherpa-onnx) with an optional cloud re-decode pass.
+- **On-device ASR** (sherpa-onnx): streaming live draft plus a SenseVoice final pass, with an optional cloud re-decode.
 - **Speaker attribution**: enroll yourself once; cluster others; swipe "not mine" to teach the filter.
 - **Commitments** extracted with evidence quotes and pushed to the system calendar.
 - **Project timelines** built from repeated topics, plus a weekly insight with evidence.
@@ -41,7 +41,7 @@ Everheard is the phone-only, open-source answer: local-first text, correctable a
 AudioRecord (16 kHz mono PCM16)
   → ring buffer (60 s)
   → Silero VAD → segments (5–30 s, 200 ms overlap)
-  → on-device ASR (streaming draft) → optional cloud re-decode
+  → on-device ASR (streaming draft + SenseVoice final) → optional cloud re-decode
   → speaker embedding + online clustering → "me" / A / B / background
   → SQLCipher (Room): session, segment, utterance, commitment, project, insight
   → LLM (JSON schema): summary, commitments, weekly review
@@ -64,10 +64,10 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21   # macOS Homebrew
 Models are not committed. Fetch them with SHA-256 verification:
 
 ```bash
-scripts/fetch_models.sh   # streaming ASR (~437 MB tarball) + speaker embedding (27 MB)
+scripts/fetch_models.sh   # streaming ASR (~437 MB tarball) + SenseVoice (228 MB) + speaker embedding (27 MB)
 ```
 
-Silero VAD (629 KB, MIT) is committed so the app can boot without a download. The ASR and speaker models live under `app/src/main/assets/models/` and are gitignored.
+Silero VAD (629 KB, MIT) is committed so the app can boot without a download. The streaming ASR, SenseVoice, and speaker models live under `app/src/main/assets/models/` and are gitignored.
 
 Instrumented tests (service, AudioRecord, VAD, ASR, speaker) run on a device or emulator:
 

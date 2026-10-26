@@ -107,6 +107,7 @@
     <string name="live_loading">Loading model…</string>
     <string name="live_recording">Listening</string>
     <string name="live_finishing">Finishing…</string>
+    <string name="live_refining">Refining the transcript…</string>
     <string name="live_stopped">Ready</string>
     <string name="live_error_label">Error</string>
     <string name="live_permission_missing">microphone permission missing</string>
