@@ -76,6 +76,28 @@ These are not preferences; they shape the product.
 
 **MVP is v0.1 at the end of M4 (2026-12-28).** v0.2 and v0.3 are deliberately separate: do not build project clustering before the transcript pipeline is trustworthy.
 
+### 4.1 OPPO parity scope (explicit)
+
+The reference app is not only a recorder. This table is the contract for parity; a feature is not “done” until the listed exit gate passes.
+
+| OPPO / 白鲸 AI capability | Everheard task(s) | Milestone |
+|---|---|---|
+| Daily timeline with structured summary and todos | M4-T3, M4-T5, M4-T6, M4-T9 | M4 |
+| Manual “important” mark visible in the timeline | M4-T6, M4-T10 | M4 |
+| Inspiration / idea notes | M4-T10 | M4 |
+| Project auto-grouping + project timeline (progress, decisions, todos, risks) | M5-T1, M5-T2 | M5 |
+| Insight / 觉察 (O-Mind-style behavior observations) | M5-T3, M5-T4 | M5 |
+| Conversation profile / long-term memory | M5-T5, M5-T6 | M5 |
+| PersonaX-style speaker attribution and person graph | M3-T1…M3-T5, M5-T5 | M3/M5 |
+| MCP memory export (summaries, inspirations, profile, long-term memory) | M6-T3, M6-T4, M6-T5 | M6 |
+| IM (WeChat/Feishu) read-only Q&A | M6-T6 (optional) | M6 phase 2 |
+| 24 h armed capture with schedule/battery guards | M1-T1…M1-T7 | M1 |
+| Local ASR + optional cloud re-decode + model manager | M2-T1…M2-T6 | M2 |
+| BYO provider configuration | M6-T1, M6-T2 | M6 |
+| Export, redaction, delete and MCP scope audit | M4-T7, M6-T5, M7-T3, M7-T7 | M4/M6/M7 |
+
+**Not in scope for v0.1:** continuous 24 h raw recording (we ship armed + gated), account system, subscription, Play Store release, iOS, and hardware.
+
 ## 5. Phase detail
 
 ### M0 — Measurement spikes (2 weeks)
@@ -146,23 +168,26 @@ These are not preferences; they shape the product.
 | M4-T3 | Summary JSON schema + validator (drop items without evidence) |
 | M4-T4 | LLM provider abstraction (OpenAI-compatible), retry/repair, cost guard |
 | M4-T5 | Commitment → system calendar/reminder; dedupe on re-extraction |
-| M4-T6 | Today timeline UI (cards, chips, marks, empty states) |
+| M4-T6 | Today timeline UI: session cards plus semantic event cards (“what happened”, decision, commitment, risk, inspiration), chips, marks, empty states |
 | M4-T7 | Markdown/JSON export + delete flows |
 | M4-T8 | End-to-end demo: 30 min session → summary → 5 commitments → calendar → export |
+| M4-T9 | Semantic event extraction for the daily timeline: what happened, decision, commitment, risk; each event needs a quote + timestamp + speaker; no event without evidence |
+| M4-T10 | Inspiration/idea capture: manual “save this thought” plus extracted ideas; a distinct timeline card with its source quote |
 
-**Exit gate:** summary ≤ 60 s; every extracted item has a quote + timestamp + speaker; calendar insert works; export/delete verified; no plaintext content in logs.
+**Exit gate:** summary ≤ 60 s; every extracted item has a quote + timestamp + speaker; Today shows semantic events (not only raw sessions); calendar insert works; export/delete verified; no plaintext content in logs.
 
 ### M5 — Projects + weekly insight (v0.2, 2 weeks)
 
 | Task | Work |
 |---|---|
 | M5-T1 | Project clustering (summary embedding + ≥ 2 shared entities or cosine > 0.82); user merge/split as constraints |
-| M5-T2 | Project timeline UI (events, decisions, open commitments, insight card) |
+| M5-T2 | Project timeline UI: cross-session progress, decisions, commitments and risks with evidence links; insight card; jump to source session |
 | M5-T3 | Insight generation with evidence chain; reject insights without ≥ 2 citations |
 | M5-T4 | Weekly review: commitment completion, open loops, talk ratio, interruptions |
-| M5-T5 | Person page aggregation |
+| M5-T5 | Person page aggregation + conversation profile: recurring people, topics, open commitments; rename, merge/split |
+| M5-T6 | Long-term memory view: project and person summaries over time, with source sessions and delete/merge controls |
 
-**Exit gate:** 20 sessions produce a sane project set (manual review); every insight cites ≥ 2 sessions; weekly review renders in < 2 s.
+**Exit gate:** 20 sessions produce a sane project set (manual review); a project timeline spans ≥ 3 sessions and shows progress/decision/commitment events; every insight cites ≥ 2 sessions; weekly review renders in < 2 s.
 
 ### M6 — BYO API + MCP (v0.3, 2 weeks)
 
@@ -170,11 +195,13 @@ These are not preferences; they shape the product.
 |---|---|
 | M6-T1 | Provider settings for ASR/LLM/embedding: base URL, key, model, "test connection" |
 | M6-T2 | Per-task routing, fallback chain, timeout, token/cost guard |
-| M6-T3 | MCP server over HTTP with bearer token: `search_memory`, `list_commitments`, `get_project`, `get_session` |
-| M6-T4 | Optional MCP client to call external tools |
-| M6-T5 | JSON export compatible with the MCP schema |
+| M6-T3 | MCP server over HTTP with bearer token and per-tool scopes: `search_memory`, `get_daily_timeline`, `list_commitments`, `get_project`, `get_session`, `list_inspirations`, `get_person`, `get_insight` |
+| M6-T4 | MCP resources for summaries, inspirations, conversation profiles and long-term memory; JSON schema + citation fields |
+| M6-T5 | JSON/Markdown export compatible with the MCP schema |
+| M6-T6 | Optional IM bridge (WeChat/Feishu) for read-only memory Q&A; no write tools; phase 2 after the MCP server |
+| M6-T7 | Optional MCP client to call external tools (research; not required for parity) |
 
-**Exit gate:** point the app at a LiteLLM gateway and swap models without rebuilding; an MCP client (Claude/Cursor) answers "what did I promise this week?" with citations.
+**Exit gate:** point the app at a LiteLLM gateway and swap models without rebuilding; an MCP client (Claude/Cursor) answers “what did I promise this week?” and “what happened in project X?” with citations; no MCP tool can write or delete.
 
 ### M7 — Hardening + v1.0 (1 week)
 
@@ -186,6 +213,7 @@ These are not preferences; they shape the product.
 | M7-T4 | License audit: models, AAR, SQLCipher; update THIRD_PARTY_NOTICES |
 | M7-T5 | Docs, build script, signed release APK (key held offline) |
 | M7-T6 | Tag v1.0.0; release notes |
+| M7-T7 | Export redaction and MCP scope audit: no secrets, no raw audio, per-tool consent recorded |
 
 **Exit gate:** 3 devices pass; 24 h armed run with schedule; no P0/P1 bug; a fresh contributor can build from README.
 

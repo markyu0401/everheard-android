@@ -370,9 +370,15 @@ Validation rules:
 - Bearer token generated on first enable, stored hashed; shown once.
 - Tools:
   - `search_memory(query, limit=10)` → utterances with citations.
+  - `get_daily_timeline(date)` → semantic events for that day: what happened, decisions, commitments, risks, inspirations; each with a quote + timestamp + speaker.
   - `list_commitments(status="open", due_before=null)` → commitments with owner/due/evidence.
   - `get_project(id)` → project timeline + open loops.
   - `get_session(id)` → summary + transcript.
+  - `list_inspirations()` → saved/extracted ideas with source quotes.
+  - `get_person(id)` → conversation profile, recurring topics, open commitments.
+  - `get_insight(id)` → insight + evidence citations.
+- Resources: `everheard://session/{id}/summary`, `everheard://session/{id}/transcript`, `everheard://inspiration/{id}`, `everheard://person/{id}`, `everheard://project/{id}/timeline`, `everheard://memory/{id}`. Every resource carries citations; no raw audio.
+- Per-tool consent and a revocable token; the client sees only the scopes the user granted.
 - Read-only in v1; no write tools.
 - Transport: streamable HTTP (MCP spec); no stdio on Android.
 
@@ -382,13 +388,13 @@ Validation rules:
 
 | Screen | Content | Key interaction |
 |---|---|---|
-| Today | Vertical timeline of session cards with time, duration, title, next-line preview, and mark count | Tap → detail; bottom taskbar persists |
+| Today | Vertical timeline of session cards plus semantic event cards (“what happened”, decision, commitment, risk, inspiration) with time, duration, title, next-line preview, and mark count | Tap → detail; bottom taskbar persists; every event links to its quote |
 | Live | Timer, waveform, live transcript with speaker colors, privacy strip | Mark; pause; stop |
 | Session detail | Transcript with star marks, share, and delete | Tap a line to mark; summary/todos tabs arrive with M4 |
 | Projects | Project cards with last activity and open commitments | Merge/split; open timeline |
-| Project detail | Event timeline + insight card | Jump to source session |
+| Project detail | Cross-session event timeline (progress, decisions, commitments, risks) + insight card | Jump to source session |
 | Insight | Weekly metrics + insight cards with evidence | Drill into citations |
-| Person | Last talked, open commitments, projects | Rename; merge clusters |
+| Person | Last talked, open commitments, projects, conversation profile | Rename; merge clusters |
 | Settings | Appearance and Language dropdowns (tap to expand), Voice profile (language dropdown, add/select Chinese or English, re-record/delete), Schedule, and Data > Clear all transcripts | Changes apply immediately; language restarts the task; clearing is confirmed; content scrolls above the taskbar |
 | Onboarding | Legal notice, mic permission, enrollment, schedule default | 3 steps, skippable enrollment |
 
