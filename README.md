@@ -36,7 +36,7 @@ Everheard is the phone-only, open-source answer: local-first text, correctable a
 - **Project timelines** built from repeated topics, plus a weekly insight with evidence.
 - **Bring your own model**: any OpenAI-compatible endpoint (LiteLLM, DeepSeek, OpenAI, Ollama, local llama.cpp).
 - **MCP server**: expose your memory to Claude, Cursor, or any MCP client.
-- **Text only by default**: audio is deleted after transcription; the database is encrypted.
+- **Text only by default**: audio is deleted after transcription; the store is AES-256-GCM encrypted with a key in Android Keystore.
 
 ## Non-goals for v1
 
@@ -53,7 +53,7 @@ AudioRecord (16 kHz mono PCM16)
   → Silero VAD → segments (5–30 s, 200 ms overlap)
   → on-device ASR (streaming draft + SenseVoice final) → optional cloud re-decode
   → speaker embedding + online clustering → "me" / A / B / background
-  → SQLCipher (Room): session, segment, utterance, commitment, project, insight
+  → KeystoreCipher (AES-256-GCM): one encrypted JSON document holding sessions, segments, utterances, commitments, projects, insights
   → LLM (JSON schema): summary, commitments, weekly review
   → Compose UI: Today, live capture, session detail, projects, insight, person, settings
   → MCP server (HTTP + token): search_memory, list_commitments, get_project

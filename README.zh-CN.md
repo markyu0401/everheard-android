@@ -36,7 +36,7 @@ Everheard 是纯手机、开源的答案：本地优先的文字、可纠正的�
 - **项目时间线**：同一主题的多场对话自动归集，每周复盘带证据。
 - **自带模型**：任何 OpenAI 兼容端点（LiteLLM、DeepSeek、OpenAI、Ollama、本地 llama.cpp）。
 - **MCP server**：把记忆暴露给 Claude、Cursor 或任何 MCP 客户端。
-- **默认只留文字**：转写完删除音频，数据库加密。
+- **默认只留文字**：转写完删除音频；文字用 AES-256-GCM 加密，密钥在 Android Keystore。
 
 ## v1 不做
 
@@ -53,7 +53,7 @@ AudioRecord（16 kHz 单声道 PCM16）
   → Silero VAD → 5–30 秒片段（200 ms 重叠）
   → 端侧 ASR（流式草稿 + SenseVoice 最终转写）→ 可选云端二次解码
   → 声纹 embedding + 在线聚类 → 「我」/ A / B / 背景
-  → SQLCipher（Room）：session、segment、utterance、commitment、project、insight
+  → KeystoreCipher（AES-256-GCM）：一个加密 JSON 文档，存 session、segment、utterance、commitment、project、insight
   → LLM（JSON schema）：摘要、承诺、周复盘
   → Compose UI：今日、实时录制、会话详情、项目、觉察、人物、设置
   → MCP server（HTTP + token）：search_memory、list_commitments、get_project

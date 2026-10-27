@@ -9,9 +9,9 @@ The default is **local-only, text-only**. Audio exists only long enough to becom
 | Data | Where it lives | Retention | Leaves the device? |
 |---|---|---|---|
 | Raw audio | App-private storage, encrypted | Deleted after transcription (default); optional 24 h for corrections | Only if a cloud ASR provider is enabled for that session |
-| Transcript | SQLCipher database | Until the user deletes it | Only to a cloud LLM if enabled for that session |
-| Speaker embeddings | SQLCipher database | Until the user deletes the person | No (computed on-device) |
-| Commitments / projects / insights | SQLCipher database | Until deleted | Included in a cloud summary request if enabled |
+| Transcript | Encrypted store (AES-256-GCM, Keystore key) | Until the user deletes it | Only to a cloud LLM if enabled for that session |
+| Speaker embeddings | Encrypted store (AES-256-GCM, Keystore key) | Until the user deletes the person | No (computed on-device) |
+| Commitments / projects / insights | Encrypted store (AES-256-GCM, Keystore key) | Until deleted | Included in a cloud summary request if enabled |
 | API keys | Keystore-wrapped encrypted preferences | Until removed | No |
 | Settings | DataStore | Until app data is cleared | No |
 | Crash logs / analytics | Not collected | — | No |
