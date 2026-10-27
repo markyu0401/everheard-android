@@ -39,5 +39,8 @@ object VoiceMatcher {
         embedding: FloatArray,
         profile: VoiceProfile,
         threshold: Float = DEFAULT_THRESHOLD
-    ): Boolean = similarity(embedding, profile.embedding) >= threshold
+    ): Boolean = bestSimilarity(embedding, profile) >= threshold
+
+    fun bestSimilarity(embedding: FloatArray, profile: VoiceProfile): Float =
+        profile.allEmbeddings().maxOfOrNull { similarity(embedding, it) } ?: -1f
 }

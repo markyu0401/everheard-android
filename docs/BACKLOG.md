@@ -25,8 +25,8 @@ only marked **Shipped** when it works on a real screen and has tests.
 | **Projects** | **Planned (M5)** | None | Embedding clustering + entity overlap; project timeline; merge/split |
 | **Insight / 觉察** | **Planned (M5)** | None | Weekly metrics + O-Mind-style behavior observations with ≥ 2 citations and one action suggestion |
 | **Connect / MCP** | **Planned (M6)** | Share/export only | HTTP MCP server with bearer token: `search_memory`, `list_commitments`, `get_project`, `get_session`; JSON schema |
-| **Voice profile enrollment** | **Shipped** | Settings → Voice profile: read three prompts in one 10–30 s recording; quality gate; CAM++ embedding normalised and stored encrypted; re-record and delete | Calibrate the threshold with real voice samples; support multiple centroids for noisy/quiet rooms |
-| **Speaker attribution** | **Partial** | Capture labels a segment `me` when its embedding matches the enrolled profile (≥1.5 s segments, cosine 0.72); UI shows “Me”; no clustering of other speakers yet | Real-device precision/recall; online clustering for others; “not mine” correction |
+| **Voice profile enrollment** | **Shipped** | Settings → Voice profile records a Chinese sample and an English sample separately; each is quality-gated, embedded with CAM++, normalised, and stored encrypted as multiple centroids. Re-record and delete supported | Calibrate thresholds per language/acoustic condition; add more conditions later |
+| **Speaker attribution** | **Partial** | Capture compares a segment against all enrolled centroids, labels `me` at best cosine ≥ 0.72, and logs the score; UI shows “Me”; other speakers are not clustered yet | Real-device precision/recall; online clustering; “not mine” correction; threshold calibration |
 | **Manual mark at capture time** | **Planned** | Mark action exists only after transcription | Notification/Live mark that attaches to the current segment |
 | **Provider settings (BYO)** | **Planned (M6)** | None | ASR/LLM/embedding base URL, key, model, test connection, fallback chain |
 | **Model manager** | **Planned (M2-T1)** | Models bundled in the debug APK (357 MB) | Runtime download, SHA-256, license screen, disk check |
@@ -65,8 +65,7 @@ only marked **Shipped** when it works on a real screen and has tests.
 - **Connect**: chat-like memory query; MCP is the first integration, IM later.
 - **Settings**: Voice profile row (enrolled/not enrolled), re-record and delete;
   Data row for clearing transcripts.
-- **Voice enrollment**: three prompts, one recording, quality feedback, encrypted
-  vector only; no audio retained.
+- **Voice enrollment**: Chinese and English samples recorded separately, quality feedback, encrypted vectors only; no audio retained. The profile keeps one centroid per language so code-switching does not collapse attribution.
 - **Privacy**: voiceprint is a biometric; it is used for attribution, never for
   authentication, and can be deleted.
 - **Motion**: restrained; no gradients, no dashboard chrome, no developer

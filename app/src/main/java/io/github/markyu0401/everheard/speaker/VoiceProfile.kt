@@ -1,12 +1,16 @@
 package io.github.markyu0401.everheard.speaker
 
 /**
- * An enrolled voice: one L2-normalised CAM++ embedding, not the audio.
- * [samples] is the number of PCM samples used to build it.
+ * An enrolled voice: one or more L2-normalised CAM++ embeddings, not the audio.
+ * A second embedding lets the profile cover more than one language or acoustic
+ * condition. [samples] is the total PCM used to build the profile.
  */
 data class VoiceProfile(
     val embedding: FloatArray,
     val samples: Int,
     val createdAt: Long,
-    val updatedAt: Long
-)
+    val updatedAt: Long,
+    val alternates: List<FloatArray> = emptyList()
+) {
+    fun allEmbeddings(): List<FloatArray> = listOf(embedding) + alternates
+}

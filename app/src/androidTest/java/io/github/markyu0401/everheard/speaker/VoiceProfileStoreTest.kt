@@ -19,17 +19,24 @@ class VoiceProfileStoreTest {
             val file = File(context.filesDir, "voice-test-${System.nanoTime()}.bin")
             val store = VoiceProfileStore(file)
             val embedding = floatArrayOf(0.1f, 0.2f, 0.3f, 0.4f)
+            val alternate = floatArrayOf(0.4f, 0.3f, 0.2f, 0.1f)
 
-            val saved = store.save(embedding, samples = 80_000)
+            val saved = store.save(
+                embeddings = listOf(embedding, alternate),
+                samples = 80_000
+            )
 
             assertThat(file.exists()).isTrue()
             assertThat(file.readBytes().toString(Charsets.UTF_8)).doesNotContain("embedding")
             assertThat(saved.samples).isEqualTo(80_000)
+            assertThat(saved.alternates).hasSize(1)
 
             val reopened = VoiceProfileStore(file)
             val loaded = reopened.load()
             assertThat(loaded).isNotNull()
             assertThat(loaded!!.embedding.size).isEqualTo(4)
+            assertThat(loaded.alternates).hasSize(1)
+            assertThat(loaded.alternates[0].size).isEqualTo(4)
             assertThat(loaded.samples).isEqualTo(80_000)
 
             reopened.clear()

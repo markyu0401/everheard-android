@@ -104,7 +104,21 @@ class CaptureTranscriber(
                         ) {
                             try {
                                 val embedding = speakerEmbedder!!.embed(segment.pcm16)
-                                if (VoiceMatcher.isMe(embedding, voiceProfile!!)) "me" else null
+                                val score = VoiceMatcher.bestSimilarity(
+                                    embedding,
+                                    voiceProfile!!
+                                )
+                                val label = if (score >= VoiceMatcher.DEFAULT_THRESHOLD) {
+                                    "me"
+                                } else {
+                                    null
+                                }
+                                Log.i(
+                                    TAG,
+                                    "speaker score=${"%.3f".format(score)} " +
+                                        "label=${label ?: "unknown"}"
+                                )
+                                label
                             } catch (error: Throwable) {
                                 Log.e(TAG, "Speaker attribution failed", error)
                                 null

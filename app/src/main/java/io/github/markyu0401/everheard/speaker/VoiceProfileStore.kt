@@ -39,16 +39,22 @@ class VoiceProfileStore(
         cache
     }
 
-    suspend fun save(embedding: FloatArray, samples: Int): VoiceProfile = mutex.withLock {
-        val normalized = VoiceMatcher.normalize(embedding)
-            ?: error("voice embedding is empty")
+    suspend fun save(embedding: FloatArray, samples: Int): VoiceProfile =
+        save(listOf(embedding), samples)
+
+    suspend fun save(embeddings: List<FloatArray>, samples: Int): VoiceProfile = mutex.withLock {
+        require(embeddings.isNotEmpty()) { "voice embedding is empty" }
+        val normalized = embeddings.map {
+            VoiceMatcher.normalize(it) ?: error("voice embedding is empty")
+        }
         val previous = if (loaded) cache else withContext(Dispatchers.IO) { readProfile() }
         val now = System.currentTimeMillis()
         val profile = VoiceProfile(
-            embedding = normalized,
+            embedding = normalized.first(),
             samples = samples,
             createdAt = previous?.createdAt ?: now,
-            updatedAt = now
+            updatedAt = now,
+            alternates = normalized.drop(1)
         )
         withContext(Dispatchers.IO) { writeProfile(profile) }
         cache = profile
@@ -77,11 +83,23 @@ class VoiceProfileStore(
             val embedding = FloatArray(array.length()) { index ->
                 array.optDouble(index, 0.0).toFloat()
             }
+            val alternates = mutableListOf<FloatArray>()
+            val alternateArray = root.optJSONArray("alternates")
+            if (alternateArray != null) {
+                for (index in 0 until alternateArray.length()) {
+                    val values = alternateArray.optJSONArray(index) ?: continue
+                    if (values.length() == 0) continue
+                    alternates += FloatArray(values.length()) { offset ->
+                        values.optDouble(offset, 0.0).toFloat()
+                    }
+                }
+            }
             VoiceProfile(
                 embedding = embedding,
                 samples = root.optInt("samples", 0),
                 createdAt = root.optLong("createdAt", 0L),
-                updatedAt = root.optLong("updatedAt", 0L)
+                updatedAt = root.optLong("updatedAt", 0L),
+                alternates = alternates
             )
         }.getOrNull()
     }
@@ -93,6 +111,15 @@ class VoiceProfileStore(
             put("embedding", JSONArray().apply {
                 profile.embedding.forEach { put(it.toDouble()) }
             })
+            if (profile.alternates.isNotEmpty()) {
+                put("alternates", JSONArray().apply {
+                    profile.alternates.forEach { alternate ->
+                        put(JSONArray().apply {
+                            alternate.forEach { put(it.toDouble()) }
+                        })
+                    }
+                })
+            }
             put("samples", profile.samples)
             put("createdAt", profile.createdAt)
             put("updatedAt", profile.updatedAt)

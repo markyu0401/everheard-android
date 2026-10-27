@@ -23,6 +23,20 @@ class VoiceMatcherTest {
     }
 
     @Test
+    fun an_alternate_embedding_can_match() {
+        val profile = VoiceProfile(
+            embedding = floatArrayOf(1f, 0f, 0f),
+            samples = 16_000,
+            createdAt = 1L,
+            updatedAt = 1L,
+            alternates = listOf(floatArrayOf(0f, 1f, 0f))
+        )
+        val chineseLike = floatArrayOf(0.1f, 0.99f, 0f)
+
+        assertThat(VoiceMatcher.isMe(chineseLike, profile)).isTrue()
+    }
+
+    @Test
     fun normalisation_rejects_a_zero_vector() {
         assertThat(VoiceMatcher.normalize(floatArrayOf(0f, 0f))).isNull()
     }

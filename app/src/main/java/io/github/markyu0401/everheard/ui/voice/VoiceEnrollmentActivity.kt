@@ -36,6 +36,7 @@ import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.capture.audio.AudioRecordSource
 import io.github.markyu0401.everheard.capture.vad.SileroVad
 import io.github.markyu0401.everheard.speaker.SherpaSpeakerEmbedder
+import io.github.markyu0401.everheard.speaker.SpeakerModelMissingException
 import io.github.markyu0401.everheard.speaker.VoiceEnrollment
 import io.github.markyu0401.everheard.speaker.VoiceIssue
 import io.github.markyu0401.everheard.speaker.VoiceProfileStore
@@ -54,6 +55,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "VoiceEnrollment"
+
+private enum class VoiceSampleStage {
+    CHINESE,
+    ENGLISH
+}
 
 class VoiceEnrollmentActivity : LocalizedActivity() {
 
@@ -82,12 +88,15 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
 
     var source by remember { mutableStateOf<AudioRecordSource?>(null) }
     var vad by remember { mutableStateOf<SileroVad?>(null) }
-    var recording by remember { mutableStateOf(false) }
-    var processing by remember { mutableStateOf(false) }
+    var recordingStage by remember { mutableStateOf<VoiceSampleStage?>(null) }
+    var processingStage by remember { mutableStateOf<VoiceSampleStage?>(null) }
     var elapsedSeconds by remember { mutableStateOf(0f) }
     var error by remember { mutableStateOf<String?>(null) }
     var saved by remember { mutableStateOf(false) }
-    var finishAfterSave by remember { mutableStateOf(false) }
+    var chineseEmbedding by remember { mutableStateOf<FloatArray?>(null) }
+    var englishEmbedding by remember { mutableStateOf<FloatArray?>(null) }
+    var chineseSamples by remember { mutableStateOf(0) }
+    var englishSamples by remember { mutableStateOf(0) }
 
     val permissionError = stringResource(R.string.voice_permission)
     val tooShortError = stringResource(R.string.voice_too_short)
@@ -97,8 +106,8 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
     val modelMissingError = stringResource(R.string.voice_model_missing)
     val failedError = stringResource(R.string.voice_failed)
 
-    fun startRecording() {
-        if (recording || processing) return
+    fun startRecording(stage: VoiceSampleStage) {
+        if (recordingStage != null || processingStage != null) return
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -112,13 +121,12 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         elapsedSeconds = 0f
         error = null
         saved = false
-        finishAfterSave = false
         val vadInstance = SileroVad(context.assets)
         val sourceInstance = AudioRecordSource()
         vad = vadInstance
         source = sourceInstance
-        recording = true
-        Log.i(TAG, "enrollment recording started")
+        recordingStage = stage
+        Log.i(TAG, "enrollment recording started: $stage")
         sourceInstance.start { frame ->
             frames.add(frame)
             totalSamples.addAndGet(frame.size)
@@ -130,13 +138,13 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
     }
 
     fun stopRecording() {
-        if (!recording) return
-        recording = false
+        val stage = recordingStage ?: return
+        recordingStage = null
         source?.stop()
         source = null
         vad?.release()
         vad = null
-        processing = true
+        processingStage = stage
         val pcm = synchronized(frames) {
             val total = frames.sumOf { it.size }
             val result = ShortArray(total)
@@ -151,7 +159,7 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         val assessment = VoiceEnrollment.assess(pcm, speech)
         Log.i(
             TAG,
-            "assessment duration=${assessment.durationSeconds}s " +
+            "assessment stage=$stage duration=${assessment.durationSeconds}s " +
                 "rms=${assessment.rms} speechRatio=${assessment.speechRatio} " +
                 "issue=${assessment.issue}"
         )
@@ -163,31 +171,65 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
                 VoiceIssue.NOT_ENOUGH_SPEECH -> notEnoughSpeechError
                 null -> null
             }
-            processing = false
+            processingStage = null
             return
         }
         scope.launch {
             try {
                 val embedder = SherpaSpeakerEmbedder(context.assets)
                 val embedding = embedder.embed(pcm)
-                store.save(embedding, pcm.size)
-                saved = true
-                Log.i(TAG, "profile saved samples=${pcm.size}")
+                when (stage) {
+                    VoiceSampleStage.CHINESE -> {
+                        chineseEmbedding = embedding
+                        chineseSamples = pcm.size
+                    }
+                    VoiceSampleStage.ENGLISH -> {
+                        englishEmbedding = embedding
+                        englishSamples = pcm.size
+                    }
+                }
+                Log.i(TAG, "sample ready: $stage samples=${pcm.size}")
             } catch (throwable: Throwable) {
-                Log.e(TAG, "profile save failed", throwable)
-                error = if (throwable is io.github.markyu0401.everheard.speaker.SpeakerModelMissingException) {
+                Log.e(TAG, "sample embedding failed: $stage", throwable)
+                error = if (throwable is SpeakerModelMissingException) {
                     modelMissingError
                 } else {
                     failedError
                 }
             } finally {
-                processing = false
+                processingStage = null
             }
         }
     }
 
-    LaunchedEffect(recording) {
-        while (recording) {
+    fun saveProfile() {
+        val chinese = chineseEmbedding ?: return
+        val english = englishEmbedding ?: return
+        if (processingStage != null) return
+        processingStage = VoiceSampleStage.CHINESE
+        scope.launch {
+            try {
+                store.save(
+                    embeddings = listOf(chinese, english),
+                    samples = chineseSamples + englishSamples
+                )
+                saved = true
+                Log.i(
+                    TAG,
+                    "bilingual profile saved chinese=${chineseSamples} " +
+                        "english=${englishSamples}"
+                )
+            } catch (throwable: Throwable) {
+                Log.e(TAG, "profile save failed", throwable)
+                error = failedError
+            } finally {
+                processingStage = null
+            }
+        }
+    }
+
+    LaunchedEffect(recordingStage) {
+        while (recordingStage != null) {
             delay(100)
             elapsedSeconds = totalSamples.get().toFloat() / 16_000f
             val total = totalSamples.get()
@@ -208,10 +250,6 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         }
     }
 
-    LaunchedEffect(saved) {
-        if (saved && finishAfterSave) onBack()
-    }
-
     DisposableEffect(Unit) {
         onDispose {
             source?.stop()
@@ -226,16 +264,7 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(horizontal = 20.dp)
     ) {
-        BackButton(
-            onClick = {
-                if (recording) {
-                    finishAfterSave = true
-                    stopRecording()
-                } else {
-                    onBack()
-                }
-            }
-        )
+        BackButton(onClick = onBack)
 
         LargeTitle(
             title = stringResource(R.string.voice_title),
@@ -270,42 +299,61 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
                 text = stringResource(R.string.voice_record_again),
                 onClick = {
                     saved = false
+                    chineseEmbedding = null
+                    englishEmbedding = null
+                    chineseSamples = 0
+                    englishSamples = 0
                     error = null
                 }
             )
             return@Column
         }
 
-        SectionHeader(stringResource(R.string.voice_prompts_header))
-        GroupedCard {
-            val prompts = listOf(
-                stringResource(R.string.voice_prompt_1),
-                stringResource(R.string.voice_prompt_2),
-                stringResource(R.string.voice_prompt_3)
-            )
-            prompts.forEachIndexed { index, prompt ->
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    Text(
-                        text = "${index + 1}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(3.dp))
-                    Text(
-                        text = prompt,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                if (index != prompts.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 16.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant
-                    )
+        SampleSection(
+            header = stringResource(R.string.voice_chinese_section),
+            prompts = listOf(
+                stringResource(R.string.voice_chinese_prompt_1),
+                stringResource(R.string.voice_chinese_prompt_2)
+            ),
+            ready = chineseEmbedding != null,
+            recording = recordingStage == VoiceSampleStage.CHINESE,
+            processing = processingStage == VoiceSampleStage.CHINESE,
+            recordLabel = stringResource(R.string.voice_record_chinese),
+            stopLabel = stringResource(R.string.voice_stop),
+            readyLabel = stringResource(R.string.voice_sample_ready),
+            checkingLabel = stringResource(R.string.voice_checking),
+            onToggle = {
+                if (recordingStage == VoiceSampleStage.CHINESE) {
+                    stopRecording()
+                } else {
+                    startRecording(VoiceSampleStage.CHINESE)
                 }
             }
-        }
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        SampleSection(
+            header = stringResource(R.string.voice_english_section),
+            prompts = listOf(
+                stringResource(R.string.voice_english_prompt_1),
+                stringResource(R.string.voice_english_prompt_2)
+            ),
+            ready = englishEmbedding != null,
+            recording = recordingStage == VoiceSampleStage.ENGLISH,
+            processing = processingStage == VoiceSampleStage.ENGLISH,
+            recordLabel = stringResource(R.string.voice_record_english),
+            stopLabel = stringResource(R.string.voice_stop),
+            readyLabel = stringResource(R.string.voice_sample_ready),
+            checkingLabel = stringResource(R.string.voice_checking),
+            onToggle = {
+                if (recordingStage == VoiceSampleStage.ENGLISH) {
+                    stopRecording()
+                } else {
+                    startRecording(VoiceSampleStage.ENGLISH)
+                }
+            }
+        )
 
         Spacer(Modifier.height(16.dp))
         Text(
@@ -324,18 +372,22 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         }
 
         Spacer(Modifier.height(20.dp))
-        PrimaryButton(
-            text = when {
-                recording -> stringResource(R.string.voice_stop)
-                processing -> stringResource(R.string.voice_checking)
-                else -> stringResource(R.string.voice_record)
-            },
-            enabled = !processing,
-            onClick = {
-                if (recording) stopRecording() else startRecording()
-            }
-        )
-        if (recording) {
+
+        if (chineseEmbedding != null && englishEmbedding != null) {
+            PrimaryButton(
+                text = stringResource(R.string.voice_save_profile),
+                enabled = processingStage == null,
+                onClick = { saveProfile() }
+            )
+        } else {
+            Text(
+                text = stringResource(R.string.voice_need_both),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (recordingStage != null) {
             Spacer(Modifier.height(10.dp))
             Text(
                 text = stringResource(R.string.voice_seconds, elapsedSeconds.toInt()),
@@ -344,4 +396,64 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun SampleSection(
+    header: String,
+    prompts: List<String>,
+    ready: Boolean,
+    recording: Boolean,
+    processing: Boolean,
+    recordLabel: String,
+    stopLabel: String,
+    readyLabel: String,
+    checkingLabel: String,
+    onToggle: () -> Unit
+) {
+    SectionHeader(header)
+    GroupedCard {
+        prompts.forEachIndexed { index, prompt ->
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Text(
+                    text = "${index + 1}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    text = prompt,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            if (index != prompts.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 16.dp),
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+            }
+        }
+        if (ready) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                Text(
+                    text = readyLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+    Spacer(Modifier.height(10.dp))
+    PrimaryButton(
+        text = when {
+            recording -> stopLabel
+            processing -> checkingLabel
+            ready -> recordLabel
+            else -> recordLabel
+        },
+        enabled = !processing,
+        onClick = onToggle
+    )
 }
