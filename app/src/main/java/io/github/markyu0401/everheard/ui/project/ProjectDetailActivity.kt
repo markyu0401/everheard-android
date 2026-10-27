@@ -4,14 +4,17 @@ import android.content.Intent
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -24,14 +27,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.markyu0401.everheard.R
+import io.github.markyu0401.everheard.data.memory.Commitment
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
-import io.github.markyu0401.everheard.data.memory.SessionMemory
+import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.project.Project
 import io.github.markyu0401.everheard.data.project.ProjectBuilder
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
@@ -39,16 +46,19 @@ import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.CommitmentRow
-import io.github.markyu0401.everheard.ui.components.GroupedCard
-import io.github.markyu0401.everheard.ui.components.LargeTitle
-import io.github.markyu0401.everheard.ui.components.MemoryEventRow
-import io.github.markyu0401.everheard.ui.components.SectionHeader
+import io.github.markyu0401.everheard.ui.components.EverheardCard
+import io.github.markyu0401.everheard.ui.components.MetricStrip
+import io.github.markyu0401.everheard.ui.components.ScreenHeader
+import io.github.markyu0401.everheard.ui.components.SectionLabel
 import io.github.markyu0401.everheard.ui.components.SettingsRow
+import io.github.markyu0401.everheard.ui.components.TimelineMoment
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
+import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 import io.github.markyu0401.everheard.ui.transcript.SessionDetailActivity
 import java.io.File
-import java.text.DateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class ProjectDetailActivity : LocalizedActivity() {
@@ -75,7 +85,6 @@ class ProjectDetailActivity : LocalizedActivity() {
 @Composable
 private fun ProjectDetailScreen(projectId: String, onBack: () -> Unit) {
     val context = LocalContext.current
-    val locale = LocalConfiguration.current.locales[0]
     val transcriptStore = remember {
         EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
     }
@@ -99,16 +108,32 @@ private fun ProjectDetailScreen(projectId: String, onBack: () -> Unit) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(horizontal = 20.dp)
     ) {
-        BackButton(onClick = onBack)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BackButton(onClick = onBack)
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = stringResource(R.string.projects_title),
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.size(44.dp))
+        }
 
         val current = project
         if (!loaded) {
             Text(
                 text = stringResource(R.string.memory_analyzing),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(20.dp)
             )
             return@Column
         }
@@ -116,47 +141,68 @@ private fun ProjectDetailScreen(projectId: String, onBack: () -> Unit) {
             Text(
                 text = stringResource(R.string.project_empty),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(20.dp)
             )
             return@Column
         }
 
-        LargeTitle(
-            title = current.name,
-            subtitle = current.keywords.joinToString(" · ")
-        )
-
-        Spacer(Modifier.height(20.dp))
-
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 24.dp)
         ) {
             item {
-                SectionHeader(stringResource(R.string.project_timeline))
-                GroupedCard {
-                    if (current.events.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.memory_no_events),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(16.dp)
+                ScreenHeader(
+                    title = current.name,
+                    subtitle = current.keywords.joinToString(" · ")
+                )
+                Spacer(Modifier.height(14.dp))
+                MetricStrip(
+                    metrics = listOf(
+                        current.sessionCount.toString() to stringResource(R.string.memory_stat_sessions),
+                        current.openCommitments.size.toString() to stringResource(R.string.memory_stat_open),
+                        current.events.size.toString() to stringResource(R.string.memory_observations_count)
+                    )
+                )
+            }
+
+            item {
+                Spacer(Modifier.height(20.dp))
+                SectionLabel(
+                    text = stringResource(R.string.project_timeline),
+                    trailing = current.events.size.toString()
+                )
+                if (current.events.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.memory_no_events),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
+                } else {
+                    current.events.forEach { projectEvent ->
+                        val session = sessions.firstOrNull { it.id == projectEvent.sessionId }
+                        TimelineMoment(
+                            time = formatClock(
+                                (session?.startedAt ?: 0L) + projectEvent.event.evidence.startMs
+                            ),
+                            title = projectEvent.event.text,
+                            typeLabel = memoryTypeLabel(projectEvent.event.type),
+                            typeColor = memoryTypeColor(projectEvent.event.type),
+                            meta = projectEvent.sessionTitle
                         )
-                    } else {
-                        current.events.forEachIndexed { index, projectEvent ->
-                            MemoryEventRow(
-                                event = projectEvent.event,
-                                showDivider = index != current.events.lastIndex
-                            )
-                        }
                     }
                 }
             }
 
             if (current.openCommitments.isNotEmpty()) {
                 item {
-                    SectionHeader(stringResource(R.string.project_commitments))
-                    GroupedCard {
+                    Spacer(Modifier.height(20.dp))
+                    SectionLabel(
+                        text = stringResource(R.string.project_commitments),
+                        trailing = current.openCommitments.size.toString()
+                    )
+                    EverheardCard {
                         current.openCommitments.forEachIndexed { index, commitment ->
                             CommitmentRow(
                                 commitment = commitment,
@@ -168,8 +214,12 @@ private fun ProjectDetailScreen(projectId: String, onBack: () -> Unit) {
             }
 
             item {
-                SectionHeader(stringResource(R.string.project_sessions))
-                GroupedCard {
+                Spacer(Modifier.height(20.dp))
+                SectionLabel(
+                    text = stringResource(R.string.project_sessions),
+                    trailing = current.sessionCount.toString()
+                )
+                EverheardCard {
                     val projectSessions = sessions.filter { it.id in current.sessionIds }
                     projectSessions.forEachIndexed { index, session ->
                         SettingsRow(
@@ -177,7 +227,7 @@ private fun ProjectDetailScreen(projectId: String, onBack: () -> Unit) {
                             title = session.title.ifBlank {
                                 stringResource(R.string.transcript_session_fallback)
                             },
-                            subtitle = formatProjectDate(session.startedAt, locale),
+                            subtitle = formatProjectDate(session.startedAt),
                             showDivider = index != projectSessions.lastIndex,
                             onClick = {
                                 context.startActivity(
@@ -193,6 +243,34 @@ private fun ProjectDetailScreen(projectId: String, onBack: () -> Unit) {
     }
 }
 
-private fun formatProjectDate(timestamp: Long, locale: Locale): String =
-    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale)
-        .format(Date(timestamp))
+@Composable
+private fun memoryTypeLabel(type: MemoryEventType): String = stringResource(
+    when (type) {
+        MemoryEventType.PROGRESS -> R.string.memory_event_progress
+        MemoryEventType.DECISION -> R.string.memory_event_decision
+        MemoryEventType.COMMITMENT -> R.string.memory_event_commitment
+        MemoryEventType.RISK -> R.string.memory_event_risk
+        MemoryEventType.INSPIRATION -> R.string.memory_event_inspiration
+    }
+)
+
+@Composable
+private fun memoryTypeColor(type: MemoryEventType): Color {
+    val semantic = LocalSemanticColors.current
+    return when (type) {
+        MemoryEventType.PROGRESS -> MaterialTheme.colorScheme.primary
+        MemoryEventType.DECISION -> semantic.decision
+        MemoryEventType.COMMITMENT -> semantic.commitment
+        MemoryEventType.RISK -> semantic.risk
+        MemoryEventType.INSPIRATION -> semantic.insight
+    }
+}
+
+private fun formatClock(timestamp: Long): String =
+    Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .format(DateTimeFormatter.ofPattern("HH:mm", Locale.US))
+
+private fun formatProjectDate(timestamp: Long): String =
+    DateTimeFormatter.ofPattern("EEE, d MMM · HH:mm", Locale.getDefault())
+        .format(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()))

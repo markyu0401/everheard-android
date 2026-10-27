@@ -54,6 +54,7 @@ import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.MainTab
 import io.github.markyu0401.everheard.ui.components.SectionHeader
+import io.github.markyu0401.everheard.ui.memory.MemoryActivity
 import io.github.markyu0401.everheard.ui.project.ProjectsActivity
 import io.github.markyu0401.everheard.ui.settings.SettingsActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
@@ -234,6 +235,9 @@ private fun InsightScreen() {
                         Intent(context, ProjectsActivity::class.java)
                     )
                     MainTab.INSIGHTS -> Unit
+                    MainTab.MEMORY -> context.startActivity(
+                        Intent(context, MemoryActivity::class.java)
+                    )
                     MainTab.SETTINGS -> context.startActivity(
                         Intent(context, SettingsActivity::class.java)
                     )

@@ -45,6 +45,7 @@ import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BottomBar
+import io.github.markyu0401.everheard.ui.memory.MemoryActivity
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.MainTab
@@ -208,6 +209,9 @@ fun ProjectsScreen(onOpen: (String) -> Unit) {
                         Intent(context, TranscriptListActivity::class.java)
                     )
                     MainTab.PROJECTS -> Unit
+                    MainTab.MEMORY -> context.startActivity(
+                        Intent(context, MemoryActivity::class.java)
+                    )
                     MainTab.INSIGHTS -> context.startActivity(
                         Intent(context, InsightActivity::class.java)
                     )

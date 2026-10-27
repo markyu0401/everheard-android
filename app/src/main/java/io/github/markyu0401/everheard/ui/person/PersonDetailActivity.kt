@@ -4,18 +4,22 @@ import android.content.Intent
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,11 +28,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
 import io.github.markyu0401.everheard.data.person.PersonBuilder
@@ -38,15 +45,19 @@ import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.CommitmentRow
-import io.github.markyu0401.everheard.ui.components.GroupedCard
-import io.github.markyu0401.everheard.ui.components.LargeTitle
-import io.github.markyu0401.everheard.ui.components.SectionHeader
+import io.github.markyu0401.everheard.ui.components.EverheardCard
+import io.github.markyu0401.everheard.ui.components.MetricStrip
+import io.github.markyu0401.everheard.ui.components.ScreenHeader
+import io.github.markyu0401.everheard.ui.components.SectionLabel
 import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
+import io.github.markyu0401.everheard.ui.theme.EverheardSerif
 import io.github.markyu0401.everheard.ui.transcript.SessionDetailActivity
 import java.io.File
-import java.text.DateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class PersonDetailActivity : LocalizedActivity() {
@@ -73,7 +84,6 @@ class PersonDetailActivity : LocalizedActivity() {
 @Composable
 private fun PersonDetailScreen(personId: String, onBack: () -> Unit) {
     val context = LocalContext.current
-    val locale = LocalConfiguration.current.locales[0]
     val transcriptStore = remember {
         EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
     }
@@ -97,16 +107,32 @@ private fun PersonDetailScreen(personId: String, onBack: () -> Unit) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(horizontal = 20.dp)
     ) {
-        BackButton(onClick = onBack)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BackButton(onClick = onBack)
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = stringResource(R.string.people_title),
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.size(44.dp))
+        }
 
         val current = person
         if (!loaded) {
             Text(
                 text = stringResource(R.string.memory_analyzing),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(20.dp)
             )
             return@Column
         }
@@ -114,30 +140,42 @@ private fun PersonDetailScreen(personId: String, onBack: () -> Unit) {
             Text(
                 text = stringResource(R.string.project_empty),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(20.dp)
             )
             return@Column
         }
 
-        LargeTitle(
-            title = if (current.name == "me") {
-                stringResource(R.string.speaker_me)
-            } else {
-                current.name
-            },
-            subtitle = formatPersonDate(current.lastTalkedAt, locale)
-        )
-
-        Spacer(Modifier.height(20.dp))
-
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 24.dp)
         ) {
+            item {
+                ScreenHeader(
+                    title = if (current.name == "me") {
+                        stringResource(R.string.speaker_me)
+                    } else {
+                        current.name
+                    },
+                    subtitle = formatPersonDate(current.lastTalkedAt)
+                )
+                Spacer(Modifier.height(14.dp))
+                MetricStrip(
+                    metrics = listOf(
+                        current.sessionIds.size.toString() to stringResource(R.string.memory_stat_sessions),
+                        current.openCommitments.size.toString() to stringResource(R.string.memory_stat_open)
+                    )
+                )
+            }
+
             if (current.openCommitments.isNotEmpty()) {
                 item {
-                    SectionHeader(stringResource(R.string.project_commitments))
-                    GroupedCard {
+                    Spacer(Modifier.height(20.dp))
+                    SectionLabel(
+                        text = stringResource(R.string.project_commitments),
+                        trailing = current.openCommitments.size.toString()
+                    )
+                    EverheardCard {
                         current.openCommitments.forEachIndexed { index, commitment ->
                             CommitmentRow(
                                 commitment = commitment,
@@ -149,8 +187,12 @@ private fun PersonDetailScreen(personId: String, onBack: () -> Unit) {
             }
 
             item {
-                SectionHeader(stringResource(R.string.project_sessions))
-                GroupedCard {
+                Spacer(Modifier.height(20.dp))
+                SectionLabel(
+                    text = stringResource(R.string.project_sessions),
+                    trailing = current.sessionIds.size.toString()
+                )
+                EverheardCard {
                     val personSessions = sessions.filter { it.id in current.sessionIds }
                     personSessions.forEachIndexed { index, session ->
                         SettingsRow(
@@ -158,7 +200,7 @@ private fun PersonDetailScreen(personId: String, onBack: () -> Unit) {
                             title = session.title.ifBlank {
                                 stringResource(R.string.transcript_session_fallback)
                             },
-                            subtitle = formatPersonDate(session.startedAt, locale),
+                            subtitle = formatPersonDate(session.startedAt),
                             showDivider = index != personSessions.lastIndex,
                             onClick = {
                                 context.startActivity(
@@ -173,19 +215,29 @@ private fun PersonDetailScreen(personId: String, onBack: () -> Unit) {
 
             if (current.quotes.isNotEmpty()) {
                 item {
-                    SectionHeader(stringResource(R.string.person_quotes))
-                    GroupedCard {
+                    Spacer(Modifier.height(20.dp))
+                    SectionLabel(
+                        text = stringResource(R.string.person_quotes),
+                        trailing = current.quotes.size.toString()
+                    )
+                    EverheardCard {
                         current.quotes.forEachIndexed { index, quote ->
                             Text(
                                 text = "\u201C$quote\u201D",
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = EverheardSerif,
+                                    fontStyle = FontStyle.Italic,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 18.sp,
+                                    lineHeight = 23.sp
+                                ),
                                 color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
                             )
                             if (index != current.quotes.lastIndex) {
-                                androidx.compose.material3.HorizontalDivider(
-                                    modifier = Modifier.padding(start = 16.dp),
-                                    thickness = 0.5.dp,
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(start = 14.dp),
+                                    thickness = 1.dp,
                                     color = MaterialTheme.colorScheme.outlineVariant
                                 )
                             }
@@ -197,6 +249,12 @@ private fun PersonDetailScreen(personId: String, onBack: () -> Unit) {
     }
 }
 
-private fun formatPersonDate(timestamp: Long, locale: Locale): String =
-    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale)
-        .format(Date(timestamp))
+private fun formatPersonDate(timestamp: Long): String {
+    val date = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
+    val today = LocalDate.now()
+    return when {
+        date == today -> "Today"
+        date == today.minusDays(1) -> "Yesterday"
+        else -> date.format(DateTimeFormatter.ofPattern("MMM d", Locale.getDefault()))
+    }
+}

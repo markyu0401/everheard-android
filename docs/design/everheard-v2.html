@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Everheard — Interface direction 02</title>
+<style>
+@font-face { font-family: 'Instrument Sans'; src: url('fonts/instrument_sans_regular.ttf'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Instrument Sans'; src: url('fonts/instrument_sans_medium.ttf'); font-weight: 500; font-style: normal; }
+@font-face { font-family: 'Instrument Sans'; src: url('fonts/instrument_sans_semibold.ttf'); font-weight: 600; font-style: normal; }
+@font-face { font-family: 'Instrument Sans'; src: url('fonts/instrument_sans_bold.ttf'); font-weight: 700; font-style: normal; }
+@font-face { font-family: 'Instrument Serif'; src: url('fonts/instrument_serif_regular.ttf'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Instrument Serif'; src: url('fonts/instrument_serif_italic.ttf'); font-weight: 400; font-style: italic; }
+
+:root {
+  --sans: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --paper: #F5F6F2;
+  --surface: #FFFFFF;
+  --surface-2: #FAFBF8;
+  --sunken: #ECEEE8;
+  --ink: #101310;
+  --ink-2: #4E554E;
+  --ink-3: #737B73;
+  --line: #E2E5DE;
+  --line-strong: #CDD2C9;
+  --accent: #1D6B4F;
+  --accent-soft: #E3EFE8;
+  --accent-ink: #0B3D2C;
+  --on-accent: #FFFFFF;
+  --live: #C24E3A;
+  --amber: #A66A1E;
+  --blue: #2F5D8A;
+  --plum: #6B5B8E;
+  --risk: #A9453C;
+  --shadow-orb: 0 10px 24px rgba(29,107,79,.28);
+}
+.phone.dark {
+  --paper: #0A0C0A;
+  --surface: #121512;
+  --surface-2: #181C18;
+  --sunken: #070907;
+  --ink: #F1F4EF;
+  --ink-2: #A9B0A8;
+  --ink-3: #7C857C;
+  --line: #232823;
+  --line-strong: #343B34;
+  --accent: #74D3A8;
+  --accent-soft: #143126;
+  --accent-ink: #B9F3D6;
+  --on-accent: #06130D;
+  --live: #F08A72;
+  --amber: #E0B36A;
+  --blue: #8FB8DD;
+  --plum: #B9A8DD;
+  --risk: #E08B84;
+  --shadow-orb: 0 10px 28px rgba(0,0,0,.55);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #E8EAE3;
+  color: #101310;
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+.page {
+  width: 1360px;
+  margin: 0 auto;
+  padding: 64px 32px 88px;
+}
+.masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 4px 40px;
+  border-bottom: 1px solid #CFD4CB;
+}
+.masthead .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #6E766D;
+  margin-bottom: 12px;
+}
+.masthead h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 64px;
+  line-height: .9;
+  letter-spacing: -.8px;
+  margin: 0;
+}
+.masthead h1 em { font-style: italic; color: #1D6B4F; }
+.masthead .lede {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4E554E;
+  max-width: 390px;
+  margin: 0 0 4px;
+}
+.swatches { display: flex; gap: 8px; margin-top: 18px; }
+.swatch { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); }
+.swatch.a { background: #1D6B4F; }
+.swatch.b { background: #F5F6F2; }
+.swatch.c { background: #101310; }
+.swatch.d { background: #A66A1E; }
+.swatch.e { background: #C24E3A; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 390px);
+  gap: 44px 44px;
+  padding-top: 44px;
+  justify-content: center;
+}
+.frame-wrap { display: flex; flex-direction: column; gap: 12px; }
+.frame-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+.frame-label strong { font-size: 12px; font-weight: 600; letter-spacing: .02em; }
+.frame-label span { font-size: 11px; color: #6E766D; }
+
+.phone {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  border-radius: 34px;
+  background: var(--paper);
+  color: var(--ink);
+  overflow: hidden;
+  border: 1px solid rgba(16,19,16,.12);
+  box-shadow: 0 30px 70px rgba(16,19,16,.16), 0 2px 6px rgba(16,19,16,.06);
+  font-family: var(--sans);
+}
+.phone.dark { border-color: #2A2F2A; box-shadow: 0 30px 70px rgba(0,0,0,.45); }
+
+.status {
+  height: 32px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.status .right { display: flex; align-items: center; gap: 5px; color: var(--ink); }
+.status svg { display: block; }
+.punch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #050605;
+  border: 1px solid #1A1D1A;
+}
+
+.app { position: absolute; inset: 32px 0 92px 0; display: flex; flex-direction: column; }
+.phone.no-nav .app { inset: 32px 0 0 0; }
+.phone.no-nav .content { padding-bottom: 24px; }
+.topbar {
+  height: 44px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand .mark { width: 20px; height: 20px; color: var(--accent); }
+.brand .wordmark {
+  font-family: var(--serif);
+  font-size: 21px;
+  letter-spacing: -.2px;
+  line-height: 1;
+}
+.icon-btn {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border: 0; background: transparent; color: var(--ink-2);
+  border-radius: 10px;
+  padding: 0;
+}
+.icon-btn svg { width: 19px; height: 19px; }
+
+.content {
+  padding: 0 20px;
+  flex: 1;
+  overflow: hidden;
+}
+.title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 6px 0 0;
+}
+h1.screen {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: .9;
+  letter-spacing: -.7px;
+  margin: 0;
+}
+.title-row .side {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  padding-bottom: 2px;
+}
+.subtitle {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  margin: 7px 0 0;
+}
+.spacer-16 { height: 14px; }
+.spacer-20 { height: 18px; }
+.spacer-24 { height: 22px; }
+
+/* ---------- capture hero ---------- */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 14px 16px 12px;
+}
+.hero-top { display: flex; align-items: center; justify-content: space-between; }
+.live { display: flex; align-items: center; gap: 7px; }
+.live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live); }
+.live .label { font-size: 11.5px; font-weight: 600; color: var(--live); }
+.live .clock { font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; margin-left: 2px; }
+.wave { display: flex; align-items: flex-end; gap: 2px; height: 16px; margin-left: 3px; }
+.wave i { display: block; width: 2px; border-radius: 1px; background: var(--accent); }
+.wave i:nth-child(1) { height: 6px; }
+.wave i:nth-child(2) { height: 12px; }
+.wave i:nth-child(3) { height: 16px; }
+.wave i:nth-child(4) { height: 9px; }
+.wave i:nth-child(5) { height: 5px; }
+.pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 5px 9px;
+}
+.hero-main { display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 0 8px; }
+.big { display: flex; align-items: baseline; gap: 7px; }
+.big .num { font-size: 34px; font-weight: 500; letter-spacing: -1.2px; line-height: 1; font-variant-numeric: tabular-nums; }
+.big .unit { font-size: 12.5px; color: var(--ink-2); }
+.arc { width: 58px; height: 44px; color: var(--accent); opacity: .95; }
+.hero-stats { display: flex; border-top: 1px solid var(--line); padding-top: 8px; }
+.stat { flex: 1; padding-left: 10px; border-left: 1px solid var(--line); }
+.stat:first-child { padding-left: 0; border-left: 0; }
+.stat .v { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 10.5px; color: var(--ink-3); margin-top: 1px; }
+.hero-foot { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); margin-top: 8px; padding-top: 7px; }
+.text-action { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--accent); }
+.text-action svg { width: 12px; height: 12px; }
+.foot-note { font-size: 10.5px; color: var(--ink-3); }
+
+/* ---------- section header ---------- */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 0 4px; }
+.section-head .name { font-size: 11.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .02em; }
+.section-head .meta { font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* ---------- spine ---------- */
+.spine { position: relative; }
+.spine::before {
+  content: "";
+  position: absolute;
+  left: 53px; top: 13px; bottom: 13px;
+  width: 1px; background: var(--line);
+}
+.moment {
+  display: grid;
+  grid-template-columns: 42px 22px 1fr;
+  min-height: 62px;
+  padding: 8px 0 7px;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+.moment:last-child { border-bottom: 0; }
+.moment .t { font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.moment .node { display: flex; justify-content: center; padding-top: 3px; }
+.moment .node i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--paper); }
+.moment .node i.blue { background: var(--blue); }
+.moment .node i.amber { background: var(--amber); }
+.moment .node i.plum { background: var(--plum); }
+.moment .node i.red { background: var(--risk); }
+.moment h3 { font-size: 14px; font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -.1px; }
+.moment p { font-size: 12px; line-height: 1.35; color: var(--ink-2); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.moment .meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 10.5px; color: var(--ink-3); }
+.moment .type { font-weight: 600; }
+.type.decision { color: var(--blue); }
+.type.commitment { color: var(--amber); }
+.type.idea { color: var(--plum); }
+.type.risk { color: var(--risk); }
+.type.progress { color: var(--accent); }
+
+/* ---------- loops ---------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+.loop { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.loop:last-child { border-bottom: 0; }
+.check { width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid var(--line-strong); flex: none; }
+.loop .body { flex: 1; min-width: 0; }
+.loop .body .text { font-size: 13px; line-height: 1.25; }
+.loop .due { font-size: 10.5px; font-weight: 600; color: var(--amber); white-space: nowrap; }
+.loop .due.soon { color: var(--risk); }
+
+/* ---------- privacy footer ---------- */
+.privacy { display: flex; align-items: center; gap: 6px; padding: 14px 2px 6px; font-size: 10.5px; color: var(--ink-3); }
+.privacy svg { width: 12px; height: 12px; }
+
+/* ---------- nav ---------- */
+.nav {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 92px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: 0 8px 18px;
+}
+.nav-row { height: 74px; display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; }
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: var(--ink-3); font-size: 10.5px; font-weight: 500;
+  padding-bottom: 4px;
+}
+.nav-item svg { width: 20px; height: 20px; stroke-width: 1.6; }
+.nav-item.active { color: var(--ink); font-weight: 600; }
+.nav-item.active svg { stroke-width: 1.9; }
+.nav-orb-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.orb {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--accent); color: var(--on-accent);
+  display: grid; place-items: center;
+  margin-top: -17px;
+  box-shadow: 0 0 0 5px var(--surface), var(--shadow-orb);
+}
+.orb svg { width: 23px; height: 23px; }
+.orb-label { font-size: 10.5px; font-weight: 600; color: var(--accent); }
+.gesture { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); width: 118px; height: 4px; border-radius: 2px; background: var(--ink); opacity: .75; }
+
+/* ---------- library ---------- */
+.search {
+  height: 42px;
+  background: var(--sunken);
+  border-radius: 14px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 12px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+.search svg { width: 16px; height: 16px; flex: none; }
+.chips { display: flex; gap: 7px; overflow: hidden; }
+.chip {
+  height: 28px; padding: 0 11px; border-radius: 999px;
+  border: 1px solid var(--line);
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 500; color: var(--ink-2);
+  white-space: nowrap;
+}
+.chip.active { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); font-weight: 600; }
+.group-head { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 0 3px; }
+.group-head .name { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.group-head .count { font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.session-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 0 8px;
+  border-bottom: 1px solid var(--line);
+}
+.session-row:last-child { border-bottom: 0; }
+.session-row .t { font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.session-row h3 { font-size: 14px; font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -.1px; }
+.session-row p { font-size: 12px; line-height: 1.35; color: var(--ink-2); margin: 3px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-row .right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; padding-top: 1px; }
+.session-row .dur { font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.star { width: 12px; height: 12px; color: var(--amber); }
+
+/* ---------- session detail ---------- */
+.detail-title { font-family: var(--serif); font-weight: 400; font-size: 29px; line-height: .95; letter-spacing: -.5px; margin: 8px 0 0; }
+.detail-meta { font-size: 11px; color: var(--ink-3); margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+.speaker-chips { display: flex; gap: 6px; margin-top: 11px; }
+.speaker { height: 24px; padding: 0 9px; border-radius: 999px; display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 600; }
+.speaker.you { background: var(--accent-soft); color: var(--accent-ink); }
+.speaker.other { background: var(--sunken); color: var(--ink-2); }
+.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 13px 15px 12px; }
+.summary .label { font-size: 10.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .02em; }
+.summary .quote { font-family: var(--serif); font-size: 21px; line-height: 1.18; letter-spacing: -.2px; margin: 7px 0 0; }
+.summary .evidence { font-size: 10.5px; color: var(--ink-3); margin: 8px 0 0; line-height: 1.35; }
+.transcript-line { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.transcript-line:last-child { border-bottom: 0; }
+.transcript-line .who { display: flex; align-items: baseline; gap: 7px; margin-bottom: 3px; }
+.transcript-line .who .name { font-size: 10.5px; font-weight: 600; color: var(--accent); }
+.transcript-line .who .name.other { color: var(--amber); }
+.transcript-line .who .time { font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.transcript-line p { font-size: 12.5px; line-height: 1.45; color: var(--ink); margin: 0; }
+.show-more { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 12px 0 0; font-size: 11px; font-weight: 600; color: var(--accent); }
+
+/* ---------- memory ---------- */
+.segment {
+  height: 40px; background: var(--sunken); border-radius: 12px; padding: 3px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+}
+.segment div { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--ink-3); border-radius: 9px; }
+.segment div.active { background: var(--surface); color: var(--ink); font-weight: 600; border: 1px solid var(--line); }
+.week-figure { display: flex; align-items: flex-end; justify-content: space-between; padding: 4px 0 0; }
+.week-figure .num { font-size: 34px; font-weight: 500; letter-spacing: -1.2px; line-height: 1; font-variant-numeric: tabular-nums; }
+.week-figure .unit { font-size: 12px; color: var(--ink-2); margin-left: 6px; }
+.week-figure .delta { font-size: 10.5px; font-weight: 600; color: var(--accent); }
+.chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 12px 13px 9px; }
+.chart-head { display: flex; align-items: baseline; justify-content: space-between; }
+.chart-head .name { font-size: 10.5px; font-weight: 600; color: var(--ink-3); }
+.chart-head .range { font-size: 10.5px; color: var(--ink-3); }
+.bars { height: 70px; display: flex; align-items: flex-end; gap: 9px; padding: 10px 2px 0; border-bottom: 1px solid var(--line); position: relative; }
+.bars::before { content: ""; position: absolute; left: 2px; right: 2px; top: 34px; border-top: 1px dashed var(--line); opacity: .7; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; }
+.bar { width: 18px; border-radius: 4px 4px 0 0; background: var(--accent-soft); }
+.bar.hi { background: var(--accent); }
+.bar-labels { display: flex; gap: 9px; padding: 5px 2px 0; }
+.bar-labels span { flex: 1; text-align: center; font-size: 10.5px; color: var(--ink-3); }
+.stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.stat-cell { padding: 9px 9px 8px; border-left: 1px solid var(--line); }
+.stat-cell:first-child { border-left: 0; }
+.stat-cell .v { font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.3px; }
+.stat-cell .l { font-size: 10.5px; color: var(--ink-3); margin-top: 1px; }
+.observation { padding: 10px 13px; border-bottom: 1px solid var(--line); }
+.observation:last-child { border-bottom: 0; }
+.observation h3 { font-size: 13px; font-weight: 600; margin: 0; letter-spacing: -.1px; }
+.observation p { font-size: 11.5px; line-height: 1.4; color: var(--ink-2); margin: 3px 0 0; }
+.observation .cite { font-size: 10.5px; color: var(--ink-3); margin: 4px 0 0; font-variant-numeric: tabular-nums; }
+.link-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; font-size: 11.5px; color: var(--ink-2); }
+.link-row strong { font-weight: 600; color: var(--ink); }
+
+/* ---------- settings ---------- */
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.row { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row .label { font-size: 13.5px; font-weight: 500; }
+.row .trail { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-3); }
+.row .trail svg { width: 14px; height: 14px; color: var(--ink-3); }
+.row.danger .label { color: var(--live); }
+.settings-title { font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: .95; letter-spacing: -.6px; margin: 4px 0 0; }
+.settings-sub { font-size: 12px; color: var(--ink-2); margin: 5px 0 0; }
+.settings-section { margin-top: 12px; }
+.settings-section .head { font-size: 10.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .03em; padding: 0 4px 6px; }
+.well { background: var(--surface-2); border: 1px solid var(--line); border-radius: 18px; padding: 3px 12px; }
+.well-row { display: flex; align-items: center; justify-content: space-between; min-height: 30px; border-bottom: 1px solid var(--line); }
+.well-row:last-child { border-bottom: 0; }
+.well-row .k { font-size: 10.5px; color: var(--ink-3); }
+.well-row .v { font-size: 10.5px; color: var(--ink); font-weight: 500; }
+.well-head { display: flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; color: var(--ink-3); padding: 4px 0 2px; }
+.well-head svg { width: 12px; height: 12px; }
+.version { text-align: center; font-size: 10.5px; color: var(--ink-3); padding: 16px 0 4px; }
+
+/* ---------- presentation only ---------- */
+@media (max-width: 1320px) {
+  .page { width: 100%; padding: 40px 20px 64px; }
+  .grid { grid-template-columns: repeat(2, 390px); }
+  .masthead { flex-direction: column; align-items: flex-start; gap: 20px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">Interface direction 02 · October 2026</div>
+      <h1>Everheard <em>—</em><br>a quiet instrument.</h1>
+      <div class="swatches">
+        <span class="swatch a"></span><span class="swatch b"></span><span class="swatch c"></span><span class="swatch d"></span><span class="swatch e"></span>
+      </div>
+    </div>
+    <div>
+      <p class="lede">A private memory for conversations. Editorial type, a single evergreen signal, and one spine that runs through the day, the session, and the week. No card soup, no dashboard chrome.</p>
+      <p class="lede" style="margin-top:10px;color:#737B73;font-size:12px">Instrument Sans · Instrument Serif · Evergreen / paper / ink</p>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ================= TODAY ================= -->
+    <div class="frame-wrap">
+      <div class="frame-label"><strong>01 · Today</strong><span>Live capture</span></div>
+      <div class="phone">
+        <div class="punch"></div>
+        <div class="status"><span>9:41</span><div class="right">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M1 3.5C3.8 1 11.2 1 14 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 6C5.4 4.5 9.6 4.5 11.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor"/></svg>
+          <svg width="23" height="11" viewBox="0 0 23 11" fill="none"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="currentColor"/><path d="M21 4V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+        </div></div>
+        <div class="app">
+          <div class="topbar">
+            <div class="brand">
+              <svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M5 12a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+              <span class="wordmark">Everheard</span>
+            </div>
+            <button class="icon-btn" aria-label="Search"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+          </div>
+          <div class="content">
+            <div class="title-row"><h1 class="screen">Today</h1><span class="side">Tue, 27 Oct</span></div>
+            <div class="spacer-16"></div>
+
+            <div class="hero">
+              <div class="hero-top">
+                <div class="live"><span class="dot"></span><span class="label">Listening</span><span class="clock">00:42</span><span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div>
+                <span class="pill">On-device</span>
+              </div>
+              <div class="hero-main">
+                <div class="big"><span class="num">2h 14m</span><span class="unit">heard today</span></div>
+                <svg class="arc" viewBox="0 0 58 44" fill="none"><path d="M4 38a26 26 0 0 1 52 0" stroke="currentColor" stroke-width="1.4" opacity=".25"/><path d="M12 38a18 18 0 0 1 36 0" stroke="currentColor" stroke-width="1.4" opacity=".55"/><path d="M20 38a10 10 0 0 1 20 0" stroke="currentColor" stroke-width="1.4"/><circle cx="30" cy="38" r="2" fill="currentColor"/></svg>
+              </div>
+              <div class="hero-stats">
+                <div class="stat"><div class="v">6</div><div class="l">conversations</div></div>
+                <div class="stat"><div class="v">3</div><div class="l">open loops</div></div>
+                <div class="stat"><div class="v">1</div><div class="l">idea</div></div>
+              </div>
+              <div class="hero-foot"><span class="text-action">Open live transcript <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="foot-note">Audio deleted after transcription</span></div>
+            </div>
+
+            <div class="spacer-24"></div>
+            <div class="section-head"><span class="name">The thread</span><span class="meta">Today · 3 moments</span></div>
+            <div class="spine">
+              <div class="moment"><div class="t">09:12</div><div class="node"><i class="blue"></i></div><div><h3>Standup with Baijian</h3><p>Move the evaluation chapter before the defense draft.</p><div class="meta"><span class="type decision">Decision</span><span>·</span><span>12 min</span></div></div></div>
+              <div class="moment"><div class="t">11:40</div><div class="node"><i class="amber"></i></div><div><h3>Call with Shu Hu</h3><p>Ablation table review by Thursday; she will send comments.</p><div class="meta"><span class="type commitment">Commitment</span><span>·</span><span>8 min</span></div></div></div>
+              <div class="moment"><div class="t">14:05</div><div class="node"><i class="plum"></i></div><div><h3>Lab notebook</h3><p>Use the phone mic as a second stream in the demo.</p><div class="meta"><span class="type idea">Idea</span><span>·</span><span>4 min</span></div></div></div>
+            </div>
+
+            <div class="spacer-20"></div>
+            <div class="section-head"><span class="name">Still open</span><span class="meta">2 commitments</span></div>
+            <div class="panel">
+              <div class="loop"><span class="check"></span><div class="body"><div class="text">Send Baijian the revised timeline</div></div><span class="due soon">Fri</span></div>
+              <div class="loop"><span class="check"></span><div class="body"><div class="text">Share the ablation table with Shu</div></div><span class="due">Thu</span></div>
+            </div>
+            <div class="privacy"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.2"/></svg><span>Audio is deleted. Text stays encrypted on this phone.</span></div>
+          </div>
+        </div>
+        <div class="nav"><div class="nav-row">
+          <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor"/><path d="M3.5 9h17M8 3v4M16 3v4" stroke="currentColor" stroke-linecap="round"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg><span>Today</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M5 12h14M5 18h9" stroke="currentColor" stroke-linecap="round"/></svg><span>Library</span></div>
+          <div class="nav-orb-wrap"><div class="orb"><svg viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="8" height="8" rx="2" fill="currentColor"/></svg></div><span class="orb-label">Stop</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5Z" stroke="currentColor" stroke-linejoin="round"/><path d="M4 12.5 12 16l8-3.5M4 17 12 20.5 20 17" stroke="currentColor" stroke-linejoin="round"/></svg><span>Memory</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18" stroke="currentColor" stroke-linecap="round"/></svg><span>Settings</span></div>
+        </div><div class="gesture"></div></div>
+      </div>
+    </div>
+
+    <!-- ================= LIBRARY ================= -->
+    <div class="frame-wrap">
+      <div class="frame-label"><strong>02 · Library</strong><span>All conversations</span></div>
+      <div class="phone">
+        <div class="punch"></div>
+        <div class="status"><span>9:41</span><div class="right">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M1 3.5C3.8 1 11.2 1 14 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 6C5.4 4.5 9.6 4.5 11.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor"/></svg>
+          <svg width="23" height="11" viewBox="0 0 23 11" fill="none"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="currentColor"/><path d="M21 4V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+        </div></div>
+        <div class="app">
+          <div class="topbar">
+            <div class="brand"><svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M5 12a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg><span class="wordmark">Everheard</span></div>
+            <button class="icon-btn" aria-label="More"><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/></svg></button>
+          </div>
+          <div class="content">
+            <div class="title-row"><h1 class="screen">Library</h1><span class="side">42 sessions</span></div>
+            <div class="spacer-16"></div>
+            <div class="search"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Search words, people, projects</span></div>
+            <div class="spacer-16"></div>
+            <div class="chips"><span class="chip active">All</span><span class="chip">Today</span><span class="chip">This week</span><span class="chip">Starred</span></div>
+
+            <div class="group-head"><span class="name">Today</span><span class="count">3</span></div>
+            <div class="session-row"><div class="t">09:12</div><div><h3>Standup with Baijian</h3><p>Move the evaluation chapter before the defense draft.</p></div><div class="right"><span class="dur">12m</span><svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.3l-3.8 2 .7-4.3-3.1-3 4.3-.6L8 1.5Z"/></svg></div></div>
+            <div class="session-row"><div class="t">11:40</div><div><h3>Call with Shu Hu</h3><p>Ablation table review by Thursday; comments to follow.</p></div><div class="right"><span class="dur">8m</span></div></div>
+            <div class="session-row"><div class="t">14:05</div><div><h3>Lab notebook</h3><p>Phone mic as a second stream for the demo.</p></div><div class="right"><span class="dur">4m</span></div></div>
+
+            <div class="group-head"><span class="name">Yesterday</span><span class="count">2</span></div>
+            <div class="session-row"><div class="t">16:20</div><div><h3>Thesis writing group</h3><p>Three open questions on the evaluation protocol.</p></div><div class="right"><span class="dur">34m</span></div></div>
+            <div class="session-row"><div class="t">10:05</div><div><h3>CNIT 175 lab</h3><p>Walkthrough of the capture pipeline and the model swap.</p></div><div class="right"><span class="dur">18m</span><svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.3l-3.8 2 .7-4.3-3.1-3 4.3-.6L8 1.5Z"/></svg></div></div>
+
+        </div>
+        </div>
+        <div class="nav"><div class="nav-row">
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor"/><path d="M3.5 9h17M8 3v4M16 3v4" stroke="currentColor" stroke-linecap="round"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg><span>Today</span></div>
+          <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M5 12h14M5 18h9" stroke="currentColor" stroke-linecap="round"/></svg><span>Library</span></div>
+          <div class="nav-orb-wrap"><div class="orb"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3.5" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M6.5 11a5.5 5.5 0 0 0 11 0M12 16.5V20M9.5 20h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><span class="orb-label">Listen</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5Z" stroke="currentColor" stroke-linejoin="round"/><path d="M4 12.5 12 16l8-3.5M4 17 12 20.5 20 17" stroke="currentColor" stroke-linejoin="round"/></svg><span>Memory</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18" stroke="currentColor" stroke-linecap="round"/></svg><span>Settings</span></div>
+        </div><div class="gesture"></div></div>
+      </div>
+    </div>
+
+    <!-- ================= SESSION ================= -->
+    <div class="frame-wrap">
+      <div class="frame-label"><strong>03 · Session</strong><span>Summary + evidence</span></div>
+      <div class="phone no-nav">
+        <div class="punch"></div>
+        <div class="status"><span>9:41</span><div class="right">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M1 3.5C3.8 1 11.2 1 14 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 6C5.4 4.5 9.6 4.5 11.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor"/></svg>
+          <svg width="23" height="11" viewBox="0 0 23 11" fill="none"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="currentColor"/><path d="M21 4V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+        </div></div>
+        <div class="app">
+          <div class="topbar">
+            <button class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none"><path d="M14 5l-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <span style="font-size:11px;font-weight:600;color:var(--ink-3)">Session</span>
+            <div style="display:flex;gap:2px">
+              <button class="icon-btn" aria-label="Star"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9L12 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
+              <button class="icon-btn" aria-label="Share"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15V4M8.5 7.5 12 4l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+            </div>
+          </div>
+          <div class="content">
+            <h1 class="detail-title">Standup with<br>Baijian</h1>
+            <div class="detail-meta">Tue, 27 Oct · 09:12 · 12 min</div>
+            <div class="speaker-chips"><span class="speaker you">You</span><span class="speaker other">Baijian</span><span class="speaker other">2 speakers</span></div>
+            <div class="spacer-16"></div>
+            <div class="summary">
+              <div class="label">Summary</div>
+              <p class="quote">Move the evaluation chapter before the defense draft. Baijian reviews the new timeline on Friday.</p>
+              <div class="evidence">“Let’s put evaluation before the draft — Friday works for me.” · 09:18</div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="section-head"><span class="name">Timeline</span><span class="meta">3 moments</span></div>
+            <div class="spine">
+              <div class="moment"><div class="t">09:14</div><div class="node"><i class="blue"></i></div><div><h3>Chapter order changes</h3><p>Evaluation moves ahead of the defense draft.</p><div class="meta"><span class="type decision">Decision</span></div></div></div>
+              <div class="moment"><div class="t">09:18</div><div class="node"><i class="amber"></i></div><div><h3>Friday review</h3><p>Baijian will read the revised timeline on Friday.</p><div class="meta"><span class="type commitment">Commitment</span><span>·</span><span>Baijian</span></div></div></div>
+              <div class="moment"><div class="t">09:24</div><div class="node"><i class="red"></i></div><div><h3>Committee timing</h3><p>Shu’s comments may land after the draft freeze.</p><div class="meta"><span class="type risk">Risk</span></div></div></div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="section-head"><span class="name">Open loops</span><span class="meta">2</span></div>
+            <div class="panel">
+              <div class="loop"><span class="check"></span><div class="body"><div class="text">Send Baijian the revised timeline</div></div><span class="due soon">Fri</span></div>
+              <div class="loop"><span class="check"></span><div class="body"><div class="text">Ask Shu for comments before the freeze</div></div><span class="due">Thu</span></div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="section-head"><span class="name">Transcript</span><span class="meta" style="color:var(--accent);font-weight:600">18 lines</span></div>
+            <div class="panel"><div class="link-row"><span>Open the full transcript</span><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+    </div>
+
+    <!-- ================= MEMORY ================= -->
+    <div class="frame-wrap">
+      <div class="frame-label"><strong>04 · Memory</strong><span>Week + projects</span></div>
+      <div class="phone">
+        <div class="punch"></div>
+        <div class="status"><span>9:41</span><div class="right">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M1 3.5C3.8 1 11.2 1 14 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 6C5.4 4.5 9.6 4.5 11.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor"/></svg>
+          <svg width="23" height="11" viewBox="0 0 23 11" fill="none"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="currentColor"/><path d="M21 4V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+        </div></div>
+        <div class="app">
+          <div class="topbar">
+            <div class="brand"><svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M5 12a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg><span class="wordmark">Everheard</span></div>
+            <button class="icon-btn" aria-label="More"><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/></svg></button>
+          </div>
+          <div class="content">
+            <div class="title-row"><h1 class="screen">Memory</h1><span class="side">Last 7 days</span></div>
+            <div class="spacer-16"></div>
+            <div class="segment"><div>Projects</div><div class="active">This week</div></div>
+            <div class="spacer-20"></div>
+            <div class="week-figure"><div><span class="num">4h 32m</span><span class="unit">heard this week</span></div><span class="delta">+38m vs last week</span></div>
+            <div class="spacer-16"></div>
+            <div class="chart-card">
+              <div class="chart-head"><span class="name">Daily listening</span><span class="range">Mon–Sun</span></div>
+              <div class="bars">
+                <div class="bar-col"><div class="bar" style="height:34px"></div></div>
+                <div class="bar-col"><div class="bar" style="height:52px"></div></div>
+                <div class="bar-col"><div class="bar" style="height:28px"></div></div>
+                <div class="bar-col"><div class="bar hi" style="height:64px"></div></div>
+                <div class="bar-col"><div class="bar" style="height:44px"></div></div>
+                <div class="bar-col"><div class="bar" style="height:18px"></div></div>
+                <div class="bar-col"><div class="bar" style="height:8px"></div></div>
+              </div>
+              <div class="bar-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+            </div>
+            <div class="spacer-16"></div>
+            <div class="stat-strip">
+              <div class="stat-cell"><div class="v">14</div><div class="l">sessions</div></div>
+              <div class="stat-cell"><div class="v">9</div><div class="l">decisions</div></div>
+              <div class="stat-cell"><div class="v">3</div><div class="l">open loops</div></div>
+              <div class="stat-cell"><div class="v">2</div><div class="l">risks</div></div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="section-head"><span class="name">What stands out</span><span class="meta">2 observations</span></div>
+            <div class="panel">
+              <div class="observation"><h3>Evaluation is now the critical path</h3><p>Three conversations moved evaluation ahead of the draft; two still depend on Shu’s comments.</p><div class="cite">09:14 · 11:40 · 16:20</div></div>
+              <div class="observation"><h3>You are carrying the open loops</h3><p>All three open commitments are yours; none are assigned to Baijian or Shu.</p><div class="cite">09:18 · 11:42</div></div>
+            </div>
+            <div class="spacer-16"></div>
+            <div class="panel"><div class="link-row"><span><strong>3 active projects</strong> · thesis, Everheard, CNIT 175</span><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+          </div>
+        </div>
+        <div class="nav"><div class="nav-row">
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor"/><path d="M3.5 9h17M8 3v4M16 3v4" stroke="currentColor" stroke-linecap="round"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg><span>Today</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M5 12h14M5 18h9" stroke="currentColor" stroke-linecap="round"/></svg><span>Library</span></div>
+          <div class="nav-orb-wrap"><div class="orb"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3.5" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M6.5 11a5.5 5.5 0 0 0 11 0M12 16.5V20M9.5 20h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><span class="orb-label">Listen</span></div>
+          <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5Z" stroke="currentColor" stroke-linejoin="round"/><path d="M4 12.5 12 16l8-3.5M4 17 12 20.5 20 17" stroke="currentColor" stroke-linejoin="round"/></svg><span>Memory</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18" stroke="currentColor" stroke-linecap="round"/></svg><span>Settings</span></div>
+        </div><div class="gesture"></div></div>
+      </div>
+    </div>
+
+    <!-- ================= SETTINGS ================= -->
+    <div class="frame-wrap">
+      <div class="frame-label"><strong>05 · Settings</strong><span>Quiet control</span></div>
+      <div class="phone">
+        <div class="punch"></div>
+        <div class="status"><span>9:41</span><div class="right">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M1 3.5C3.8 1 11.2 1 14 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 6C5.4 4.5 9.6 4.5 11.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor"/></svg>
+          <svg width="23" height="11" viewBox="0 0 23 11" fill="none"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="currentColor"/><path d="M21 4V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+        </div></div>
+        <div class="app">
+          <div class="topbar">
+            <div class="brand"><svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M5 12a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg><span class="wordmark">Everheard</span></div>
+            <span class="pill">v0.1.0</span>
+          </div>
+          <div class="content">
+            <h1 class="settings-title">Settings</h1>
+            <p class="settings-sub">Privacy, voice, and how Everheard works.</p>
+
+            <div class="settings-section">
+              <div class="head">Experience</div>
+              <div class="group">
+                <div class="row"><span class="label">Appearance</span><span class="trail">Light <svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+                <div class="row"><span class="label">Language</span><span class="trail">English <svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="head">Voice &amp; people</div>
+              <div class="group">
+                <div class="row"><span class="label">Voice profile</span><span class="trail">English · 中文 <svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+                <div class="row"><span class="label">People</span><span class="trail">4 people <svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="head">Intelligence</div>
+              <div class="group">
+                <div class="row"><span class="label">Model provider</span><span class="trail"><span class="pill">Connected</span><svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+                <div class="row"><span class="label">MCP server</span><span class="trail">Off <svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="head">Capture</div>
+              <div class="group">
+                <div class="row"><span class="label">Schedule</span><span class="trail">23:30–07:00 <svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="head">Privacy</div>
+              <div class="well">
+                <div class="well-head"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.2"/></svg>On this device only</div>
+                <div class="well-row"><span class="k">Audio</span><span class="v">Deleted after transcription</span></div>
+                <div class="well-row"><span class="k">Transcripts</span><span class="v">AES-256 · Keystore</span></div>
+                <div class="well-row"><span class="k">Cloud backup</span><span class="v">Off</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav"><div class="nav-row">
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor"/><path d="M3.5 9h17M8 3v4M16 3v4" stroke="currentColor" stroke-linecap="round"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg><span>Today</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M5 12h14M5 18h9" stroke="currentColor" stroke-linecap="round"/></svg><span>Library</span></div>
+          <div class="nav-orb-wrap"><div class="orb"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3.5" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M6.5 11a5.5 5.5 0 0 0 11 0M12 16.5V20M9.5 20h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><span class="orb-label">Listen</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5Z" stroke="currentColor" stroke-linejoin="round"/><path d="M4 12.5 12 16l8-3.5M4 17 12 20.5 20 17" stroke="currentColor" stroke-linejoin="round"/></svg><span>Memory</span></div>
+          <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18" stroke="currentColor" stroke-linecap="round"/></svg><span>Settings</span></div>
+        </div><div class="gesture"></div></div>
+      </div>
+    </div>
+
+    <!-- ================= DARK ================= -->
+    <div class="frame-wrap">
+      <div class="frame-label"><strong>06 · Today, dark</strong><span>True black</span></div>
+      <div class="phone dark">
+        <div class="punch"></div>
+        <div class="status"><span>9:41</span><div class="right">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M1 3.5C3.8 1 11.2 1 14 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 6C5.4 4.5 9.6 4.5 11.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor"/></svg>
+          <svg width="23" height="11" viewBox="0 0 23 11" fill="none"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="currentColor"/><path d="M21 4V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+        </div></div>
+        <div class="app">
+          <div class="topbar">
+            <div class="brand"><svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M5 12a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg><span class="wordmark">Everheard</span></div>
+            <button class="icon-btn" aria-label="Search"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+          </div>
+          <div class="content">
+            <div class="title-row"><h1 class="screen">Today</h1><span class="side">Tue, 27 Oct</span></div>
+            <div class="spacer-16"></div>
+            <div class="hero">
+              <div class="hero-top">
+                <div class="live"><span class="dot" style="background:var(--accent)"></span><span class="label" style="color:var(--accent)">Ready</span><span class="clock">on-device</span></div>
+                <span class="pill">Private</span>
+              </div>
+              <div class="hero-main">
+                <div class="big"><span class="num">2h 14m</span><span class="unit">heard today</span></div>
+                <svg class="arc" viewBox="0 0 58 44" fill="none"><path d="M4 38a26 26 0 0 1 52 0" stroke="currentColor" stroke-width="1.4" opacity=".25"/><path d="M12 38a18 18 0 0 1 36 0" stroke="currentColor" stroke-width="1.4" opacity=".55"/><path d="M20 38a10 10 0 0 1 20 0" stroke="currentColor" stroke-width="1.4"/><circle cx="30" cy="38" r="2" fill="currentColor"/></svg>
+              </div>
+              <div class="hero-stats">
+                <div class="stat"><div class="v">6</div><div class="l">conversations</div></div>
+                <div class="stat"><div class="v">3</div><div class="l">open loops</div></div>
+                <div class="stat"><div class="v">1</div><div class="l">idea</div></div>
+              </div>
+              <div class="hero-foot"><span class="text-action">Open live transcript <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="foot-note">Audio deleted after transcription</span></div>
+            </div>
+            <div class="spacer-24"></div>
+            <div class="section-head"><span class="name">The thread</span><span class="meta">Today · 3 moments</span></div>
+            <div class="spine">
+              <div class="moment"><div class="t">09:12</div><div class="node"><i class="blue"></i></div><div><h3>Standup with Baijian</h3><p>Move the evaluation chapter before the defense draft.</p><div class="meta"><span class="type decision">Decision</span><span>·</span><span>12 min</span></div></div></div>
+              <div class="moment"><div class="t">11:40</div><div class="node"><i class="amber"></i></div><div><h3>Call with Shu Hu</h3><p>Ablation table review by Thursday; she will send comments.</p><div class="meta"><span class="type commitment">Commitment</span><span>·</span><span>8 min</span></div></div></div>
+              <div class="moment"><div class="t">14:05</div><div class="node"><i class="plum"></i></div><div><h3>Lab notebook</h3><p>Use the phone mic as a second stream in the demo.</p><div class="meta"><span class="type idea">Idea</span><span>·</span><span>4 min</span></div></div></div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="section-head"><span class="name">Still open</span><span class="meta">2 commitments</span></div>
+            <div class="panel">
+              <div class="loop"><span class="check"></span><div class="body"><div class="text">Send Baijian the revised timeline</div></div><span class="due soon">Fri</span></div>
+              <div class="loop"><span class="check"></span><div class="body"><div class="text">Share the ablation table with Shu</div></div><span class="due">Thu</span></div>
+            </div>
+            <div class="privacy"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.2"/></svg><span>Audio is deleted. Text stays encrypted on this phone.</span></div>
+          </div>
+        </div>
+        <div class="nav"><div class="nav-row">
+          <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor"/><path d="M3.5 9h17M8 3v4M16 3v4" stroke="currentColor" stroke-linecap="round"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg><span>Today</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M5 12h14M5 18h9" stroke="currentColor" stroke-linecap="round"/></svg><span>Library</span></div>
+          <div class="nav-orb-wrap"><div class="orb"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3.5" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M6.5 11a5.5 5.5 0 0 0 11 0M12 16.5V20M9.5 20h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><span class="orb-label">Listen</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5Z" stroke="currentColor" stroke-linejoin="round"/><path d="M4 12.5 12 16l8-3.5M4 17 12 20.5 20 17" stroke="currentColor" stroke-linejoin="round"/></svg><span>Memory</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18" stroke="currentColor" stroke-linecap="round"/></svg><span>Settings</span></div>
+        </div><div class="gesture"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

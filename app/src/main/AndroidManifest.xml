@@ -77,6 +77,11 @@
             android:theme="@style/Theme.Everheard" />
 
         <activity
+            android:name=".ui.memory.MemoryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
             android:name=".ui.project.ProjectsActivity"
             android:exported="false"
             android:theme="@style/Theme.Everheard" />

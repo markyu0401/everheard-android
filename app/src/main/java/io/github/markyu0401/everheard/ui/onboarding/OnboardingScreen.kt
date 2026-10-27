@@ -1,7 +1,6 @@
 package io.github.markyu0401.everheard.ui.onboarding
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -23,9 +22,9 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,17 +34,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.markyu0401.everheard.R
-import io.github.markyu0401.everheard.ui.components.GroupedCard
+import io.github.markyu0401.everheard.ui.components.ArcMark
+import io.github.markyu0401.everheard.ui.components.EverheardCard
+import io.github.markyu0401.everheard.ui.components.Hairline
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
-import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
-import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 
 @Composable
 fun OnboardingScreen(
@@ -54,7 +52,6 @@ fun OnboardingScreen(
 ) {
     var accepted by remember { mutableStateOf(false) }
     var showLegal by remember { mutableStateOf(false) }
-    val semantic = LocalSemanticColors.current
 
     Column(
         modifier = modifier
@@ -62,32 +59,23 @@ fun OnboardingScreen(
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(horizontal = 20.dp, vertical = 20.dp)
+            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
+        ArcMark(
+            modifier = Modifier.size(64.dp),
+            color = MaterialTheme.colorScheme.primary
+        )
         Spacer(Modifier.height(24.dp))
-
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-            modifier = Modifier.size(64.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_stat_everheard),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
-        }
-
-        Spacer(Modifier.height(20.dp))
         Text(
             text = stringResource(R.string.onboarding_title),
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.displaySmall.copy(
+                fontFamily = io.github.markyu0401.everheard.ui.theme.displayFontFor(
+                    stringResource(R.string.onboarding_title)
+                )
+            ),
             color = MaterialTheme.colorScheme.onBackground
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         Text(
             text = stringResource(R.string.onboarding_body),
             style = MaterialTheme.typography.bodyLarge,
@@ -95,48 +83,49 @@ fun OnboardingScreen(
         )
 
         Spacer(Modifier.height(28.dp))
-
-        GroupedCard {
-            SettingsRow(
+        EverheardCard {
+            FeatureRow(
                 icon = Icons.Filled.Notifications,
-                iconTint = semantic.decision,
                 title = stringResource(R.string.onboarding_visible_title),
-                subtitle = stringResource(R.string.onboarding_visible_body)
+                body = stringResource(R.string.onboarding_visible_body),
+                showDivider = true
             )
-            SettingsRow(
+            FeatureRow(
                 icon = Icons.Filled.Lock,
-                iconTint = semantic.commitment,
                 title = stringResource(R.string.onboarding_text_title),
-                subtitle = stringResource(R.string.onboarding_text_body)
+                body = stringResource(R.string.onboarding_text_body),
+                showDivider = true
             )
-            SettingsRow(
+            FeatureRow(
                 icon = Icons.Filled.DateRange,
-                iconTint = semantic.insight,
                 title = stringResource(R.string.onboarding_sleep_title),
-                subtitle = stringResource(R.string.onboarding_sleep_body),
+                body = stringResource(R.string.onboarding_sleep_body),
                 showDivider = false
             )
         }
 
-        Spacer(Modifier.height(24.dp))
-
-        GroupedCard {
+        Spacer(Modifier.height(22.dp))
+        EverheardCard {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.Top
             ) {
                 Checkbox(
                     checked = accepted,
-                    onCheckedChange = { accepted = it }
+                    onCheckedChange = { accepted = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = MaterialTheme.colorScheme.primary,
+                        uncheckedColor = MaterialTheme.colorScheme.outline
+                    )
                 )
                 Spacer(Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.onboarding_consent),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     TextButton(
                         onClick = { showLegal = true },
@@ -152,18 +141,16 @@ fun OnboardingScreen(
             }
         }
 
-        Spacer(Modifier.height(20.dp))
-
+        Spacer(Modifier.height(22.dp))
         PrimaryButton(
             text = stringResource(R.string.onboarding_continue),
             onClick = onContinue,
             enabled = accepted
         )
-
         Spacer(Modifier.height(14.dp))
         Text(
             text = stringResource(R.string.onboarding_footer),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
@@ -176,13 +163,57 @@ fun OnboardingScreen(
 }
 
 @Composable
+private fun FeatureRow(
+    icon: ImageVector,
+    title: String,
+    body: String,
+    showDivider: Boolean
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(top = 1.dp)
+                    .size(18.dp)
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        if (showDivider) {
+            Hairline(modifier = Modifier.padding(start = 14.dp))
+        }
+    }
+}
+
+@Composable
 private fun LegalDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
         title = {
             Text(
                 text = stringResource(R.string.legal_title),
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.headlineSmall
             )
         },
         text = {
@@ -196,12 +227,10 @@ private fun LegalDialog(onDismiss: () -> Unit) {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.legal_confirm))
             }
-        },
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+        }
     )
 }
 
-@Preview(showBackground = true, heightDp = 900)
 @Composable
 private fun OnboardingPreview() {
     EverheardTheme(darkTheme = false) {

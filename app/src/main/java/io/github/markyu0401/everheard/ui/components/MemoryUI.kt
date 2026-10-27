@@ -1,54 +1,66 @@
 package io.github.markyu0401.everheard.ui.components
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.memory.Commitment
 import io.github.markyu0401.everheard.data.memory.Inspiration
 import io.github.markyu0401.everheard.data.memory.MemoryEvent
 import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.memory.SessionMemory
+import io.github.markyu0401.everheard.ui.theme.EverheardSerif
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 import java.util.Locale
 
 @Composable
 fun MemorySummaryCard(memory: SessionMemory) {
     if (memory.summary.isBlank()) return
-    GroupedCard {
-        Column(modifier = Modifier.padding(16.dp)) {
+    EverheardCard {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Text(
                 text = stringResource(R.string.memory_summary),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 text = memory.summary,
-                style = MaterialTheme.typography.bodyLarge,
+                style = androidx.compose.ui.text.TextStyle(
+                    fontFamily = EverheardSerif,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 21.sp,
+                    lineHeight = 25.sp
+                ),
                 color = MaterialTheme.colorScheme.onSurface
             )
             memory.summaryEvidence?.let { evidence ->
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "\u201C${evidence.quote}\u201D  ${formatMemoryTime(evidence.startMs)}",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -62,46 +74,33 @@ fun MemoryEventRow(
     showDivider: Boolean = true,
     onClick: (() -> Unit)? = null
 ) {
-    val color = memoryTypeColor(event.type)
     Column {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .then(if (onClick != null) Modifier.clickableRow(onClick) else Modifier)
+                .padding(horizontal = 16.dp, vertical = 11.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                MemoryTypeChip(type = event.type, color = color)
+                MemoryTypeLabel(type = event.type)
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = formatMemoryTime(event.evidence.startMs),
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(4.dp))
             Text(
                 text = event.text,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            if (event.evidence.speaker != null) {
-                Spacer(Modifier.height(3.dp))
-                Text(
-                    text = if (event.evidence.speaker == "me") {
-                        stringResource(R.string.speaker_me)
-                    } else {
-                        event.evidence.speaker
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
         if (showDivider) {
-            androidx.compose.material3.HorizontalDivider(
+            HorizontalDivider(
                 modifier = Modifier.padding(start = 16.dp),
-                thickness = 0.5.dp,
+                thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant
             )
         }
@@ -115,56 +114,80 @@ fun CommitmentRow(
     onAddToCalendar: (() -> Unit)? = null
 ) {
     Column {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                MemoryTypeChip(
-                    type = MemoryEventType.COMMITMENT,
-                    color = LocalSemanticColors.current.commitment
+        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    Modifier
+                        .size(17.dp)
+                        .border(
+                            width = 1.5.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = CircleShape
+                        )
                 )
-                Spacer(Modifier.weight(1f))
                 Text(
-                    text = stringResource(R.string.memory_open),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = LocalSemanticColors.current.commitment
+                    text = commitment.text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
                 )
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = commitment.text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            val meta = buildString {
-                commitment.owner?.let { owner ->
-                    append(if (owner == "me") stringResource(R.string.memory_owner_me) else owner)
-                }
                 commitment.dueHint?.let { due ->
+                    Text(
+                        text = due,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = LocalSemanticColors.current.commitment
+                    )
+                }
+            }
+            val ownerLabel = if (commitment.owner != null) {
+                if (commitment.owner == "me") {
+                    stringResource(R.string.memory_owner_me)
+                } else {
+                    commitment.owner
+                }
+            } else {
+                null
+            }
+            val dueLabel = if (commitment.dueHint != null) {
+                stringResource(R.string.memory_due, commitment.dueHint)
+            } else {
+                null
+            }
+            val meta = buildString {
+                if (ownerLabel != null) append(ownerLabel)
+                if (dueLabel != null) {
                     if (isNotEmpty()) append(" · ")
-                    append(stringResource(R.string.memory_due, due))
+                    append(dueLabel)
                 }
             }
             if (meta.isNotBlank()) {
                 Spacer(Modifier.height(3.dp))
                 Text(
                     text = meta,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 27.dp)
                 )
             }
             if (onAddToCalendar != null) {
-                Spacer(Modifier.height(4.dp))
-                androidx.compose.material3.TextButton(onClick = onAddToCalendar) {
-                    Text(
-                        text = stringResource(R.string.memory_add_calendar),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
+                Spacer(Modifier.height(3.dp))
+                TextAction(
+                    text = stringResource(R.string.memory_add_calendar),
+                    onClick = onAddToCalendar,
+                    showArrow = false,
+                    modifier = Modifier.padding(start = 27.dp)
+                )
             }
         }
         if (showDivider) {
-            androidx.compose.material3.HorizontalDivider(
-                modifier = Modifier.padding(start = 16.dp),
-                thickness = 0.5.dp,
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 14.dp),
+                thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant
             )
         }
@@ -177,30 +200,28 @@ fun InspirationRow(
     showDivider: Boolean = true
 ) {
     Column {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                MemoryTypeChip(
-                    type = MemoryEventType.INSPIRATION,
-                    color = LocalSemanticColors.current.insight
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = formatMemoryTime(inspiration.evidence.startMs),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(Modifier.height(6.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = inspiration.text,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = formatMemoryTime(inspiration.evidence.startMs),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         if (showDivider) {
-            androidx.compose.material3.HorizontalDivider(
-                modifier = Modifier.padding(start = 16.dp),
-                thickness = 0.5.dp,
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 14.dp),
+                thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant
             )
         }
@@ -208,22 +229,19 @@ fun InspirationRow(
 }
 
 @Composable
-private fun MemoryTypeChip(type: MemoryEventType, color: Color) {
-    Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = color.copy(alpha = 0.14f)
-    ) {
-        Text(
-            text = memoryTypeLabel(type),
-            style = MaterialTheme.typography.labelMedium,
-            color = color,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-        )
-    }
+private fun MemoryTypeLabel(type: MemoryEventType) {
+    Text(
+        text = memoryTypeLabelText(type),
+        style = MaterialTheme.typography.labelSmall.copy(
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 10.5.sp
+        ),
+        color = memoryTypeColor(type)
+    )
 }
 
 @Composable
-private fun memoryTypeLabel(type: MemoryEventType): String = stringResource(
+private fun memoryTypeLabelText(type: MemoryEventType): String = stringResource(
     when (type) {
         MemoryEventType.PROGRESS -> R.string.memory_event_progress
         MemoryEventType.DECISION -> R.string.memory_event_decision
@@ -251,3 +269,10 @@ private fun formatMemoryTime(ms: Long): String {
     val seconds = totalSeconds % 60
     return String.format(Locale.US, "%02d:%02d", minutes, seconds)
 }
+
+private fun Modifier.clickableRow(onClick: () -> Unit): Modifier =
+    this.then(
+        Modifier
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+    )

@@ -363,8 +363,15 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
                             R.string.voice_not_recorded
                         }
                     ),
-                    trailingText = "▾",
+                    trailingContent = {
+                        Text(
+                            text = "▾",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
                     showDivider = false,
+                    showChevron = false,
                     onClick = { menuExpanded = true }
                 )
                 DropdownMenu(
