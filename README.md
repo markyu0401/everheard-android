@@ -95,7 +95,7 @@ emulator -avd everheard_atd -no-window -no-audio -no-boot-anim -gpu swiftshader_
 
 ## Legal
 
-Recording law depends on where you are and who is in the room. Everheard defaults to explicit, visible capture and a meeting-mode announcement; it is not a covert recorder. Read [docs/LEGAL.md](docs/LEGAL.md) before using it around other people.
+Recording law depends on where you are and who is in the room. Everheard defaults to explicit, visible capture and a meeting-mode announcement; it is not a covert recorder. It is an independent implementation of the category: no OPPO code, models, assets, or trade dress are used, and the project is not affiliated with, endorsed by, or sponsored by OPPO. Read [docs/LEGAL.md](docs/LEGAL.md) before using it around other people.
 
 ## License
 

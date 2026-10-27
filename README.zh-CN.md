@@ -95,7 +95,7 @@ emulator -avd everheard_atd -no-window -no-audio -no-boot-anim -gpu swiftshader_
 
 ## 法律
 
-录音是否合法取决于所在地和在场的人。Everheard 默认显式、可见地采集，并提供会议模式提示音；它不是隐蔽录音器。在他人周围使用前请读 [docs/LEGAL.md](docs/LEGAL.md)。
+录音是否合法取决于所在地和在场的人。Everheard 默认显式、可见地采集，并提供会议模式提示音；它不是隐蔽录音器。它是这个品类的独立实现：没有使用 OPPO 的代码、模型、素材或界面文件，与 OPPO 也没有隶属、背书或赞助关系。在他人周围使用前请读 [docs/LEGAL.md](docs/LEGAL.md)。
 
 ## 许可证
 
