@@ -56,6 +56,24 @@ Look for:
 If the first syllable is missing, check whether the segment starts near 0 ms. If
 it starts at 300–500 ms, the pre-roll is not reaching the word onset.
 
+## Voice profile check
+
+Do this before testing attribution:
+
+1. Open **Settings → Voice profile**. If it says **Not enrolled**, tap it.
+2. Read the three prompts in one take, naturally, for 10–30 seconds. Stop.
+3. Wait for **Voice profile saved**. The Settings row should now show the enrolled
+   duration. The recording is discarded; only a voice vector is stored.
+4. Start capture and speak one long sentence (at least 2 seconds), then have
+   another person speak, or play a different voice. Open the newest transcript:
+   only the enrolled speaker's segment should be labelled **Me**.
+5. Check logcat for `speaker model loaded: 3dspeaker-campplus-zh-en-16k` and any
+   `Speaker attribution failed` errors.
+
+The cosine threshold is **0.72 and provisional**. Record false positives and
+false negatives; do not report a precision number until it is calibrated on real
+voice. Segments shorter than 1.5 seconds are intentionally left unknown.
+
 ## Scoring
 
 Use character error rate (CER) for Chinese and word error rate (WER) for English.

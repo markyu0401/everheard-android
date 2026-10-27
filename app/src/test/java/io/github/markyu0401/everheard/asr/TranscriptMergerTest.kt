@@ -37,6 +37,15 @@ class TranscriptMergerTest {
     }
 
     @Test
+    fun does_not_merge_across_different_speakers() {
+        val first = utterance(0, 2_000, "First sentence.").copy(speaker = "me")
+        val second = utterance(2_500, 3_500, "Second sentence.").copy(speaker = null)
+        assertThat(
+            TranscriptMerger.shouldMerge(first, second.startMs, nextSpeaker = second.speaker)
+        ).isFalse()
+    }
+
+    @Test
     fun joins_english_with_a_space_and_chinese_without_one() {
         assertThat(TranscriptMerger.joinText("Hello", "world")).isEqualTo("Hello world")
         assertThat(TranscriptMerger.joinText("你好", "世界")).isEqualTo("你好世界")

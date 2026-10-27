@@ -34,6 +34,7 @@ import io.github.markyu0401.everheard.capture.vad.SileroVad
 import io.github.markyu0401.everheard.data.settings.captureStateStore
 import io.github.markyu0401.everheard.data.settings.scheduleStore
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
+import io.github.markyu0401.everheard.speaker.VoiceProfileStore
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -306,9 +307,13 @@ class CaptureService : Service() {
             val transcriptStore = EncryptedTranscriptStore(
                 File(filesDir, "transcripts.bin")
             )
+            val voiceProfileStore = VoiceProfileStore(
+                File(filesDir, "voice_profile.bin")
+            )
             val transcriberInstance = CaptureTranscriber(
                 context = this,
-                store = transcriptStore
+                store = transcriptStore,
+                voiceProfileStore = voiceProfileStore
             )
             silenceTracker.reset()
             vad = vadInstance

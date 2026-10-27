@@ -5,6 +5,11 @@ import android.util.Log
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
+import io.github.markyu0401.everheard.speaker.SherpaSpeakerEmbedder
+import io.github.markyu0401.everheard.speaker.SpeakerEmbedder
+import io.github.markyu0401.everheard.speaker.VoiceMatcher
+import io.github.markyu0401.everheard.speaker.VoiceProfile
+import io.github.markyu0401.everheard.speaker.VoiceProfileStore
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +43,10 @@ class CaptureTranscriber(
             Log.e(TAG, "SenseVoice unavailable; falling back to streaming ASR", error)
             SherpaAsr(appContext.assets)
         }
+    },
+    private val voiceProfileStore: VoiceProfileStore? = null,
+    private val speakerFactory: () -> SpeakerEmbedder = {
+        SherpaSpeakerEmbedder(appContext.assets)
     }
 ) {
 
@@ -57,6 +66,9 @@ class CaptureTranscriber(
         consumerJob = scope.launch {
             var sessionCreated = false
             var lastUtterance: TranscriptUtterance? = null
+            var speakerInitialized = false
+            var voiceProfile: VoiceProfile? = null
+            var speakerEmbedder: SpeakerEmbedder? = null
             for (segment in queue) {
                 if (segment.pcm16.isEmpty()) continue
                 try {
@@ -73,6 +85,33 @@ class CaptureTranscriber(
                             "samples=${segment.pcm16.size} textLength=${text.length}"
                     )
                     if (text.isNotEmpty()) {
+                        if (!speakerInitialized) {
+                            speakerInitialized = true
+                            voiceProfile = voiceProfileStore?.load()
+                            if (voiceProfile != null) {
+                                try {
+                                    speakerEmbedder = speakerFactory()
+                                    Log.i(TAG, "speaker model loaded: ${speakerEmbedder?.id}")
+                                } catch (error: Throwable) {
+                                    Log.e(TAG, "Speaker model unavailable", error)
+                                }
+                            }
+                        }
+                        val speaker = if (
+                            voiceProfile != null &&
+                            segment.pcm16.size >= VoiceMatcher.MIN_SPEAKER_SAMPLES &&
+                            speakerEmbedder != null
+                        ) {
+                            try {
+                                val embedding = speakerEmbedder!!.embed(segment.pcm16)
+                                if (VoiceMatcher.isMe(embedding, voiceProfile!!)) "me" else null
+                            } catch (error: Throwable) {
+                                Log.e(TAG, "Speaker attribution failed", error)
+                                null
+                            }
+                        } else {
+                            null
+                        }
                         if (!sessionCreated) {
                             store.createSession(
                                 TranscriptSession(
@@ -88,11 +127,16 @@ class CaptureTranscriber(
                             sessionId = sessionId,
                             startMs = segment.startMs,
                             endMs = segment.endMs,
-                            text = text
+                            text = text,
+                            speaker = speaker
                         )
                         val previous = lastUtterance
                         if (previous != null &&
-                            TranscriptMerger.shouldMerge(previous, segment.startMs)
+                            TranscriptMerger.shouldMerge(
+                                previous,
+                                segment.startMs,
+                                nextSpeaker = speaker
+                            )
                         ) {
                             val merged = TranscriptMerger.merge(previous, utterance)
                             val existing = store.session(sessionId)

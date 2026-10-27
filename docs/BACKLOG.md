@@ -25,7 +25,8 @@ only marked **Shipped** when it works on a real screen and has tests.
 | **Projects** | **Planned (M5)** | None | Embedding clustering + entity overlap; project timeline; merge/split |
 | **Insight / 觉察** | **Planned (M5)** | None | Weekly metrics + O-Mind-style behavior observations with ≥ 2 citations and one action suggestion |
 | **Connect / MCP** | **Planned (M6)** | Share/export only | HTTP MCP server with bearer token: `search_memory`, `list_commitments`, `get_project`, `get_session`; JSON schema |
-| **Speaker attribution** | **Planned (M3)** | CAM++ embedding model downloaded; not wired into capture | Enrollment, online clustering, "me" relevance, correction in ≤ 2 taps |
+| **Voice profile enrollment** | **Shipped** | Settings → Voice profile: read three prompts in one 10–30 s recording; quality gate; CAM++ embedding normalised and stored encrypted; re-record and delete | Calibrate the threshold with real voice samples; support multiple centroids for noisy/quiet rooms |
+| **Speaker attribution** | **Partial** | Capture labels a segment `me` when its embedding matches the enrolled profile (≥1.5 s segments, cosine 0.72); UI shows “Me”; no clustering of other speakers yet | Real-device precision/recall; online clustering for others; “not mine” correction |
 | **Manual mark at capture time** | **Planned** | Mark action exists only after transcription | Notification/Live mark that attaches to the current segment |
 | **Provider settings (BYO)** | **Planned (M6)** | None | ASR/LLM/embedding base URL, key, model, test connection, fallback chain |
 | **Model manager** | **Planned (M2-T1)** | Models bundled in the debug APK (357 MB) | Runtime download, SHA-256, license screen, disk check |
@@ -40,9 +41,9 @@ only marked **Shipped** when it works on a real screen and has tests.
 
 ## Priority order
 
-1. **P0 — trustworthy input**: real-device ASR benchmark (CER/WER), speaker
-   attribution, segment merge tuning, mark-at-capture. Everything downstream is
-   worthless if the transcript is wrong.
+1. **P0 — trustworthy input**: real-device ASR benchmark (CER/WER), voice-profile
+   threshold calibration, speaker clustering/correction, segment merge tuning,
+   mark-at-capture. Everything downstream is worthless if the transcript is wrong.
 2. **P1 — memory layer**: BYO LLM provider, summary + commitments, Today chips,
    session detail tabs. This is the actual OPPO parity gap.
 3. **P2 — projects and insight**: clustering, project timeline, weekly review
@@ -62,6 +63,12 @@ only marked **Shipped** when it works on a real screen and has tests.
 - **Insight**: weekly metrics + evidence cards; never an insight without at
   least two citations.
 - **Connect**: chat-like memory query; MCP is the first integration, IM later.
+- **Settings**: Voice profile row (enrolled/not enrolled), re-record and delete;
+  Data row for clearing transcripts.
+- **Voice enrollment**: three prompts, one recording, quality feedback, encrypted
+  vector only; no audio retained.
+- **Privacy**: voiceprint is a biometric; it is used for attribution, never for
+  authentication, and can be deleted.
 - **Motion**: restrained; no gradients, no dashboard chrome, no developer
   labels on the main surface.
 - **Empty states**: explain what will appear and offer one primary action.

@@ -222,16 +222,15 @@ data class AsrResult(
 
 ### 6.1 Enrollment
 
-- 30 s read passage; extract a 256-d embedding; store in `person` with `is_self = 1`.
-- Re-enrollment allowed; keep the old embedding for fallback until the new one is validated.
+- **Implemented:** Settings → Voice profile reads three prompts in one 10–30 s take; the UI gates on duration, RMS, and speech ratio. The CAM++ zh-en model (27 MB) produces an embedding; it is L2-normalised and stored in `voice_profile.bin` with AES-256-GCM under a separate Keystore alias. No enrollment audio is written.
+- Re-enrollment replaces the profile; delete is available in Settings. Voiceprint is biometric data used only for attribution, never for authentication.
+- The current cosine threshold is **0.72 (provisional)**; calibrate it on real voice before claiming accuracy. Keep the old embedding only if a future migration needs a fallback.
 
 ### 6.2 Online clustering
 
-- Window: 1.5 s of speech, 0.75 s hop; embedding per window.
-- Cosine similarity; assign to an existing cluster if ≥ 0.70, else create a new cluster.
-- Merge clusters if centroid similarity ≥ 0.80; split on user request.
-- Cluster labels: `我`, `说话人 A`, `说话人 B`, `背景`.
-- Person rename maps a cluster to a `person` row; future matches use the person's centroid.
+- **Implemented now:** each VAD segment ≥ 1.5 s is embedded; a segment is labelled `me` when cosine to the enrolled profile is ≥ 0.72, otherwise it stays unlabelled (unknown). The detail UI maps `me` to the localized “Me”.
+- **Planned:** 1.5 s windows with 0.75 s hop for other speakers; cosine clustering at ≥ 0.70; merge at ≥ 0.80; labels `我`, `说话人 A`, `说话人 B`, `背景`; rename maps a cluster to a person.
+- Do not claim speaker names without enrollment or calibration.
 
 ### 6.3 Relevance scoring
 
@@ -390,10 +389,10 @@ Validation rules:
 | Project detail | Event timeline + insight card | Jump to source session |
 | Insight | Weekly metrics + insight cards with evidence | Drill into citations |
 | Person | Last talked, open commitments, projects | Rename; merge clusters |
-| Settings | Language (System/English/简体中文), appearance (System/Light/Dark), and Data > Clear all transcripts | Changes apply immediately; language restarts the task; clearing is confirmed |
+| Settings | Language (System/English/简体中文), appearance (System/Light/Dark), Voice profile (enroll/re-record/delete), and Data > Clear all transcripts | Changes apply immediately; language restarts the task; clearing is confirmed |
 | Onboarding | Legal notice, mic permission, enrollment, schedule default | 3 steps, skippable enrollment |
 
-Implemented in the M2 UI slice: Home (with a Today/Recent timeline of session cards), Live, Transcripts, Session detail (manual star marks, share, single-session delete), Schedule, Settings (including Data > Clear all), Onboarding, Permission gate. Today shows time, duration, title, preview, and mark count; summary, todos, chips, and summary/transcript tabs remain planned. Projects, Insight, Person, and provider settings remain planned; do not ship dead links for them.
+Implemented in the M2 UI slice: Home (with a Today/Recent timeline of session cards), Live, Transcripts, Session detail (manual star marks, share, single-session delete), Schedule, Settings (Voice profile enrollment/delete and Data > Clear all), Onboarding, Permission gate. Today shows time, duration, title, preview, and mark count; summary, todos, chips, and summary/transcript tabs remain planned. Voice enrollment and “me” labelling are implemented; other-speaker clustering, threshold calibration, and background filtering remain planned. Projects, Insight, Person, and provider settings remain planned; do not ship dead links for them.
 
 ### 10.2 Tokens
 

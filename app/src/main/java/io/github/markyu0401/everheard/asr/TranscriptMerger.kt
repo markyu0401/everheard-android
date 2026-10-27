@@ -14,9 +14,13 @@ object TranscriptMerger {
     fun shouldMerge(
         previous: TranscriptUtterance?,
         nextStartMs: Long,
-        gapMs: Long = DEFAULT_GAP_MS
+        gapMs: Long = DEFAULT_GAP_MS,
+        nextSpeaker: String? = null
     ): Boolean {
         if (previous == null) return false
+        val speakersDiffer = previous.speaker != nextSpeaker &&
+            (previous.speaker != null || nextSpeaker != null)
+        if (speakersDiffer) return false
         val gap = nextStartMs - previous.endMs
         return gap <= gapMs
     }

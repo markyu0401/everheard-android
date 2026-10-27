@@ -274,9 +274,14 @@ private fun UtteranceRow(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (utterance.speaker != null) {
+            val speakerText = when (utterance.speaker) {
+                "me" -> stringResource(R.string.speaker_me)
+                null -> null
+                else -> utterance.speaker
+            }
+            if (speakerText != null) {
                 Text(
-                    text = utterance.speaker,
+                    text = speakerText,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

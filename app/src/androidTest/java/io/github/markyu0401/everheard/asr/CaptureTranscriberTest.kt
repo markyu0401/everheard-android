@@ -5,6 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
+import io.github.markyu0401.everheard.speaker.SpeakerEmbedder
+import io.github.markyu0401.everheard.speaker.VoiceProfileStore
 import java.io.File
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -29,6 +31,11 @@ class CaptureTranscriberTest {
             index += 1
             return AsrResult(text = text, segments = emptyList(), model = id, latencyMs = 0L)
         }
+    }
+
+    private class FakeEmbedder(private val embedding: FloatArray) : SpeakerEmbedder {
+        override val id: String = "fake-speaker"
+        override suspend fun embed(pcm16: ShortArray, sampleRate: Int): FloatArray = embedding
     }
 
     @Test
@@ -157,6 +164,43 @@ class CaptureTranscriberTest {
             assertThat(sessions[0].utterances).hasSize(1)
             assertThat(sessions[0].utterances[0].text).isEqualTo("Send the draft by Friday.")
             file.delete()
+        }
+    }
+
+    @Test
+    fun labels_a_matching_long_segment_as_me() {
+        runBlocking {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val transcriptFile = File(context.filesDir, "transcriber-test-${System.nanoTime()}.bin")
+            val profileFile = File(context.filesDir, "profile-test-${System.nanoTime()}.bin")
+            val store = EncryptedTranscriptStore(transcriptFile)
+            val profileStore = VoiceProfileStore(profileFile)
+            profileStore.save(floatArrayOf(1f, 0f, 0f), samples = 24_000)
+            val transcriber = CaptureTranscriber(
+                context = context,
+                store = store,
+                asrFactory = { FakeAsr("This is my sentence.") },
+                voiceProfileStore = profileStore,
+                speakerFactory = { FakeEmbedder(floatArrayOf(0.98f, 0.1f, 0f)) }
+            )
+
+            transcriber.start()
+            transcriber.submit(
+                SpeechSegmenter.Segment(
+                    pcm16 = ShortArray(24_000) { 1_000 },
+                    startMs = 0,
+                    endMs = 1_500
+                )
+            )
+            delay(500)
+            transcriber.stop()
+            delay(500)
+
+            val sessions = store.sessions()
+            assertThat(sessions).hasSize(1)
+            assertThat(sessions[0].utterances[0].speaker).isEqualTo("me")
+            transcriptFile.delete()
+            profileFile.delete()
         }
     }
 }

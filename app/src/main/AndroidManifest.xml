@@ -81,6 +81,11 @@
             android:theme="@style/Theme.Everheard" />
 
         <activity
+            android:name=".ui.voice.VoiceEnrollmentActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
             android:name=".spike.AudioSpikeActivity"
             android:exported="false"
             android:theme="@style/Theme.Everheard" />
