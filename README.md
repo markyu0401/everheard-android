@@ -4,7 +4,7 @@
 
 Always-on conversation memory for Android. Everheard records the conversations you are part of, transcribes them on-device, attributes speakers, and turns what was said into commitments, project timelines, and a weekly review — without keeping the audio.
 
-> **Status: pre-alpha.** Debug builds work (Compose shell, a four-tab bottom taskbar with a central capture orb and an embedded Instrument Sans / Instrument Serif / Noto Serif SC type system, in-app language and theme settings, armed capture core with schedule/battery/thermal/silence gates, an excluded-app playback guard and a visible mic-busy state, on-device VAD/ASR/speaker spikes, encrypted transcript store with live partials and search, a Today timeline with manual marks and semantic highlights, per-session share/delete/export, clear-all, a language-dropdown voice profile that labels “me” segments, an encrypted memory layer with local and optional LLM summary/commitments/events, keyword project timelines, a deterministic weekly insight view, explicit-speaker People profiles, BYO provider settings, and a local read-only MCP server); no release APK yet. The development plan is in [docs/PLAN.md](docs/PLAN.md); the architecture is in [docs/DESIGN.md](docs/DESIGN.md); the v2 visual direction is in [docs/DESIGN-V2.md](docs/DESIGN-V2.md); feature parity and priorities are in [docs/BACKLOG.md](docs/BACKLOG.md).
+> **Status: pre-alpha.** Debug builds work (Compose shell, a four-tab bottom taskbar with a central capture orb and an embedded Instrument Sans / Instrument Serif / Noto Serif SC type system, in-app language and theme settings, armed capture core with schedule/battery/thermal/silence gates, an excluded-app playback guard and a visible mic-busy state, on-device VAD/ASR/speaker spikes, encrypted transcript store with live partials and search, a Today timeline with manual marks and semantic highlights, per-session share/delete/export, clear-all, a language-dropdown voice profile that labels “me” segments, an encrypted memory layer with local and optional LLM summary/commitments/events, keyword project timelines, a deterministic weekly insight view, explicit-speaker People profiles, BYO provider settings, and a local read-only MCP server); **Pre-alpha APK: [Releases](https://github.com/markyu0401/everheard-android/releases).** The development plan is in [docs/PLAN.md](docs/PLAN.md); the architecture is in [docs/DESIGN.md](docs/DESIGN.md); the v2 visual direction is in [docs/DESIGN-V2.md](docs/DESIGN-V2.md); feature parity and priorities are in [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Why another recorder
 
@@ -50,6 +50,10 @@ AudioRecord (16 kHz mono PCM16)
 ```
 
 The capture service is a single `microphone` foreground service that stays armed; schedule rules gate `AudioRecord` instead of stopping the service, because Android refuses to create a microphone foreground service from the background.
+
+## Install
+
+Download `everheard-0.1.0-alpha.apk` from [Releases](https://github.com/markyu0401/everheard-android/releases). Requires Android 8.0+ (minSdk 26). The on-device models are bundled, so the download is ~360 MB. If you have the debug build installed, uninstall it first — the release is signed with a different key and its data will not carry over.
 
 ## Build
 

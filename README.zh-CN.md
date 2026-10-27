@@ -4,7 +4,7 @@
 
 一个 Android 端的「全天候对话记忆」应用：记录你参与的对话，在手机上转写成文字，区分说话人，把说过的话变成承诺、项目时间线和每周复盘——但不保留原始录音。
 
-> **状态：pre-alpha。** 调试构建可用（Compose 外壳、四标签底部任务栏 + 中央采集 orb、内嵌 Instrument Sans / Instrument Serif / Noto Serif SC 字体系统，支持应用内语言与主题设置、带时段/电量/温度/静音门控的全天候采集核心、排除应用播放守卫和可见的麦克风占用状态、端侧 VAD/ASR/说话人 spike、加密转写存储、实时草稿与搜索、带手动标记和语义要点的今日时间线、单条分享/删除/导出、全部清空、带语言下拉的声音档案和“我”片段标注、本地与可选 LLM 摘要/承诺/事件的加密记忆层、关键词项目时间线、确定性周洞察、基于明确说话人标签的人物页、自带模型服务设置，以及本机只读 MCP 服务）；尚无 release APK。开发计划见 [docs/PLAN.md](docs/PLAN.md)，架构见 [docs/DESIGN.md](docs/DESIGN.md)，新版视觉方向见 [docs/DESIGN-V2.md](docs/DESIGN-V2.md)，功能对齐与优先级见 [docs/BACKLOG.md](docs/BACKLOG.md)。
+> **状态：pre-alpha。** 调试构建可用（Compose 外壳、四标签底部任务栏 + 中央采集 orb、内嵌 Instrument Sans / Instrument Serif / Noto Serif SC 字体系统，支持应用内语言与主题设置、带时段/电量/温度/静音门控的全天候采集核心、排除应用播放守卫和可见的麦克风占用状态、端侧 VAD/ASR/说话人 spike、加密转写存储、实时草稿与搜索、带手动标记和语义要点的今日时间线、单条分享/删除/导出、全部清空、带语言下拉的声音档案和“我”片段标注、本地与可选 LLM 摘要/承诺/事件的加密记忆层、关键词项目时间线、确定性周洞察、基于明确说话人标签的人物页、自带模型服务设置，以及本机只读 MCP 服务）；**pre-alpha APK：[Releases](https://github.com/markyu0401/everheard-android/releases)。**开发计划见 [docs/PLAN.md](docs/PLAN.md)，架构见 [docs/DESIGN.md](docs/DESIGN.md)，新版视觉方向见 [docs/DESIGN-V2.md](docs/DESIGN-V2.md)，功能对齐与优先级见 [docs/BACKLOG.md](docs/BACKLOG.md)。
 
 ## 为什么再做一次
 
@@ -50,6 +50,10 @@ AudioRecord（16 kHz 单声道 PCM16）
 ```
 
 采集服务是一个常驻的 `microphone` 前台服务；时段规则只门控 `AudioRecord`，不 stop/start 服务——因为 Android 不允许在后台新建麦克风前台服务。
+
+## 安装
+
+从 [Releases](https://github.com/markyu0401/everheard-android/releases) 下载 `everheard-0.1.0-alpha.apk`。需要 Android 8.0+（minSdk 26）。端上模型已内置，下载约 360 MB。如果之前装过 debug 构建，请先卸载：release 用的是另一把签名密钥，数据不会保留。
 
 ## 构建
 
