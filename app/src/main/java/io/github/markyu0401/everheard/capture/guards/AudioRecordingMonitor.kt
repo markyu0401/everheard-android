@@ -69,6 +69,10 @@ class AudioRecordingMonitor(
     }
 
     companion object {
+        // MediaRecorder.AudioSource.HOTWORD is 1999; the constant is hidden from
+        // some SDK stubs, so keep the value here.
+        private const val AUDIO_SOURCE_HOTWORD = 1999
+
         /**
          * Busy when another non-silenced client is recording, or when our own
          * client has been silenced by the concurrent-capture policy. Our own
@@ -85,7 +89,12 @@ class AudioRecordingMonitor(
             }
             val ownSilenced = own?.isClientSilenced == true
             val otherActive = configs.any { config ->
-                config.clientAudioSessionId != ownSessionId && !config.isClientSilenced
+                config.clientAudioSessionId != ownSessionId &&
+                    !config.isClientSilenced &&
+                    // Always-on hotword detectors (Google Assistant, Samsung
+                    // voice wakeup) are not "another app recording speech"; they
+                    // would otherwise keep Everheard paused forever.
+                    config.clientAudioSource != AUDIO_SOURCE_HOTWORD
             }
             return ownSilenced || otherActive
         }
