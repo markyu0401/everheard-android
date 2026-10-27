@@ -157,7 +157,7 @@ Default for a new install: one `BLOCK` rule 23:30–07:00, every day. The UI is 
 - **Thermal:** `PowerManager.getCurrentThermalStatus() >= THERMAL_STATUS_MODERATE` → close mic, keep service armed; resume at `LIGHT`.
 - **Silence:** 15 min without speech and no significant motion → `PAUSED_SILENCE`; resume on motion (Activity Recognition transition) or screen unlock.
 - **Excluded playback:** Settings → Capture → Excluded apps; needs Usage access. If an excluded app is foreground and `AudioManager` reports audible media/communication playback, close the mic as `PAUSED_APP_AUDIO`; resume when playback stops. PiP/background playback without a foreground package is not detected yet.
-- **Mic busy:** `AudioRecordingMonitor` (API 29+) checks `getActiveRecordingConfigurations()`. Another non-silenced recorder, or a silenced own `AudioRecord` session, closes the mic as `PAUSED_MIC_BUSY`. This is the honest response to Android's concurrent-capture policy: an ordinary app cannot capture alongside a voice keyboard, call, or meeting app.
+- **Mic busy:** `AudioRecordingMonitor` (API 29+) checks `getActiveRecordingConfigurations()`. Another non-silenced recorder, or a silenced own `AudioRecord` session, closes the mic as `PAUSED_MIC_BUSY`. Always-on hotword clients (Google Assistant/Samsung wakeword, source 1999) are ignored so the phone's wakeword service does not pin Everheard in a permanent pause. This is the honest response to Android's concurrent-capture policy: an ordinary app cannot capture alongside a voice keyboard, call, or meeting app.
 - **Storage:** < 500 MB free → pause and notify; delete completed temp audio first.
 
 ### 4.4 Start, reboot, recovery
