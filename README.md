@@ -1,10 +1,20 @@
 # Everheard
 
+[![CI](https://github.com/markyu0401/everheard-android/actions/workflows/ci.yml/badge.svg)](https://github.com/markyu0401/everheard-android/actions/workflows/ci.yml)
+
 **English** | [简体中文](README.zh-CN.md)
 
 Always-on conversation memory for Android. Everheard records the conversations you are part of, transcribes them on-device, attributes speakers, and turns what was said into commitments, project timelines, and a weekly review — without keeping the audio.
 
 > **Status: pre-alpha.** Debug builds work (Compose shell, a four-tab bottom taskbar with a central capture orb and an embedded Instrument Sans / Instrument Serif / Noto Serif SC type system, in-app language and theme settings, armed capture core with schedule/battery/thermal/silence gates, an excluded-app playback guard and a visible mic-busy state, on-device VAD/ASR/speaker spikes, encrypted transcript store with live partials and search, a Today timeline with manual marks and semantic highlights, per-session share/delete/export, clear-all, a language-dropdown voice profile that labels “me” segments, an encrypted memory layer with local and optional LLM summary/commitments/events, keyword project timelines, a deterministic weekly insight view, explicit-speaker People profiles, BYO provider settings, and a local read-only MCP server); **Pre-alpha APK: [Releases](https://github.com/markyu0401/everheard-android/releases).** The development plan is in [docs/PLAN.md](docs/PLAN.md); the architecture is in [docs/DESIGN.md](docs/DESIGN.md); the v2 visual direction is in [docs/DESIGN-V2.md](docs/DESIGN-V2.md); feature parity and priorities are in [docs/BACKLOG.md](docs/BACKLOG.md).
+## Screens
+
+<p align="center">
+  <img src="assets/screenshots/en-today.png" width="300" alt="Today: live capture, timeline and open commitments">
+  <img src="assets/screenshots/en-session.png" width="300" alt="Session: summary, decisions, commitments and risk">
+</p>
+
+Demo data / UI preview. The app ships in English and Simplified Chinese.
 
 ## Why another recorder
 

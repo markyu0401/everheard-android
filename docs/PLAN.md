@@ -76,11 +76,11 @@ These are not preferences; they shape the product.
 
 **MVP is v0.1 at the end of M4 (2026-12-28).** v0.2 and v0.3 are deliberately separate: do not build project clustering before the transcript pipeline is trustworthy.
 
-### 4.1 OPPO parity scope (explicit)
+### 4.1 Reference-product parity scope (explicit)
 
 The reference app is not only a recorder. This table is the contract for parity; a feature is not “done” until the listed exit gate passes.
 
-| OPPO / 白鲸 AI capability | Everheard task(s) | Milestone |
+| Reference capability | Everheard task(s) | Milestone |
 |---|---|---|
 | Daily timeline with structured summary and todos | M4-T3, M4-T5, M4-T6, M4-T9 | M4 |
 | Manual “important” mark visible in the timeline | M4-T6, M4-T10 | M4 |
@@ -324,7 +324,7 @@ The reference app is not only a recorder. This table is the contract for parity;
 - **M2-T1/T3/T6 pending:** model manager (runtime download/license), cloud ASR provider, and hotword/normalization. **M2-T4** has the local two-pass path; cloud re-decode remains.
 - **M4-T6 partial:** Today shows session cards plus semantic highlights; session detail shows summary/timeline/commitments/ideas. Todos, full chips and a capture-time mark gesture remain.
 - **M4-T7 partial:** per-session share/delete and clear-all are shipped; text/Markdown/JSON export is shipped; bulk export and export redaction remain.
-- **Backlog:** OPPO parity, priority order, and design gaps are tracked in [BACKLOG.md](BACKLOG.md). Do not add placeholder tabs or fake summaries.
+- **Backlog:** reference-product parity, priority order, and design gaps are tracked in [BACKLOG.md](BACKLOG.md). Do not add placeholder tabs or fake summaries.
 - **UI navigation shipped:** five-tab bottom taskbar with Today / Library / Projects / Insights / Settings; Schedule is folded into Settings, Live into Today; main surfaces scroll above the bar.
 - **Voice profile shipped:** Settings → Voice profile chooses Chinese or English from a dropdown, records one or both samples separately, gates on duration/RMS/speech ratio, computes a CAM++ embedding per language, normalises them, and stores only the vectors in an AES-256-GCM file with a separate Keystore alias. Capture uses the best cosine across the centroids. Re-record and delete are supported. No enrollment audio is written.
 - **M3 attribution partial:** `CaptureTranscriber` lazily loads the enrolled profile and the speaker model, embeds VAD segments ≥1.5 s, logs the best cosine, and labels them `me` at ≥ 0.72; the detail UI maps `me` to the localized “Me”. Other speakers are not clustered yet and the threshold is not calibrated on real voice; that is the next measurement.

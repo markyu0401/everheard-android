@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Install and requirements
+    url: https://github.com/markyu0401/everheard-android#install
+    about: Read this before filing a build or install issue.
+  - name: Privacy, recording law and limits
+    url: https://github.com/markyu0401/everheard-android/blob/main/docs/LEGAL.md
+    about: What the app does with audio, and when recording is lawful.

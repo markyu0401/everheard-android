@@ -1,0 +1,63 @@
+name: Bug report
+description: Something broke on your device. Include the exact build and ROM.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing a pre-alpha build. Most capture bugs are ROM-specific, so please fill in the device and ROM fields.
+  - type: input
+    id: build
+    attributes:
+      label: Build
+      description: Release APK version, or a commit hash if you built it yourself.
+      placeholder: v0.1.0-alpha
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and ROM
+      description: Model, Android version, ROM build.
+      placeholder: Samsung SM-S948U1, Android 17, One UI 8.5
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Capture / microphone
+        - Transcription / ASR
+        - Speaker attribution
+        - Memory / commitments
+        - UI
+        - Battery / thermal
+        - Build / install
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the app
+        2. Start capture
+        3. Lock the screen
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: adb logcat or a screen recording. Do not paste personal transcripts.
+    validations:
+      required: false

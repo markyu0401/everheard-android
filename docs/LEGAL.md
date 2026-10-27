@@ -1,6 +1,8 @@
 # Legal notes
 
-> This is engineering guidance, not legal advice. Recording law varies by country, state, and situation. Consult a lawyer before distributing or using this app around other people.
+> This is engineering guidance, not legal advice.
+>
+> Everheard is an independent implementation of the category. No OPPO code, models, assets, or trade dress are used, and the project is not affiliated with, endorsed by, or sponsored by OPPO. Recording law varies by country, state, and situation. Consult a lawyer before distributing or using this app around other people.
 
 ## The short version
 

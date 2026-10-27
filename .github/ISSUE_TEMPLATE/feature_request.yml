@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a capability or a ROM fix.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that the app makes hard?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like
+      description: A concrete behaviour, not a slogan.
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Capture / microphone
+        - Transcription / ASR
+        - Speaker attribution
+        - Memory / commitments
+        - UI
+        - Integrations (MCP, calendar)
+        - Build / install
+    validations:
+      required: true

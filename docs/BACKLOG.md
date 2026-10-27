@@ -1,7 +1,7 @@
 # Everheard — Feature Backlog
 
 Updated: 2026-10-27. This is the working backlog for feature parity with the
-OPPO AI 心力球 / 白鲸 AI loop, plus the engineering gaps behind it. A feature is
+reference-product loop, plus the engineering gaps behind it. A feature is
 only marked **Shipped** when it works on a real screen and has tests.
 
 ## Status
@@ -15,7 +15,7 @@ only marked **Shipped** when it works on a real screen and has tests.
 
 ## Parity matrix
 
-| OPPO / 白鲸 AI capability | Everheard status | What exists now | Next |
+| Reference capability | Everheard status | What exists now | Next |
 |---|---|---|---|
 | **Today** timeline | **Partial** | Home shows today's sessions (or recent), plus up to three semantic highlights extracted locally; session cards carry time, duration, title, next-line preview, mark count; tap → detail | Add todos, full event cards and chips; add a mark gesture from Today |
 | **Semantic daily timeline** | **Partial (M4)** | Local rule analyzer extracts progress / decision / commitment / risk / inspiration from transcript lines; Today shows the top three; session detail shows the full timeline | LLM schema extraction for better recall; every event still needs quote + timestamp + speaker; no event without evidence |
@@ -57,7 +57,7 @@ only marked **Shipped** when it works on a real screen and has tests.
    is worthless if the transcript is wrong.
 2. **P1 — memory layer**: BYO LLM provider, structured summary + commitments,
    semantic daily timeline (what happened / decision / commitment / risk),
-   inspiration notes, Today chips, session detail tabs. This is the actual OPPO
+   inspiration notes, Today chips, session detail tabs. This is the actual reference-product
    parity gap. The local baseline, encrypted memory store, optional LLM analyzer,
    calendar intent and Markdown/JSON export are in place.
 3. **P2 — projects and insight**: keyword project clustering, cross-session
