@@ -68,8 +68,10 @@ class AudioRecordSource(
         // devices, but some OEMs only expose it after startRecording(). Read it
         // on both sides so the recording monitor can recognize our own client.
         sessionId = record.audioSessionId
+        Log.i(TAG, "start before sessionId=$sessionId source=${hashCode()}")
         record.startRecording()
         sessionId = record.audioSessionId
+        Log.i(TAG, "start after sessionId=$sessionId source=${hashCode()}")
 
         readThread = Thread({
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
@@ -95,6 +97,7 @@ class AudioRecordSource(
     }
 
     fun stop() {
+        Log.i(TAG, "stop source=${hashCode()} sessionId=$sessionId running=$running")
         running = false
         sessionId = 0
 

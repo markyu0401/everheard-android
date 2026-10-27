@@ -13,6 +13,7 @@ import android.media.ToneGenerator
 import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
@@ -208,6 +209,10 @@ class CaptureService : Service() {
             return
         }
 
+        // A previous failed background start may have left the "tap to resume"
+        // notification behind; clear it now that capture is actually running.
+        NotificationManagerCompat.from(this).cancel(CaptureNotification.RESUME_NOTIF_ID)
+
         state = CaptureState.ARMED
         isRunning = true
         playStartTone()
@@ -224,6 +229,13 @@ class CaptureService : Service() {
     }
 
     private fun evaluate() {
+        // Battery, schedule, pause and monitor callbacks all call this from
+        // different threads. Serialize every transition on the main thread so
+        // two evaluations cannot both see "mic closed" and open two records.
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            mainHandler.post { evaluate() }
+            return
+        }
         val now = System.currentTimeMillis()
         val scheduleAllows = ScheduleEvaluator.isAllowed(
             scheduleRules,
@@ -343,6 +355,7 @@ class CaptureService : Service() {
     }
 
     private fun openMicrophone() {
+        Log.i(TAG, "openMicrophone state=$state source=${audioSource?.hashCode()}")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -400,6 +413,7 @@ class CaptureService : Service() {
     }
 
     private fun closeMicrophone() {
+        Log.i(TAG, "closeMicrophone state=$state source=${audioSource?.hashCode()}")
         audioSource?.stop()
         audioSource = null
         segmenter?.flush()?.let { segment ->
