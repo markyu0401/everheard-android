@@ -353,6 +353,11 @@ class CaptureService : Service() {
         }
 
         try {
+            // A duplicate start command must not leave the previous AudioRecord
+            // alive; otherwise the mic-busy guard sees our own second session.
+            if (audioSource != null) {
+                closeMicrophone()
+            }
             val vadInstance = SileroVad(assets)
             val source = AudioRecordSource()
             val segmenterInstance = SpeechSegmenter()

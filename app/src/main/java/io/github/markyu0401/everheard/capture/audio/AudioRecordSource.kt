@@ -64,8 +64,12 @@ class AudioRecordSource(
 
         audioRecord = record
         running = true
+        // AudioRecord assigns its session id during construction on most
+        // devices, but some OEMs only expose it after startRecording(). Read it
+        // on both sides so the recording monitor can recognize our own client.
         sessionId = record.audioSessionId
         record.startRecording()
+        sessionId = record.audioSessionId
 
         readThread = Thread({
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
