@@ -121,6 +121,17 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 scope.launch {
                     sessions = store.reload()
                     memories = memoryStore.reload()
+                    val missing = sessions
+                        .filter { isToday(it.startedAt) && it.utterances.isNotEmpty() }
+                        .filter { session -> memories.none { it.sessionId == session.id } }
+                    if (missing.isNotEmpty()) {
+                        missing.take(5).forEach { session ->
+                            runCatching {
+                                memoryStore.save(analyzer.analyze(session))
+                            }
+                        }
+                        memories = memoryStore.reload()
+                    }
                 }
             }
         }
