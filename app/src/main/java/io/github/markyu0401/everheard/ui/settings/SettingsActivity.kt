@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,11 +59,14 @@ import kotlinx.coroutines.launch
 
 class SettingsActivity : LocalizedActivity() {
 
+    private var refreshToken by mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             EverheardAppTheme {
                 SettingsScreen(
+                    refreshToken = refreshToken,
                     onBack = { finish() },
                     onLanguageSelected = { language ->
                         val store = appSettingsStore()
@@ -76,6 +80,11 @@ class SettingsActivity : LocalizedActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshToken++
+    }
+
     private fun restartApp() {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -86,6 +95,7 @@ class SettingsActivity : LocalizedActivity() {
 
 @Composable
 private fun SettingsScreen(
+    refreshToken: Int,
     onBack: () -> Unit,
     onLanguageSelected: (AppLanguage) -> Unit
 ) {
@@ -104,7 +114,7 @@ private fun SettingsScreen(
     var showClearDialog by remember { mutableStateOf(false) }
     var showDeleteVoiceDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(refreshToken) {
         profile = voiceStore.reload()
     }
 
