@@ -57,6 +57,6 @@ class ForegroundAppMonitor(private val context: Context) {
     }
 
     companion object {
-        private const val LOOKBACK_MS = 10 * 60_000L
+        private const val LOOKBACK_MS = 30 * 60_000L
     }
 }
