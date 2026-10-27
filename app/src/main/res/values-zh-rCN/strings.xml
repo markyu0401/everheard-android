@@ -61,6 +61,7 @@
 
     <string name="settings_title">设置</string>
     <string name="settings_subtitle">语言与外观</string>
+    <string name="settings_general">通用</string>
     <string name="settings_appearance">外观</string>
     <string name="settings_language">语言</string>
     <string name="theme_system">跟随系统</string>

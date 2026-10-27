@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,6 +21,8 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,7 +58,6 @@ import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.MainTab
 import io.github.markyu0401.everheard.ui.components.SectionHeader
-import io.github.markyu0401.everheard.ui.components.SelectionRow
 import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
@@ -120,6 +122,8 @@ private fun SettingsScreen(
     var profile by remember { mutableStateOf<VoiceProfile?>(null) }
     var showClearDialog by remember { mutableStateOf(false) }
     var showDeleteVoiceDialog by remember { mutableStateOf(false) }
+    var appearanceExpanded by remember { mutableStateOf(false) }
+    var languageExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(refreshToken) {
         profile = voiceStore.reload()
@@ -156,29 +160,67 @@ private fun SettingsScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        SectionHeader(stringResource(R.string.settings_appearance))
+        SectionHeader(stringResource(R.string.settings_general))
         GroupedCard {
-            ThemeMode.values().forEachIndexed { index, mode ->
-                SelectionRow(
-                    title = themeLabel(mode),
-                    selected = settings.themeMode == mode,
-                    showDivider = index != ThemeMode.values().lastIndex,
-                    onClick = { store.setTheme(mode) }
+            Box {
+                SettingsRow(
+                    title = stringResource(R.string.settings_appearance),
+                    subtitle = themeLabel(settings.themeMode),
+                    trailingText = "▾",
+                    showDivider = true,
+                    onClick = { appearanceExpanded = true }
                 )
+                DropdownMenu(
+                    expanded = appearanceExpanded,
+                    onDismissRequest = { appearanceExpanded = false }
+                ) {
+                    ThemeMode.values().forEach { mode ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = buildString {
+                                        append(themeLabel(mode))
+                                        if (settings.themeMode == mode) append("  ✓")
+                                    }
+                                )
+                            },
+                            onClick = {
+                                store.setTheme(mode)
+                                appearanceExpanded = false
+                            }
+                        )
+                    }
+                }
             }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        SectionHeader(stringResource(R.string.settings_language))
-        GroupedCard {
-            AppLanguage.values().forEachIndexed { index, language ->
-                SelectionRow(
-                    title = languageLabel(language),
-                    selected = settings.language == language,
-                    showDivider = index != AppLanguage.values().lastIndex,
-                    onClick = { onLanguageSelected(language) }
+            Box {
+                SettingsRow(
+                    title = stringResource(R.string.settings_language),
+                    subtitle = languageLabel(settings.language),
+                    trailingText = "▾",
+                    showDivider = false,
+                    onClick = { languageExpanded = true }
                 )
+                DropdownMenu(
+                    expanded = languageExpanded,
+                    onDismissRequest = { languageExpanded = false }
+                ) {
+                    AppLanguage.values().forEach { language ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = buildString {
+                                        append(languageLabel(language))
+                                        if (settings.language == language) append("  ✓")
+                                    }
+                                )
+                            },
+                            onClick = {
+                                languageExpanded = false
+                                onLanguageSelected(language)
+                            }
+                        )
+                    }
+                }
             }
         }
 

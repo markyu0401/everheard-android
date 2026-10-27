@@ -69,8 +69,9 @@ only marked **Shipped** when it works on a real screen and has tests.
   Settings, Live into Today. Do not add an Insights tab until the page exists.
 - **Scrolling**: every main surface scrolls vertically above the fixed taskbar;
   voice enrollment and settings must never clip below the fold.
-- **Settings**: Voice profile row (language dropdown, add/select Chinese or
-  English, re-record/delete), Schedule row, and Data row for clearing transcripts.
+- **Settings**: Appearance and Language are tap-to-expand dropdown rows; Voice
+  profile row (language dropdown, add/select Chinese or English,
+  re-record/delete); Schedule row; Data row for clearing transcripts.
 - **Voice enrollment**: choose a language from a dropdown, record 5–20 seconds,
   repeat for another language if needed; encrypted vectors only; no audio retained.
 - **Privacy**: voiceprint is a biometric; it is used for attribution, never for
