@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.map
 private val Context.everheardSettings by preferencesDataStore(name = "everheard_settings")
 
 private val ONBOARDING_COMPLETE = booleanPreferencesKey("onboarding_complete")
+private val TUTORIAL_SEEN = booleanPreferencesKey("tutorial_seen")
 
 /**
  * Persists the one-time legal/onboarding acknowledgement.
@@ -33,6 +34,19 @@ class OnboardingStore(private val dataStore: DataStore<Preferences>) {
     suspend fun markComplete() {
         dataStore.edit { preferences ->
             preferences[ONBOARDING_COMPLETE] = true
+        }
+    }
+
+    /** True once the first-run walkthrough has been completed or skipped. */
+    val tutorialSeen: Flow<Boolean> = dataStore.data
+        .catch { error ->
+            if (error is IOException) emit(emptyPreferences()) else throw error
+        }
+        .map { preferences -> preferences[TUTORIAL_SEEN] ?: false }
+
+    suspend fun markTutorialSeen() {
+        dataStore.edit { preferences ->
+            preferences[TUTORIAL_SEEN] = true
         }
     }
 }

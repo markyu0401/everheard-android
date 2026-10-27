@@ -425,4 +425,24 @@
     <string name="session_ideas">Ideas</string>
     <string name="session_timeline">Timeline</string>
     <string name="session_summary">Summary</string>
+
+    <string name="settings_help">Help</string>
+    <string name="settings_tutorial_title">How to use Everheard</string>
+    <string name="settings_tutorial_subtitle">Walk through capture, sessions, voice and privacy</string>
+
+    <string name="tutorial_step">STEP %1$d / %2$d</string>
+    <string name="tutorial_skip">Skip</string>
+    <string name="tutorial_back">Back</string>
+    <string name="tutorial_next">Next</string>
+    <string name="tutorial_done">Start using it</string>
+    <string name="tutorial_1_title">Start a session</string>
+    <string name="tutorial_1_body">Tap the round button in the middle of the bottom bar to start listening. A persistent notification appears while capture is on, and tapping the button again stops it.</string>
+    <string name="tutorial_2_title">It listens only when you allow it</string>
+    <string name="tutorial_2_body">The default sleep window is 23:30–07:00. Capture also pauses on low battery, high temperature, silence, or when another app holds the microphone. There is no covert mode.</string>
+    <string name="tutorial_3_title">Read the session, not the transcript</string>
+    <string name="tutorial_3_body">Open a session from Today. The summary, decisions, commitments and risks each keep the original quote and timestamp, so you can check the evidence instead of trusting a black box.</string>
+    <string name="tutorial_4_title">Teach it your voice</string>
+    <string name="tutorial_4_body">In Settings → Voice &amp; people, record one sample of your voice. Your segments are labeled “me”; other speakers are clustered, and the People page shows who appeared.</string>
+    <string name="tutorial_5_title">Review the week, keep the data local</string>
+    <string name="tutorial_5_body">Memory shows project timelines and a weekly review. Audio is deleted after transcription; text is AES-256-GCM encrypted with a key in Android Keystore. Settings → Data can clear everything.</string>
 </resources>

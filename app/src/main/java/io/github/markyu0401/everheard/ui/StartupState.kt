@@ -10,6 +10,7 @@ sealed interface StartupState {
     data object Onboarding : StartupState
     data object NeedsMicrophone : StartupState
     data object NeedsNotifications : StartupState
+    data object Tutorial : StartupState
     data object Ready : StartupState
 }
 
@@ -20,10 +21,12 @@ data class PermissionStatus(
 
 fun startupStateFor(
     onboardingComplete: Boolean,
+    tutorialSeen: Boolean,
     permissions: PermissionStatus
 ): StartupState = when {
     !onboardingComplete -> StartupState.Onboarding
     !permissions.microphoneGranted -> StartupState.NeedsMicrophone
     !permissions.notificationsGranted -> StartupState.NeedsNotifications
+    !tutorialSeen -> StartupState.Tutorial
     else -> StartupState.Ready
 }

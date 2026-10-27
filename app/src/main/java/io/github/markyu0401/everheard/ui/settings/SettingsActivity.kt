@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.GraphicEq
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Schedule
@@ -89,6 +90,7 @@ import io.github.markyu0401.everheard.ui.person.PeopleActivity
 import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
+import io.github.markyu0401.everheard.ui.tutorial.TutorialActivity
 import io.github.markyu0401.everheard.ui.voice.VoiceEnrollmentActivity
 import java.io.File
 import java.util.Locale
@@ -340,6 +342,19 @@ private fun SettingsScreen(
                     showDivider = false,
                     onClick = {
                         context.startActivity(Intent(context, ExcludedAppsActivity::class.java))
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(18.dp))
+            SettingsSection(title = stringResource(R.string.settings_help)) {
+                SettingsRow(
+                    icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                    title = stringResource(R.string.settings_tutorial_title),
+                    subtitle = stringResource(R.string.settings_tutorial_subtitle),
+                    showDivider = false,
+                    onClick = {
+                        context.startActivity(Intent(context, TutorialActivity::class.java))
                     }
                 )
             }

@@ -424,4 +424,24 @@
     <string name="session_ideas">灵感</string>
     <string name="session_timeline">时间线</string>
     <string name="session_summary">摘要</string>
+
+    <string name="settings_help">帮助</string>
+    <string name="settings_tutorial_title">怎么用 Everheard</string>
+    <string name="settings_tutorial_subtitle">采集、会话、声音和隐私，一次走完</string>
+
+    <string name="tutorial_step">第 %1$d / %2$d 步</string>
+    <string name="tutorial_skip">跳过</string>
+    <string name="tutorial_back">上一步</string>
+    <string name="tutorial_next">下一步</string>
+    <string name="tutorial_done">开始使用</string>
+    <string name="tutorial_1_title">开始一次采集</string>
+    <string name="tutorial_1_body">点底部中间那个圆形按钮开始聆听。采集时通知栏会一直显示，再点一次就停止。</string>
+    <string name="tutorial_2_title">只在你允许的时候听</string>
+    <string name="tutorial_2_body">默认睡眠时段是 23:30–07:00。电量低、温度高、长时间没有声音，或者别的 App 占着麦克风时，采集都会暂停。没有隐蔽模式。</string>
+    <string name="tutorial_3_title">看会话，不用翻全文</string>
+    <string name="tutorial_3_body">在「今天」里点开一条会话。摘要、决定、承诺和风险都带着原话和时间戳，可以点回去核对，而不是相信一个黑盒总结。</string>
+    <string name="tutorial_4_title">让它认识你的声音</string>
+    <string name="tutorial_4_body">设置 → 声音与人：录一次自己的声音。之后你的片段会标成「我」，其他说话人会被聚类，人物页能看到谁出现过。</string>
+    <string name="tutorial_5_title">每周复盘，数据留在本机</string>
+    <string name="tutorial_5_body">记忆页有项目时间线和每周复盘。音频转写完就删；文字用 AES-256-GCM 加密，密钥在 Android Keystore。设置 → 数据可以一次清空。</string>
 </resources>

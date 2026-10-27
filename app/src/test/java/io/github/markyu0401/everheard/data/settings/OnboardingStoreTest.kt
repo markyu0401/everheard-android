@@ -30,4 +30,20 @@ class OnboardingStoreTest {
         assertThat(store.isComplete.first()).isTrue()
         assertThat(file.exists()).isTrue()
     }
+
+    @Test
+    fun tutorial_defaults_to_unseen_and_persists() = runTest {
+        val file = File(temporaryFolder.root, "settings-tutorial.preferences_pb")
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = backgroundScope,
+            produceFile = { file }
+        )
+        val store = OnboardingStore(dataStore)
+
+        assertThat(store.tutorialSeen.first()).isFalse()
+
+        store.markTutorialSeen()
+
+        assertThat(store.tutorialSeen.first()).isTrue()
+    }
 }

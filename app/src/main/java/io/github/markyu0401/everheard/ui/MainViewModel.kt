@@ -22,10 +22,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val state: StateFlow<StartupState> = _state.asStateFlow()
 
     private var onboardingComplete = false
+    private var tutorialSeen = false
 
     init {
         viewModelScope.launch {
             onboardingComplete = onboardingStore.isComplete.first()
+            tutorialSeen = onboardingStore.tutorialSeen.first()
             refreshPermissions()
         }
     }
@@ -34,6 +36,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             onboardingStore.markComplete()
             onboardingComplete = true
+            refreshPermissions()
+        }
+    }
+
+    fun completeTutorial() {
+        viewModelScope.launch {
+            onboardingStore.markTutorialSeen()
+            tutorialSeen = true
             refreshPermissions()
         }
     }
@@ -54,6 +64,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         _state.value = startupStateFor(
             onboardingComplete = onboardingComplete,
+            tutorialSeen = tutorialSeen,
             permissions = PermissionStatus(
                 microphoneGranted = microphoneGranted,
                 notificationsGranted = notificationsGranted

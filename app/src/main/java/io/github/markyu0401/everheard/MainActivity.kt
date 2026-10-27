@@ -34,6 +34,7 @@ import io.github.markyu0401.everheard.ui.home.HomeScreen
 import io.github.markyu0401.everheard.ui.onboarding.OnboardingScreen
 import io.github.markyu0401.everheard.ui.onboarding.PermissionGate
 import io.github.markyu0401.everheard.ui.onboarding.PermissionKind
+import io.github.markyu0401.everheard.ui.tutorial.TutorialScreen
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 
 class MainActivity : LocalizedActivity() {
@@ -94,6 +95,10 @@ private fun EverheardRoot() {
                     }
                 },
                 onOpenSettings = { openAppSettings(context) }
+            )
+
+            StartupState.Tutorial -> TutorialScreen(
+                onDone = viewModel::completeTutorial
             )
 
             StartupState.Ready -> HomeScreen()
