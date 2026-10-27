@@ -23,7 +23,6 @@ import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,9 +68,12 @@ fun BottomBar(
     val running = state.isServiceAlive
     val recording = state == CaptureState.RECORDING
 
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        modifier = modifier.fillMaxWidth()
+    // A plain Box, not a Material Surface: the capture orb intentionally draws
+    // above the bar, and Surface would clip it at the hairline.
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         Column {
             Hairline()
