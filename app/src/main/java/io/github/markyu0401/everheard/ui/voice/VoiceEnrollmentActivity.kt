@@ -3,6 +3,8 @@ package io.github.markyu0401.everheard.ui.voice
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.SystemClock
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -47,8 +49,11 @@ import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import java.io.File
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+private const val TAG = "VoiceEnrollment"
 
 class VoiceEnrollmentActivity : LocalizedActivity() {
 
@@ -73,6 +78,7 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
     val frames = remember { Collections.synchronizedList(mutableListOf<ShortArray>()) }
     val totalSamples = remember { AtomicInteger(0) }
     val speechSamples = remember { AtomicInteger(0) }
+    val lastSpeechAt = remember { AtomicLong(SystemClock.elapsedRealtime()) }
 
     var source by remember { mutableStateOf<AudioRecordSource?>(null) }
     var vad by remember { mutableStateOf<SileroVad?>(null) }
@@ -81,6 +87,7 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
     var elapsedSeconds by remember { mutableStateOf(0f) }
     var error by remember { mutableStateOf<String?>(null) }
     var saved by remember { mutableStateOf(false) }
+    var finishAfterSave by remember { mutableStateOf(false) }
 
     val permissionError = stringResource(R.string.voice_permission)
     val tooShortError = stringResource(R.string.voice_too_short)
@@ -101,19 +108,23 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         frames.clear()
         totalSamples.set(0)
         speechSamples.set(0)
+        lastSpeechAt.set(SystemClock.elapsedRealtime())
         elapsedSeconds = 0f
         error = null
         saved = false
+        finishAfterSave = false
         val vadInstance = SileroVad(context.assets)
         val sourceInstance = AudioRecordSource()
         vad = vadInstance
         source = sourceInstance
         recording = true
+        Log.i(TAG, "enrollment recording started")
         sourceInstance.start { frame ->
             frames.add(frame)
             totalSamples.addAndGet(frame.size)
             if (vadInstance.isSpeech(frame)) {
                 speechSamples.addAndGet(frame.size)
+                lastSpeechAt.set(SystemClock.elapsedRealtime())
             }
         }
     }
@@ -138,6 +149,12 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         }
         val speech = speechSamples.get()
         val assessment = VoiceEnrollment.assess(pcm, speech)
+        Log.i(
+            TAG,
+            "assessment duration=${assessment.durationSeconds}s " +
+                "rms=${assessment.rms} speechRatio=${assessment.speechRatio} " +
+                "issue=${assessment.issue}"
+        )
         if (!assessment.ok) {
             error = when (assessment.issue) {
                 VoiceIssue.TOO_SHORT -> tooShortError
@@ -155,7 +172,9 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
                 val embedding = embedder.embed(pcm)
                 store.save(embedding, pcm.size)
                 saved = true
+                Log.i(TAG, "profile saved samples=${pcm.size}")
             } catch (throwable: Throwable) {
+                Log.e(TAG, "profile save failed", throwable)
                 error = if (throwable is io.github.markyu0401.everheard.speaker.SpeakerModelMissingException) {
                     modelMissingError
                 } else {
@@ -171,10 +190,26 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         while (recording) {
             delay(100)
             elapsedSeconds = totalSamples.get().toFloat() / 16_000f
+            val total = totalSamples.get()
+            val speech = speechSamples.get()
+            val enoughSpeech = total > 0 &&
+                speech.toFloat() / total >= VoiceEnrollment.MIN_SPEECH_RATIO
+            val quietFor = SystemClock.elapsedRealtime() - lastSpeechAt.get()
             if (elapsedSeconds >= VoiceEnrollment.MAX_SECONDS) {
+                stopRecording()
+            } else if (
+                elapsedSeconds >= VoiceEnrollment.MIN_SECONDS &&
+                enoughSpeech &&
+                quietFor >= 4_000
+            ) {
+                Log.i(TAG, "auto-stopping after silence")
                 stopRecording()
             }
         }
+    }
+
+    LaunchedEffect(saved) {
+        if (saved && finishAfterSave) onBack()
     }
 
     DisposableEffect(Unit) {
@@ -191,7 +226,16 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(horizontal = 20.dp)
     ) {
-        BackButton(onClick = onBack)
+        BackButton(
+            onClick = {
+                if (recording) {
+                    finishAfterSave = true
+                    stopRecording()
+                } else {
+                    onBack()
+                }
+            }
+        )
 
         LargeTitle(
             title = stringResource(R.string.voice_title),

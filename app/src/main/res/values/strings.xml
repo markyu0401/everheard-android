@@ -88,7 +88,7 @@
     <string name="voice_prompt_3">I will own this and get back to you by Friday.</string>
     <string name="voice_instructions">Read all three in one recording. Aim for 10–30 seconds of clear speech. Audio is discarded; only a voice vector is stored.</string>
     <string name="voice_record">Record voice</string>
-    <string name="voice_stop">Stop recording</string>
+    <string name="voice_stop">Stop and save</string>
     <string name="voice_checking">Checking…</string>
     <string name="voice_saved">Voice profile saved</string>
     <string name="voice_saved_body">Only a voice vector is stored on this device. You can re-record or delete it in Settings.</string>

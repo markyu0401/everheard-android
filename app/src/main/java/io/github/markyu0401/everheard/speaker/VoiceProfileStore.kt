@@ -33,6 +33,12 @@ class VoiceProfileStore(
         cache
     }
 
+    suspend fun reload(): VoiceProfile? = mutex.withLock {
+        cache = withContext(Dispatchers.IO) { readProfile() }
+        loaded = true
+        cache
+    }
+
     suspend fun save(embedding: FloatArray, samples: Int): VoiceProfile = mutex.withLock {
         val normalized = VoiceMatcher.normalize(embedding)
             ?: error("voice embedding is empty")

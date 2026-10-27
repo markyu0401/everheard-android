@@ -87,7 +87,7 @@
     <string name="voice_prompt_3">这件事我负责，周五之前给你答复。</string>
     <string name="voice_instructions">一次录完三句，尽量保持 10–30 秒清晰说话。音频会丢弃，只保存声纹向量。</string>
     <string name="voice_record">录制声音</string>
-    <string name="voice_stop">停止录制</string>
+    <string name="voice_stop">停止并保存</string>
     <string name="voice_checking">检查中…</string>
     <string name="voice_saved">声音档案已保存</string>
     <string name="voice_saved_body">本机只保存声纹向量。可以在设置里重新录制或删除。</string>

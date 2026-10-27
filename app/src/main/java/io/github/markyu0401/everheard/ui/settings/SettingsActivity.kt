@@ -105,13 +105,13 @@ private fun SettingsScreen(
     var showDeleteVoiceDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        profile = voiceStore.load()
+        profile = voiceStore.reload()
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                scope.launch { profile = voiceStore.load() }
+                scope.launch { profile = voiceStore.reload() }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
