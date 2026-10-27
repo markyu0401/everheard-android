@@ -122,9 +122,11 @@ AudioRecord(
 | `PAUSED_BATTERY` | closed | "Paused — battery 12 %" | battery < 15 % |
 | `PAUSED_SILENCE` | closed | "Paused — no speech for 15 min" | silence + stationary |
 | `PAUSED_USER` | closed | "Paused for 1 h" | notification action |
+| `PAUSED_APP_AUDIO` | closed | "Paused — excluded app is playing audio" | excluded app foreground + audible media/communication playback |
+| `PAUSED_MIC_BUSY` | closed | "Paused — another app is using the microphone" | another recorder, or our own capture is silenced by concurrent-capture policy |
 | `ERROR` | closed | "Capture stopped — tap to fix" | permission/FGS failure |
 
-Events: `USER_START`, `USER_STOP`, `USER_PAUSE(duration)`, `SCHEDULE_ALLOW`, `SCHEDULE_BLOCK`, `BATTERY_LOW`, `POWER_CONNECTED`, `SILENCE_TIMEOUT`, `MOTION`, `SCREEN_UNLOCK`, `BOOT`, `SERVICE_KILLED`.
+Events: `USER_START`, `USER_STOP`, `USER_PAUSE(duration)`, `SCHEDULE_ALLOW`, `SCHEDULE_BLOCK`, `BATTERY_LOW`, `POWER_CONNECTED`, `SILENCE_TIMEOUT`, `MOTION`, `SCREEN_UNLOCK`, `MIC_BUSY`, `MIC_AVAILABLE`, `EXCLUDED_APP_PLAYING`, `EXCLUDED_APP_STOPPED`, `BOOT`, `SERVICE_KILLED`.
 
 Transitions are pure functions, unit-tested without Android. Side effects (open/close `AudioRecord`, update notification) are applied by `CaptureService` after a transition.
 
@@ -154,6 +156,8 @@ Default for a new install: one `BLOCK` rule 23:30–07:00, every day. The UI is 
 - **Battery:** pause at < 15 %, resume at > 30 % while charging. Optional "record only while charging".
 - **Thermal:** `PowerManager.getCurrentThermalStatus() >= THERMAL_STATUS_MODERATE` → close mic, keep service armed; resume at `LIGHT`.
 - **Silence:** 15 min without speech and no significant motion → `PAUSED_SILENCE`; resume on motion (Activity Recognition transition) or screen unlock.
+- **Excluded playback:** Settings → Capture → Excluded apps; needs Usage access. If an excluded app is foreground and `AudioManager` reports audible media/communication playback, close the mic as `PAUSED_APP_AUDIO`; resume when playback stops. PiP/background playback without a foreground package is not detected yet.
+- **Mic busy:** `AudioRecordingMonitor` (API 29+) checks `getActiveRecordingConfigurations()`. Another non-silenced recorder, or a silenced own `AudioRecord` session, closes the mic as `PAUSED_MIC_BUSY`. This is the honest response to Android's concurrent-capture policy: an ordinary app cannot capture alongside a voice keyboard, call, or meeting app.
 - **Storage:** < 500 MB free → pause and notify; delete completed temp audio first.
 
 ### 4.4 Start, reboot, recovery
