@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.AlertDialog
@@ -47,12 +50,16 @@ import io.github.markyu0401.everheard.speaker.VoiceProfile
 import io.github.markyu0401.everheard.speaker.VoiceProfileStore
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
+import io.github.markyu0401.everheard.ui.components.BottomBar
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
+import io.github.markyu0401.everheard.ui.components.MainTab
 import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.components.SelectionRow
 import io.github.markyu0401.everheard.ui.components.SettingsRow
+import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
+import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
 import io.github.markyu0401.everheard.ui.voice.VoiceEnrollmentActivity
 import java.io.File
 import kotlinx.coroutines.launch
@@ -133,8 +140,13 @@ private fun SettingsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(horizontal = 20.dp)
     ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+        ) {
         BackButton(onClick = onBack)
 
         LargeTitle(
@@ -204,6 +216,21 @@ private fun SettingsScreen(
 
         Spacer(Modifier.height(24.dp))
 
+        SectionHeader(stringResource(R.string.settings_schedule))
+        GroupedCard {
+            SettingsRow(
+                icon = Icons.Filled.DateRange,
+                title = stringResource(R.string.schedule_open),
+                subtitle = stringResource(R.string.home_schedule_subtitle),
+                showDivider = false,
+                onClick = {
+                    context.startActivity(Intent(context, ScheduleActivity::class.java))
+                }
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
         SectionHeader(stringResource(R.string.settings_data))
         GroupedCard {
             SettingsRow(
@@ -223,6 +250,26 @@ private fun SettingsScreen(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(Modifier.height(16.dp))
+        }
+
+        BottomBar(
+            selected = MainTab.SETTINGS,
+            onSelect = { tab ->
+                when (tab) {
+                    MainTab.TODAY -> context.startActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
+                    MainTab.LIBRARY -> context.startActivity(
+                        Intent(context, TranscriptListActivity::class.java)
+                    )
+                    MainTab.SETTINGS -> Unit
+                }
+            }
         )
     }
 

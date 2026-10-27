@@ -10,7 +10,11 @@ data class VoiceProfile(
     val samples: Int,
     val createdAt: Long,
     val updatedAt: Long,
-    val alternates: List<FloatArray> = emptyList()
+    val alternates: List<FloatArray> = emptyList(),
+    val languages: List<String> = emptyList()
 ) {
     fun allEmbeddings(): List<FloatArray> = listOf(embedding) + alternates
+
+    fun languageAt(index: Int): String =
+        languages.getOrNull(index) ?: if (index == 0) "en" else "und"
 }

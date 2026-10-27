@@ -61,16 +61,12 @@ it starts at 300–500 ms, the pre-roll is not reaching the word onset.
 Do this before testing attribution:
 
 1. Open **Settings → Voice profile**. If it says **Not enrolled**, tap it.
-2. Record the **Chinese sample** first: read both Chinese prompts in one take,
-   naturally, for 5–20 seconds. Stop, or wait for the automatic silence stop.
-3. Record the **English sample** the same way.
-4. Tap **Save voice profile**. The Settings row should show the enrolled
-   duration. The recordings are discarded; only the voice vectors are stored.
-5. Start capture and speak one long Chinese sentence (at least 2 seconds), then
-   one English sentence, then have another person speak. Open the newest
-   transcript: your Chinese and English segments should be labelled **Me**; the
-   other voice should not.
-6. Check logcat for `speaker model loaded: 3dspeaker-campplus-zh-en-16k`,
+2. Choose a language from the **Language** dropdown (中文 / Chinese or English / 英文).
+3. Read both prompts for that language in one take, naturally, for 5–20 seconds. Stop, or wait for the automatic silence stop.
+4. If you speak both languages, choose the other language and record it too; one language is enough for a single-language user.
+5. Tap **Save voice profile**. The Settings row should show the enrolled duration and language count. The recordings are discarded; only the voice vectors are stored.
+6. Start capture and speak one long sentence in each enrolled language, then have another person speak. Open the newest transcript: your segments should be labelled **Me**; the other voice should not.
+7. Check logcat for `speaker model loaded: 3dspeaker-campplus-zh-en-16k`,
    `speaker score=...`, and any `Speaker attribution failed` errors.
 
 The cosine threshold is **0.72 and provisional**. Record the scores and any

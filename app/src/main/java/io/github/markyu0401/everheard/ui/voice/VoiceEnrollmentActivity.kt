@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -16,6 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,6 +53,7 @@ import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
 import io.github.markyu0401.everheard.ui.components.SectionHeader
+import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import java.io.File
 import java.util.Collections
@@ -56,10 +64,30 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "VoiceEnrollment"
 
-private enum class VoiceSampleStage {
-    CHINESE,
-    ENGLISH
-}
+private data class VoiceLanguageOption(
+    val tag: String,
+    val labelRes: Int,
+    val promptRes: List<Int>
+)
+
+private val VOICE_LANGUAGES = listOf(
+    VoiceLanguageOption(
+        tag = "zh",
+        labelRes = R.string.voice_language_chinese,
+        promptRes = listOf(
+            R.string.voice_chinese_prompt_1,
+            R.string.voice_chinese_prompt_2
+        )
+    ),
+    VoiceLanguageOption(
+        tag = "en",
+        labelRes = R.string.voice_language_english,
+        promptRes = listOf(
+            R.string.voice_english_prompt_1,
+            R.string.voice_english_prompt_2
+        )
+    )
+)
 
 class VoiceEnrollmentActivity : LocalizedActivity() {
 
@@ -88,15 +116,15 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
 
     var source by remember { mutableStateOf<AudioRecordSource?>(null) }
     var vad by remember { mutableStateOf<SileroVad?>(null) }
-    var recordingStage by remember { mutableStateOf<VoiceSampleStage?>(null) }
-    var processingStage by remember { mutableStateOf<VoiceSampleStage?>(null) }
+    var recordingLanguage by remember { mutableStateOf<String?>(null) }
+    var processingLanguage by remember { mutableStateOf<String?>(null) }
     var elapsedSeconds by remember { mutableStateOf(0f) }
     var error by remember { mutableStateOf<String?>(null) }
     var saved by remember { mutableStateOf(false) }
-    var chineseEmbedding by remember { mutableStateOf<FloatArray?>(null) }
-    var englishEmbedding by remember { mutableStateOf<FloatArray?>(null) }
-    var chineseSamples by remember { mutableStateOf(0) }
-    var englishSamples by remember { mutableStateOf(0) }
+    var selectedLanguage by remember { mutableStateOf("zh") }
+    var menuExpanded by remember { mutableStateOf(false) }
+    var recordedEmbeddings by remember { mutableStateOf<Map<String, FloatArray>>(emptyMap()) }
+    var samplesByLanguage by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
 
     val permissionError = stringResource(R.string.voice_permission)
     val tooShortError = stringResource(R.string.voice_too_short)
@@ -106,8 +134,24 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
     val modelMissingError = stringResource(R.string.voice_model_missing)
     val failedError = stringResource(R.string.voice_failed)
 
-    fun startRecording(stage: VoiceSampleStage) {
-        if (recordingStage != null || processingStage != null) return
+    LaunchedEffect(Unit) {
+        val existing = store.load()
+        if (existing != null) {
+            val embeddings = existing.allEmbeddings()
+            val languages = existing.languages.ifEmpty {
+                List(embeddings.size) { index -> if (index == 0) "en" else "und" }
+            }
+            recordedEmbeddings = languages.zip(embeddings).toMap()
+            val perLanguage = if (embeddings.isEmpty()) 0 else existing.samples / embeddings.size
+            samplesByLanguage = languages.associateWith { perLanguage }
+            selectedLanguage = languages.firstOrNull { tag ->
+                VOICE_LANGUAGES.any { it.tag == tag }
+            } ?: "zh"
+        }
+    }
+
+    fun startRecording() {
+        if (recordingLanguage != null || processingLanguage != null) return
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -125,8 +169,8 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         val sourceInstance = AudioRecordSource()
         vad = vadInstance
         source = sourceInstance
-        recordingStage = stage
-        Log.i(TAG, "enrollment recording started: $stage")
+        recordingLanguage = selectedLanguage
+        Log.i(TAG, "enrollment recording started: $selectedLanguage")
         sourceInstance.start { frame ->
             frames.add(frame)
             totalSamples.addAndGet(frame.size)
@@ -138,13 +182,13 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
     }
 
     fun stopRecording() {
-        val stage = recordingStage ?: return
-        recordingStage = null
+        val language = recordingLanguage ?: return
+        recordingLanguage = null
         source?.stop()
         source = null
         vad?.release()
         vad = null
-        processingStage = stage
+        processingLanguage = language
         val pcm = synchronized(frames) {
             val total = frames.sumOf { it.size }
             val result = ShortArray(total)
@@ -159,7 +203,7 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         val assessment = VoiceEnrollment.assess(pcm, speech)
         Log.i(
             TAG,
-            "assessment stage=$stage duration=${assessment.durationSeconds}s " +
+            "assessment language=$language duration=${assessment.durationSeconds}s " +
                 "rms=${assessment.rms} speechRatio=${assessment.speechRatio} " +
                 "issue=${assessment.issue}"
         )
@@ -171,65 +215,58 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
                 VoiceIssue.NOT_ENOUGH_SPEECH -> notEnoughSpeechError
                 null -> null
             }
-            processingStage = null
+            processingLanguage = null
             return
         }
         scope.launch {
             try {
                 val embedder = SherpaSpeakerEmbedder(context.assets)
                 val embedding = embedder.embed(pcm)
-                when (stage) {
-                    VoiceSampleStage.CHINESE -> {
-                        chineseEmbedding = embedding
-                        chineseSamples = pcm.size
-                    }
-                    VoiceSampleStage.ENGLISH -> {
-                        englishEmbedding = embedding
-                        englishSamples = pcm.size
-                    }
-                }
-                Log.i(TAG, "sample ready: $stage samples=${pcm.size}")
+                recordedEmbeddings = recordedEmbeddings + (language to embedding)
+                samplesByLanguage = samplesByLanguage + (language to pcm.size)
+                Log.i(TAG, "sample ready: $language samples=${pcm.size}")
             } catch (throwable: Throwable) {
-                Log.e(TAG, "sample embedding failed: $stage", throwable)
+                Log.e(TAG, "sample embedding failed: $language", throwable)
                 error = if (throwable is SpeakerModelMissingException) {
                     modelMissingError
                 } else {
                     failedError
                 }
             } finally {
-                processingStage = null
+                processingLanguage = null
             }
         }
     }
 
     fun saveProfile() {
-        val chinese = chineseEmbedding ?: return
-        val english = englishEmbedding ?: return
-        if (processingStage != null) return
-        processingStage = VoiceSampleStage.CHINESE
+        if (recordedEmbeddings.isEmpty() || processingLanguage != null) return
+        val languages = recordedEmbeddings.keys.toList()
+        val embeddings = languages.map { recordedEmbeddings.getValue(it) }
+        processingLanguage = selectedLanguage
         scope.launch {
             try {
                 store.save(
-                    embeddings = listOf(chinese, english),
-                    samples = chineseSamples + englishSamples
+                    embeddings = embeddings,
+                    languages = languages,
+                    samples = samplesByLanguage.values.sum()
                 )
                 saved = true
                 Log.i(
                     TAG,
-                    "bilingual profile saved chinese=${chineseSamples} " +
-                        "english=${englishSamples}"
+                    "voice profile saved languages=$languages " +
+                        "samples=${samplesByLanguage.values.sum()}"
                 )
             } catch (throwable: Throwable) {
                 Log.e(TAG, "profile save failed", throwable)
                 error = failedError
             } finally {
-                processingStage = null
+                processingLanguage = null
             }
         }
     }
 
-    LaunchedEffect(recordingStage) {
-        while (recordingStage != null) {
+    LaunchedEffect(recordingLanguage) {
+        while (recordingLanguage != null) {
             delay(100)
             elapsedSeconds = totalSamples.get().toFloat() / 16_000f
             val total = totalSamples.get()
@@ -257,12 +294,18 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
         }
     }
 
+    val selectedOption = VOICE_LANGUAGES.firstOrNull { it.tag == selectedLanguage }
+        ?: VOICE_LANGUAGES.first()
+    val selectedReady = recordedEmbeddings.containsKey(selectedOption.tag)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.safeDrawing)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
+            .padding(bottom = 24.dp)
     ) {
         BackButton(onClick = onBack)
 
@@ -299,60 +342,75 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
                 text = stringResource(R.string.voice_record_again),
                 onClick = {
                     saved = false
-                    chineseEmbedding = null
-                    englishEmbedding = null
-                    chineseSamples = 0
-                    englishSamples = 0
+                    recordedEmbeddings = emptyMap()
+                    samplesByLanguage = emptyMap()
                     error = null
                 }
             )
             return@Column
         }
 
-        SectionHeader(stringResource(R.string.voice_profiles_header))
-
-        SampleSection(
-            header = stringResource(R.string.voice_chinese_section),
-            prompts = listOf(
-                stringResource(R.string.voice_chinese_prompt_1),
-                stringResource(R.string.voice_chinese_prompt_2)
-            ),
-            ready = chineseEmbedding != null,
-            recording = recordingStage == VoiceSampleStage.CHINESE,
-            processing = processingStage == VoiceSampleStage.CHINESE,
-            recordLabel = stringResource(R.string.voice_record_chinese),
-            stopLabel = stringResource(R.string.voice_stop),
-            readyLabel = stringResource(R.string.voice_sample_ready),
-            checkingLabel = stringResource(R.string.voice_checking),
-            onToggle = {
-                if (recordingStage == VoiceSampleStage.CHINESE) {
-                    stopRecording()
-                } else {
-                    startRecording(VoiceSampleStage.CHINESE)
+        SectionHeader(stringResource(R.string.voice_language_header))
+        GroupedCard {
+            Box {
+                SettingsRow(
+                    icon = Icons.Filled.Face,
+                    title = stringResource(selectedOption.labelRes),
+                    subtitle = stringResource(
+                        if (selectedReady) {
+                            R.string.voice_sample_ready
+                        } else {
+                            R.string.voice_not_recorded
+                        }
+                    ),
+                    trailingText = "▾",
+                    showDivider = false,
+                    onClick = { menuExpanded = true }
+                )
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    VOICE_LANGUAGES.forEach { option ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = buildString {
+                                        append(stringResource(option.labelRes))
+                                        if (recordedEmbeddings.containsKey(option.tag)) {
+                                            append("  ✓")
+                                        }
+                                    }
+                                )
+                            },
+                            onClick = {
+                                selectedLanguage = option.tag
+                                menuExpanded = false
+                                error = null
+                            }
+                        )
+                    }
                 }
             }
-        )
+        }
 
         Spacer(Modifier.height(20.dp))
 
         SampleSection(
-            header = stringResource(R.string.voice_english_section),
-            prompts = listOf(
-                stringResource(R.string.voice_english_prompt_1),
-                stringResource(R.string.voice_english_prompt_2)
-            ),
-            ready = englishEmbedding != null,
-            recording = recordingStage == VoiceSampleStage.ENGLISH,
-            processing = processingStage == VoiceSampleStage.ENGLISH,
-            recordLabel = stringResource(R.string.voice_record_english),
+            header = stringResource(R.string.voice_prompts_header),
+            prompts = selectedOption.promptRes.map { stringResource(it) },
+            ready = selectedReady,
+            recording = recordingLanguage == selectedOption.tag,
+            processing = processingLanguage == selectedOption.tag,
+            recordLabel = stringResource(R.string.voice_record),
             stopLabel = stringResource(R.string.voice_stop),
             readyLabel = stringResource(R.string.voice_sample_ready),
             checkingLabel = stringResource(R.string.voice_checking),
             onToggle = {
-                if (recordingStage == VoiceSampleStage.ENGLISH) {
+                if (recordingLanguage == selectedOption.tag) {
                     stopRecording()
                 } else {
-                    startRecording(VoiceSampleStage.ENGLISH)
+                    startRecording()
                 }
             }
         )
@@ -375,21 +433,21 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
 
         Spacer(Modifier.height(20.dp))
 
-        if (chineseEmbedding != null && englishEmbedding != null) {
+        if (recordedEmbeddings.isNotEmpty()) {
             PrimaryButton(
                 text = stringResource(R.string.voice_save_profile),
-                enabled = processingStage == null,
+                enabled = processingLanguage == null,
                 onClick = { saveProfile() }
             )
         } else {
             Text(
-                text = stringResource(R.string.voice_need_both),
+                text = stringResource(R.string.voice_need_one),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        if (recordingStage != null) {
+        if (recordingLanguage != null) {
             Spacer(Modifier.height(10.dp))
             Text(
                 text = stringResource(R.string.voice_seconds, elapsedSeconds.toInt()),
@@ -452,7 +510,6 @@ private fun SampleSection(
         text = when {
             recording -> stopLabel
             processing -> checkingLabel
-            ready -> recordLabel
             else -> recordLabel
         },
         enabled = !processing,

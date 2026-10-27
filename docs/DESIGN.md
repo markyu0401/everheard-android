@@ -382,17 +382,17 @@ Validation rules:
 
 | Screen | Content | Key interaction |
 |---|---|---|
-| Today | Vertical timeline of session cards with time, duration, title, next-line preview, and mark count | Tap → detail; chips and summary are planned |
+| Today | Vertical timeline of session cards with time, duration, title, next-line preview, and mark count | Tap → detail; bottom taskbar persists |
 | Live | Timer, waveform, live transcript with speaker colors, privacy strip | Mark; pause; stop |
 | Session detail | Transcript with star marks, share, and delete | Tap a line to mark; summary/todos tabs arrive with M4 |
 | Projects | Project cards with last activity and open commitments | Merge/split; open timeline |
 | Project detail | Event timeline + insight card | Jump to source session |
 | Insight | Weekly metrics + insight cards with evidence | Drill into citations |
 | Person | Last talked, open commitments, projects | Rename; merge clusters |
-| Settings | Language (System/English/简体中文), appearance (System/Light/Dark), Voice profile (Chinese + English enrollment, re-record/delete), and Data > Clear all transcripts | Changes apply immediately; language restarts the task; clearing is confirmed |
+| Settings | Language (System/English/简体中文), appearance (System/Light/Dark), Voice profile (language dropdown, add/select Chinese or English, re-record/delete), Schedule, and Data > Clear all transcripts | Changes apply immediately; language restarts the task; clearing is confirmed; content scrolls above the taskbar |
 | Onboarding | Legal notice, mic permission, enrollment, schedule default | 3 steps, skippable enrollment |
 
-Implemented in the M2 UI slice: Home (with a Today/Recent timeline of session cards), Live, Transcripts, Session detail (manual star marks, share, single-session delete), Schedule, Settings (Voice profile enrollment/delete and Data > Clear all), Onboarding, Permission gate. Today shows time, duration, title, preview, and mark count; summary, todos, chips, and summary/transcript tabs remain planned. Voice enrollment and “me” labelling are implemented; other-speaker clustering, threshold calibration, and background filtering remain planned. Projects, Insight, Person, and provider settings remain planned; do not ship dead links for them.
+Implemented in the M2 UI slice: Home (Today/Recent timeline), Live, Transcripts, Session detail (marks/share/delete), Schedule, Settings (voice profile, schedule, data), Onboarding, Permission gate, and a persistent bottom taskbar (Today / Library / Settings). Main surfaces scroll above the bar. Voice enrollment uses a language dropdown and stores one centroid per recorded language; summary, todos, chips, Insights, Projects, Person, and provider settings remain planned. Do not ship dead links for them.
 
 ### 10.2 Tokens
 

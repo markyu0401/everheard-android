@@ -25,7 +25,8 @@ only marked **Shipped** when it works on a real screen and has tests.
 | **Projects** | **Planned (M5)** | None | Embedding clustering + entity overlap; project timeline; merge/split |
 | **Insight / 觉察** | **Planned (M5)** | None | Weekly metrics + O-Mind-style behavior observations with ≥ 2 citations and one action suggestion |
 | **Connect / MCP** | **Planned (M6)** | Share/export only | HTTP MCP server with bearer token: `search_memory`, `list_commitments`, `get_project`, `get_session`; JSON schema |
-| **Voice profile enrollment** | **Shipped** | Settings → Voice profile records a Chinese sample and an English sample separately; each is quality-gated, embedded with CAM++, normalised, and stored encrypted as multiple centroids. Re-record and delete supported | Calibrate thresholds per language/acoustic condition; add more conditions later |
+| **Today / Library / Insights / Settings tabs** | **Partial** | A persistent bottom taskbar (Today, Library, Settings) is implemented; Schedule is folded into Settings, Live into Today; Insights has no destination yet | Add Insights only when the page exists; keep three tabs until then |
+| **Voice profile enrollment** | **Shipped** | Settings → Voice profile uses a language dropdown (中文 / Chinese, English / 英文), records one or both languages separately, quality-gates each, and stores encrypted per-language centroids. Re-record and delete supported | Add more language options when prompt sets exist; per-language threshold calibration |
 | **Speaker attribution** | **Partial** | Capture compares a segment against all enrolled centroids, labels `me` at best cosine ≥ 0.72, and logs the score; UI shows “Me”; other speakers are not clustered yet | Real-device precision/recall; online clustering; “not mine” correction; threshold calibration |
 | **Manual mark at capture time** | **Planned** | Mark action exists only after transcription | Notification/Live mark that attaches to the current segment |
 | **Provider settings (BYO)** | **Planned (M6)** | None | ASR/LLM/embedding base URL, key, model, test connection, fallback chain |
@@ -63,9 +64,15 @@ only marked **Shipped** when it works on a real screen and has tests.
 - **Insight**: weekly metrics + evidence cards; never an insight without at
   least two citations.
 - **Connect**: chat-like memory query; MCP is the first integration, IM later.
-- **Settings**: Voice profile row (enrolled/not enrolled), re-record and delete;
-  Data row for clearing transcripts.
-- **Voice enrollment**: Chinese and English samples recorded separately, quality feedback, encrypted vectors only; no audio retained. The profile keeps one centroid per language so code-switching does not collapse attribution.
+- **Navigation**: persistent bottom taskbar with Today, Library, and Settings;
+  detail screens keep a back button and hide the bar. Schedule is folded into
+  Settings, Live into Today. Do not add an Insights tab until the page exists.
+- **Scrolling**: every main surface scrolls vertically above the fixed taskbar;
+  voice enrollment and settings must never clip below the fold.
+- **Settings**: Voice profile row (language dropdown, add/select Chinese or
+  English, re-record/delete), Schedule row, and Data row for clearing transcripts.
+- **Voice enrollment**: choose a language from a dropdown, record 5–20 seconds,
+  repeat for another language if needed; encrypted vectors only; no audio retained.
 - **Privacy**: voiceprint is a biometric; it is used for attribution, never for
   authentication, and can be deleted.
 - **Motion**: restrained; no gradients, no dashboard chrome, no developer

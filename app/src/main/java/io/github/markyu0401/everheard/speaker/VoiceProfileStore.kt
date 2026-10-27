@@ -40,10 +40,18 @@ class VoiceProfileStore(
     }
 
     suspend fun save(embedding: FloatArray, samples: Int): VoiceProfile =
-        save(listOf(embedding), samples)
+        save(listOf(embedding), listOf("en"), samples)
 
-    suspend fun save(embeddings: List<FloatArray>, samples: Int): VoiceProfile = mutex.withLock {
+    suspend fun save(embeddings: List<FloatArray>, samples: Int): VoiceProfile =
+        save(embeddings, List(embeddings.size) { "und" }, samples)
+
+    suspend fun save(
+        embeddings: List<FloatArray>,
+        languages: List<String>,
+        samples: Int
+    ): VoiceProfile = mutex.withLock {
         require(embeddings.isNotEmpty()) { "voice embedding is empty" }
+        require(embeddings.size == languages.size) { "language count mismatch" }
         val normalized = embeddings.map {
             VoiceMatcher.normalize(it) ?: error("voice embedding is empty")
         }
@@ -54,7 +62,8 @@ class VoiceProfileStore(
             samples = samples,
             createdAt = previous?.createdAt ?: now,
             updatedAt = now,
-            alternates = normalized.drop(1)
+            alternates = normalized.drop(1),
+            languages = languages
         )
         withContext(Dispatchers.IO) { writeProfile(profile) }
         cache = profile
@@ -99,9 +108,20 @@ class VoiceProfileStore(
                 samples = root.optInt("samples", 0),
                 createdAt = root.optLong("createdAt", 0L),
                 updatedAt = root.optLong("updatedAt", 0L),
-                alternates = alternates
+                alternates = alternates,
+                languages = readLanguages(root)
             )
         }.getOrNull()
+    }
+
+    private fun readLanguages(root: JSONObject): List<String> {
+        val array = root.optJSONArray("languages") ?: return emptyList()
+        val result = mutableListOf<String>()
+        for (index in 0 until array.length()) {
+            val value = array.optString(index).trim()
+            if (value.isNotEmpty()) result += value
+        }
+        return result
     }
 
     private fun writeProfile(profile: VoiceProfile) {
@@ -123,6 +143,11 @@ class VoiceProfileStore(
             put("samples", profile.samples)
             put("createdAt", profile.createdAt)
             put("updatedAt", profile.updatedAt)
+            if (profile.languages.isNotEmpty()) {
+                put("languages", JSONArray().apply {
+                    profile.languages.forEach { put(it) }
+                })
+            }
         }
         val encrypted = cipher.encrypt(root.toString().toByteArray(Charsets.UTF_8))
         val temp = File(file.parentFile, "${file.name}.tmp")

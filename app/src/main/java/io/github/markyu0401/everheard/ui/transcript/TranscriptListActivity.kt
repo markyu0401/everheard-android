@@ -54,16 +54,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.markyu0401.everheard.R
+import io.github.markyu0401.everheard.MainActivity
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptHit
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
+import io.github.markyu0401.everheard.ui.components.BottomBar
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
+import io.github.markyu0401.everheard.ui.components.MainTab
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
 import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
+import io.github.markyu0401.everheard.ui.settings.SettingsActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import java.io.File
 import java.text.DateFormat
@@ -199,6 +203,7 @@ fun TranscriptListScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(Modifier.weight(1f))
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -219,6 +224,7 @@ fun TranscriptListScreen(
             }
         } else if (loaded && sessions.isEmpty()) {
             EmptyTranscripts(onOpenLive = onOpenLive)
+            Spacer(Modifier.weight(1f))
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f),
@@ -245,6 +251,23 @@ fun TranscriptListScreen(
                 }
             }
         }
+
+        BottomBar(
+            selected = MainTab.LIBRARY,
+            onSelect = { tab ->
+                when (tab) {
+                    MainTab.TODAY -> context.startActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
+                    MainTab.SETTINGS -> context.startActivity(
+                        Intent(context, SettingsActivity::class.java)
+                    )
+                    MainTab.LIBRARY -> Unit
+                }
+            }
+        )
     }
 }
 

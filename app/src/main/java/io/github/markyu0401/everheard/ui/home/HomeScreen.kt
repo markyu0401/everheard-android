@@ -18,10 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -41,7 +37,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -53,15 +48,16 @@ import io.github.markyu0401.everheard.capture.CaptureController
 import io.github.markyu0401.everheard.capture.CaptureState
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.ui.components.BottomBar
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
+import io.github.markyu0401.everheard.ui.components.MainTab
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
 import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.components.StatusDot
 import io.github.markyu0401.everheard.ui.components.TranscriptSessionRow
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
-import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
 import io.github.markyu0401.everheard.ui.settings.SettingsActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
@@ -181,54 +177,46 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
             Spacer(Modifier.height(28.dp))
 
-            SectionHeader(stringResource(R.string.home_library))
+            SectionHeader(stringResource(R.string.home_quick_actions))
             GroupedCard {
-                SettingsRow(
-                    icon = Icons.Filled.List,
-                    title = stringResource(R.string.transcript_open),
-                    subtitle = stringResource(R.string.home_transcript_subtitle),
-                    onClick = {
-                        context.startActivity(Intent(context, TranscriptListActivity::class.java))
-                    }
-                )
-                SettingsRow(
-                    icon = Icons.Filled.DateRange,
-                    title = stringResource(R.string.schedule_open),
-                    subtitle = stringResource(R.string.home_schedule_subtitle),
-                    onClick = {
-                        context.startActivity(Intent(context, ScheduleActivity::class.java))
-                    }
-                )
                 SettingsRow(
                     iconPainter = painterResource(R.drawable.ic_stat_everheard),
                     title = stringResource(R.string.live_open),
                     subtitle = stringResource(R.string.home_live_subtitle),
+                    showDivider = false,
                     onClick = {
                         context.startActivity(Intent(context, LiveCaptureActivity::class.java))
                     }
                 )
-                SettingsRow(
-                    icon = Icons.Filled.Settings,
-                    title = stringResource(R.string.settings_open),
-                    subtitle = stringResource(R.string.home_settings_subtitle),
-                    showDivider = false,
-                    onClick = {
-                        context.startActivity(Intent(context, SettingsActivity::class.java))
-                    }
-                )
             }
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(24.dp))
+
+            Text(
+                text = stringResource(R.string.home_footer),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 8.dp)
+            )
+
+            Spacer(Modifier.height(8.dp))
         }
 
-        Text(
-            text = stringResource(R.string.home_footer),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+        BottomBar(
+            selected = MainTab.TODAY,
+            onSelect = { tab ->
+                when (tab) {
+                    MainTab.LIBRARY -> context.startActivity(
+                        Intent(context, TranscriptListActivity::class.java)
+                    )
+                    MainTab.SETTINGS -> context.startActivity(
+                        Intent(context, SettingsActivity::class.java)
+                    )
+                    MainTab.TODAY -> Unit
+                }
+            }
         )
     }
 }
