@@ -178,7 +178,11 @@ private fun SettingsScreen(
                 icon = Icons.Filled.Face,
                 title = stringResource(R.string.settings_voice_title),
                 subtitle = profile?.let {
-                    stringResource(R.string.settings_voice_enrolled, it.samples / 16_000)
+                    stringResource(
+                        R.string.settings_voice_enrolled,
+                        it.samples / 16_000,
+                        it.allEmbeddings().size
+                    )
                 } ?: stringResource(R.string.settings_voice_not_enrolled),
                 showDivider = profile != null,
                 onClick = {

@@ -309,6 +309,8 @@ private fun VoiceEnrollmentScreen(onBack: () -> Unit) {
             return@Column
         }
 
+        SectionHeader(stringResource(R.string.voice_profiles_header))
+
         SampleSection(
             header = stringResource(R.string.voice_chinese_section),
             prompts = listOf(
