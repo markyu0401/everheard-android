@@ -48,6 +48,7 @@ import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.settings.AppLanguage
 import io.github.markyu0401.everheard.data.settings.ThemeMode
 import io.github.markyu0401.everheard.data.settings.appSettingsStore
+import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.speaker.VoiceProfile
 import io.github.markyu0401.everheard.speaker.VoiceProfileStore
@@ -114,6 +115,9 @@ private fun SettingsScreen(
     val settings by store.settings.collectAsStateWithLifecycle(initialValue = store.current)
     val transcriptStore = remember(context) {
         EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
+    }
+    val memoryStore = remember(context) {
+        EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
     val voiceStore = remember(context) {
         VoiceProfileStore(File(context.filesDir, "voice_profile.bin"))
@@ -326,6 +330,7 @@ private fun SettingsScreen(
                         showClearDialog = false
                         scope.launch {
                             transcriptStore.clear()
+                            memoryStore.clear()
                             Toast.makeText(
                                 context,
                                 R.string.settings_clear_done,

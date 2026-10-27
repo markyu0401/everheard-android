@@ -17,13 +17,14 @@ only marked **Shipped** when it works on a real screen and has tests.
 
 | OPPO / 白鲸 AI capability | Everheard status | What exists now | Next |
 |---|---|---|---|
-| **Today** timeline | **Partial** | Home shows today's sessions (or recent), with time, duration, title, next-line preview, mark count; tap → detail | Add structured summary, todos, semantic event cards (“what happened”, decision, commitment, risk, inspiration), chips, and a mark gesture from Today |
-| **Semantic daily timeline** | **Planned (M4)** | Only raw session cards; no extracted events | M4-T9: extract what happened / decision / commitment / risk, each with quote + timestamp + speaker; render as timeline cards |
-| **Inspiration / idea notes** | **Planned (M4)** | None | M4-T10: manual “save this thought” and extracted ideas; distinct timeline card with source quote |
+| **Today** timeline | **Partial** | Home shows today's sessions (or recent), plus up to three semantic highlights extracted locally; session cards carry time, duration, title, next-line preview, mark count; tap → detail | Add full structured summary, todos, all semantic event cards, chips, and a mark gesture from Today |
+| **Semantic daily timeline** | **Partial (M4)** | Local rule analyzer extracts progress / decision / commitment / risk / inspiration from transcript lines; Today shows the top three; session detail shows the full timeline | LLM schema extraction for better recall; every event still needs quote + timestamp + speaker; no event without evidence |
+| **Inspiration / idea notes** | **Partial (M4)** | Marked lines and keyword ideas become “Ideas” cards; no manual “save this thought” action yet | Add a capture-time / Live “save idea” action; keep source quote |
 | **Manual highlight** | **Shipped** | Tap any transcript line in Session detail to star/unstar it; marked lines get an amber tint; Today shows the mark count; mark is persisted in the encrypted store | Add a capture-time mark action (notification/Live) and a "Marked" filter |
 | **Session share / delete** | **Shipped** | Share a session as plain text; delete one session with confirmation; Settings → Data → clear all | Add JSON/Markdown export and bulk export |
-| **Structured summary** | **Planned (M4)** | None; do not fake one | Summary JSON schema + validator; every item must cite a quote + timestamp |
-| **Todos / commitments** | **Planned (M4)** | None | Bitemporal commitment model, dedupe, calendar/reminder bridge |
+| **Structured summary** | **Partial (M4)** | Extractive summary from the first two utterances; every summary/event cites a transcript line; no cloud LLM yet | LLM JSON schema + validator; hierarchical summary; retry/repair; no fabricated item |
+| **Todos / commitments** | **Partial (M4)** | Local rule extractor finds commitments and due hints; encrypted memory store persists them; session detail lists open commitments | Bitemporal commitment model, dedupe, calendar/reminder bridge, completion state |
+| **Memory store** | **Shipped (M4 slice)** | Encrypted `memory.bin` (AES-256-GCM, separate Keystore alias), versioned JSON; save/get/delete/clear; session delete and clear-all remove memory | Room + SQLCipher migration; FTS/vector retrieval; project/person relations |
 | **Projects** | **Planned (M5)** | None | Embedding clustering + entity overlap; project timeline with cross-session progress/decision/commitment/risk events and evidence; merge/split |
 | **Insight / 觉察** | **Planned (M5)** | None | Weekly metrics + O-Mind-style behavior observations with ≥ 2 citations and one action suggestion |
 | **Conversation profile / long-term memory** | **Planned (M5)** | None | Person page with recurring people, topics, open commitments; project/person summaries over time; rename/merge/split; source citations |
@@ -40,7 +41,7 @@ only marked **Shipped** when it works on a real screen and has tests.
 | **Cloud ASR re-decode** | **Planned (M2-T3)** | Local SenseVoice final decode | OpenAI-compatible `/v1/audio/transcriptions`, per-session consent |
 | **Hotwords / normalization** | **Planned (M2-T6)** | None | People/project names, punctuation, number/date normalization |
 | **FTS search** | **Partial** | Substring search over utterances | SQLite FTS5 + ranking, date/language filters |
-| **Session detail tabs** | **Planned** | One transcript list with marks | Summary / Transcript / Actions segmented control after M4 |
+| **Session detail tabs** | **Partial** | Stacked Summary / Timeline / Commitments / Ideas above the transcript; no segmented control | Summary / Transcript / Actions segmented control; tap an event to jump to its quote |
 | **ROM matrix / survival** | **Partial** | S26 Ultra + AOSP emulator; Tailscale install | 8 h/24 h soak, Chinese OEM background guidance, boot recovery |
 | **24 h armed** | **Partial** | ARMED + schedule/battery/thermal/silence gates | Soak numbers; charge-during-sleep guidance |
 | **Privacy** | **Shipped** | Persistent notification, visible capture, FLAG_SECURE, AES-256-GCM + Keystore, no raw audio retained, `allowBackup=false` | Log audit; export redaction; MCP scope audit |

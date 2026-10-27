@@ -250,4 +250,24 @@
     <string name="speaker_spike_windows">%1$d 个窗口</string>
     <string name="speaker_spike_clusters">聚类数：%1$d</string>
     <string name="speaker_spike_open">打开声纹自检（M0）</string>
+    <string name="memory_section">记忆</string>
+    <string name="memory_highlights">今日要点</string>
+    <string name="memory_summary">摘要</string>
+    <string name="memory_timeline">时间线</string>
+    <string name="memory_commitments">承诺与待办</string>
+    <string name="memory_inspirations">灵感</string>
+    <string name="memory_analyze">分析这段对话</string>
+    <string name="memory_refresh">重新分析</string>
+    <string name="memory_analyzing">正在分析…</string>
+    <string name="memory_local_note">本地分析；每条都引用原文。</string>
+    <string name="memory_empty">还没有结构化记忆。</string>
+    <string name="memory_no_events">这段转写里没有明确的决定、承诺、风险或灵感。</string>
+    <string name="memory_open">未完成</string>
+    <string name="memory_owner_me">我</string>
+    <string name="memory_due">截止：%1$s</string>
+    <string name="memory_event_progress">进展</string>
+    <string name="memory_event_decision">决定</string>
+    <string name="memory_event_commitment">承诺</string>
+    <string name="memory_event_risk">风险</string>
+    <string name="memory_event_inspiration">灵感</string>
 </resources>

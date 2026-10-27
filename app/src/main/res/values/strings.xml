@@ -251,4 +251,24 @@
     <string name="speaker_spike_windows">%1$d windows</string>
     <string name="speaker_spike_clusters">Clusters: %1$d</string>
     <string name="speaker_spike_open">Open speaker spike (M0)</string>
+    <string name="memory_section">Memory</string>
+    <string name="memory_highlights">Highlights</string>
+    <string name="memory_summary">Summary</string>
+    <string name="memory_timeline">Timeline</string>
+    <string name="memory_commitments">Commitments</string>
+    <string name="memory_inspirations">Ideas</string>
+    <string name="memory_analyze">Analyze this conversation</string>
+    <string name="memory_refresh">Refresh analysis</string>
+    <string name="memory_analyzing">Analyzing…</string>
+    <string name="memory_local_note">Local analysis. Every item cites a transcript line.</string>
+    <string name="memory_empty">No structured memory yet.</string>
+    <string name="memory_no_events">No clear decisions, commitments, risks, or ideas in this transcript.</string>
+    <string name="memory_open">Open</string>
+    <string name="memory_owner_me">Me</string>
+    <string name="memory_due">Due: %1$s</string>
+    <string name="memory_event_progress">Progress</string>
+    <string name="memory_event_decision">Decision</string>
+    <string name="memory_event_commitment">Commitment</string>
+    <string name="memory_event_risk">Risk</string>
+    <string name="memory_event_inspiration">Idea</string>
 </resources>

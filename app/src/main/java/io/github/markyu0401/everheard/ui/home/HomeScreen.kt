@@ -46,12 +46,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.capture.CaptureController
 import io.github.markyu0401.everheard.capture.CaptureState
+import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
+import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.SessionMemory
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.ui.components.BottomBar
 import io.github.markyu0401.everheard.ui.components.GroupedCard
 import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.MainTab
+import io.github.markyu0401.everheard.ui.components.MemoryEventRow
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
 import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.components.SettingsRow
@@ -86,16 +90,38 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     val store = remember(context) {
         EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
     }
+    val memoryStore = remember(context) {
+        EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
+    }
+    val analyzer = remember { RuleBasedMemoryAnalyzer() }
     var sessions by remember { mutableStateOf<List<TranscriptSession>>(emptyList()) }
+    var memories by remember { mutableStateOf<List<SessionMemory>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         sessions = store.reload()
+        memories = memoryStore.reload()
+        val today = sessions.filter { isToday(it.startedAt) }
+        val missing = today.filter { session ->
+            session.utterances.isNotEmpty() &&
+                memories.none { it.sessionId == session.id }
+        }
+        if (missing.isNotEmpty()) {
+            missing.take(5).forEach { session ->
+                runCatching {
+                    memoryStore.save(analyzer.analyze(session))
+                }
+            }
+            memories = memoryStore.reload()
+        }
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                scope.launch { sessions = store.reload() }
+                scope.launch {
+                    sessions = store.reload()
+                    memories = memoryStore.reload()
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -107,6 +133,11 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         if (todaySessions.isNotEmpty()) todaySessions.take(5) else sessions.take(3)
     val timelineTitle =
         if (todaySessions.isNotEmpty()) R.string.home_today else R.string.home_recent
+    val todayIds = todaySessions.map { it.id }.toSet()
+    val highlights = memories
+        .filter { it.sessionId in todayIds }
+        .flatMap { memory -> memory.events.map { memory.sessionId to it } }
+        .take(3)
 
     Column(
         modifier = modifier
@@ -132,6 +163,25 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 onStart = { CaptureController.start(context) },
                 onStop = { CaptureController.stop(context) }
             )
+
+            if (highlights.isNotEmpty()) {
+                Spacer(Modifier.height(28.dp))
+                SectionHeader(stringResource(R.string.memory_highlights))
+                GroupedCard {
+                    highlights.forEachIndexed { index, (sessionId, event) ->
+                        MemoryEventRow(
+                            event = event,
+                            showDivider = index != highlights.lastIndex,
+                            onClick = {
+                                context.startActivity(
+                                    Intent(context, SessionDetailActivity::class.java)
+                                        .putExtra(SessionDetailActivity.EXTRA_SESSION_ID, sessionId)
+                                )
+                            }
+                        )
+                    }
+                }
+            }
 
             if (timelineSessions.isNotEmpty()) {
                 Spacer(Modifier.height(28.dp))

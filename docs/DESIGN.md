@@ -101,6 +101,13 @@ AudioRecord(
 - In M2, VAD segments are held in memory only; the final text is written to the AES-256-GCM transcript document. No audio temp file is created.
 - The M4 design keeps encrypted segment files for crash recovery; that path is not implemented yet.
 
+### 3.4 Memory layer (M4 slice)
+
+- `memory.bin` is a second AES-256-GCM document with its own Keystore alias; its versioned JSON holds one `SessionMemory` per session.
+- The current analyzer is deterministic (`rule-v1`): progress / decision / commitment / risk / inspiration patterns plus marked lines. Every item carries the exact quote, utterance id, timestamp, and speaker; an item without evidence is dropped.
+- The summary is extractive (first two utterances), not a generated claim. This is a baseline, not the LLM path; LLM JSON schema + validator, Room/SQLCipher, bitemporal commitments, calendar bridge, and project clustering remain planned.
+- Home shows up to three semantic highlights for today; session detail shows the summary, full timeline, commitments, and ideas above the transcript. Session delete and clear-all delete the corresponding memory.
+
 ## 4. Service and state machine
 
 ### 4.1 States

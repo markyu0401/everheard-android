@@ -48,13 +48,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.markyu0401.everheard.R
+import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
+import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.SessionMemory
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
+import io.github.markyu0401.everheard.ui.components.CommitmentRow
 import io.github.markyu0401.everheard.ui.components.GroupedCard
+import io.github.markyu0401.everheard.ui.components.InspirationRow
 import io.github.markyu0401.everheard.ui.components.LargeTitle
+import io.github.markyu0401.everheard.ui.components.MemoryEventRow
+import io.github.markyu0401.everheard.ui.components.MemorySummaryCard
+import io.github.markyu0401.everheard.ui.components.PrimaryButton
+import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
 import java.io.File
@@ -91,15 +100,42 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     val store = remember {
         EncryptedTranscriptStore(File(context.filesDir, "transcripts.bin"))
     }
+    val memoryStore = remember {
+        EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
+    }
+    val analyzer = remember { RuleBasedMemoryAnalyzer() }
     val scope = rememberCoroutineScope()
     val markColor = LocalSemanticColors.current.commitment
     var session by remember { mutableStateOf<TranscriptSession?>(null) }
+    var memory by remember { mutableStateOf<SessionMemory?>(null) }
+    var analyzing by remember { mutableStateOf(false) }
     var loaded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    fun analyzeCurrent() {
+        val target = session ?: return
+        if (target.utterances.isEmpty() || analyzing) return
+        scope.launch {
+            analyzing = true
+            val generated = analyzer.analyze(target)
+            memoryStore.save(generated)
+            memory = generated
+            analyzing = false
+        }
+    }
+
     LaunchedEffect(sessionId) {
-        session = store.session(sessionId)
+        val loadedSession = store.session(sessionId)
+        session = loadedSession
+        memory = memoryStore.get(sessionId)
         loaded = true
+        if (memory == null && loadedSession?.utterances?.isNotEmpty() == true) {
+            analyzing = true
+            val generated = analyzer.analyze(loadedSession)
+            memoryStore.save(generated)
+            memory = generated
+            analyzing = false
+        }
     }
 
     val current = session
@@ -190,6 +226,88 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
+                    PrimaryButton(
+                        text = when {
+                            analyzing -> stringResource(R.string.memory_analyzing)
+                            memory == null -> stringResource(R.string.memory_analyze)
+                            else -> stringResource(R.string.memory_refresh)
+                        },
+                        enabled = !analyzing,
+                        onClick = { analyzeCurrent() }
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.memory_local_note),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
+
+                val currentMemory = memory
+                if (currentMemory != null) {
+                    if (currentMemory.summary.isNotBlank()) {
+                        item { MemorySummaryCard(currentMemory) }
+                    }
+                    item {
+                        SectionHeader(stringResource(R.string.memory_timeline))
+                        GroupedCard {
+                            if (currentMemory.events.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.memory_no_events),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            } else {
+                                currentMemory.events.forEachIndexed { index, event ->
+                                    MemoryEventRow(
+                                        event = event,
+                                        showDivider = index != currentMemory.events.lastIndex
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (currentMemory.commitments.isNotEmpty()) {
+                        item {
+                            SectionHeader(stringResource(R.string.memory_commitments))
+                            GroupedCard {
+                                currentMemory.commitments.forEachIndexed { index, commitment ->
+                                    CommitmentRow(
+                                        commitment = commitment,
+                                        showDivider = index != currentMemory.commitments.lastIndex
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (currentMemory.inspirations.isNotEmpty()) {
+                        item {
+                            SectionHeader(stringResource(R.string.memory_inspirations))
+                            GroupedCard {
+                                currentMemory.inspirations.forEachIndexed { index, inspiration ->
+                                    InspirationRow(
+                                        inspiration = inspiration,
+                                        showDivider = index != currentMemory.inspirations.lastIndex
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else if (!analyzing) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.memory_empty),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
+                }
+
+                item {
+                    SectionHeader(stringResource(R.string.transcript_title))
                     GroupedCard {
                         current.utterances.forEachIndexed { index, utterance ->
                             UtteranceRow(
@@ -230,6 +348,7 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
                     onClick = {
                         showDeleteDialog = false
                         scope.launch {
+                            memoryStore.delete(sessionId)
                             store.deleteSession(sessionId)
                             Toast.makeText(
                                 context,
