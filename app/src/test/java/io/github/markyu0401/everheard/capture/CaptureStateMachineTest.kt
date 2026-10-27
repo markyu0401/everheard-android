@@ -184,6 +184,111 @@ class CaptureStateMachineTest {
         assertThat(CaptureState.ARMED.isMicrophoneOpen).isFalse()
         assertThat(CaptureState.PAUSED_SCHEDULE.isMicrophoneOpen).isFalse()
         assertThat(CaptureState.PAUSED_SILENCE.isMicrophoneOpen).isFalse()
+        assertThat(CaptureState.PAUSED_APP_AUDIO.isMicrophoneOpen).isFalse()
+        assertThat(CaptureState.PAUSED_MIC_BUSY.isMicrophoneOpen).isFalse()
+    }
+
+    @Test
+    fun mic_busy_pauses_recording_and_resumes_when_free() {
+        val busy = CaptureContext(micBusy = true)
+        val free = CaptureContext()
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.RECORDING,
+                CaptureEvent.MicBusy,
+                busy
+            )
+        ).isEqualTo(CaptureState.PAUSED_MIC_BUSY)
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.PAUSED_MIC_BUSY,
+                CaptureEvent.MicAvailable,
+                free
+            )
+        ).isEqualTo(CaptureState.RECORDING)
+    }
+
+    @Test
+    fun excluded_app_playback_pauses_recording_and_resumes_when_it_stops() {
+        val playing = CaptureContext(excludedAppPlaying = true)
+        val stopped = CaptureContext()
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.RECORDING,
+                CaptureEvent.ExcludedAppPlaying,
+                playing
+            )
+        ).isEqualTo(CaptureState.PAUSED_APP_AUDIO)
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.PAUSED_APP_AUDIO,
+                CaptureEvent.ExcludedAppStopped,
+                stopped
+            )
+        ).isEqualTo(CaptureState.RECORDING)
+    }
+
+    @Test
+    fun mic_busy_wins_over_excluded_app_playback() {
+        val both = CaptureContext(micBusy = true, excludedAppPlaying = true)
+        val excludedOnly = CaptureContext(excludedAppPlaying = true)
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.RECORDING,
+                CaptureEvent.ExcludedAppPlaying,
+                both
+            )
+        ).isEqualTo(CaptureState.PAUSED_MIC_BUSY)
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.PAUSED_MIC_BUSY,
+                CaptureEvent.MicAvailable,
+                excludedOnly
+            )
+        ).isEqualTo(CaptureState.PAUSED_APP_AUDIO)
+    }
+
+    @Test
+    fun battery_recovery_respects_a_busy_microphone() {
+        val busy = CaptureContext(micBusy = true)
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.PAUSED_BATTERY,
+                CaptureEvent.BatteryRecovered,
+                busy
+            )
+        ).isEqualTo(CaptureState.PAUSED_MIC_BUSY)
+    }
+
+    @Test
+    fun schedule_allow_respects_an_excluded_app_playing() {
+        val playing = CaptureContext(excludedAppPlaying = true)
+
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.PAUSED_SCHEDULE,
+                CaptureEvent.ScheduleAllow,
+                playing
+            )
+        ).isEqualTo(CaptureState.PAUSED_APP_AUDIO)
+    }
+
+    @Test
+    fun a_user_pause_is_not_overridden_by_mic_busy() {
+        assertThat(
+            CaptureStateMachine.transition(
+                CaptureState.PAUSED_USER,
+                CaptureEvent.MicBusy,
+                CaptureContext(micBusy = true)
+            )
+        ).isEqualTo(CaptureState.PAUSED_USER)
     }
 
     @Test

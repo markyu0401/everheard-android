@@ -305,6 +305,8 @@ private fun CaptureHero(
         CaptureState.PAUSED_THERMAL,
         CaptureState.PAUSED_SILENCE,
         CaptureState.PAUSED_USER -> stringResource(R.string.home_service_paused)
+        CaptureState.PAUSED_APP_AUDIO -> stringResource(R.string.home_service_app_audio)
+        CaptureState.PAUSED_MIC_BUSY -> stringResource(R.string.home_service_mic_busy)
         CaptureState.ERROR -> stringResource(R.string.home_service_stopped)
     }
 

@@ -13,6 +13,8 @@ enum class CaptureState {
     PAUSED_THERMAL,
     PAUSED_SILENCE,
     PAUSED_USER,
+    PAUSED_APP_AUDIO,
+    PAUSED_MIC_BUSY,
     ERROR;
 
     val isServiceAlive: Boolean
@@ -35,6 +37,10 @@ sealed interface CaptureEvent {
     data object SilenceTimeout : CaptureEvent
     data object MotionDetected : CaptureEvent
     data object ScreenUnlocked : CaptureEvent
+    data object MicBusy : CaptureEvent
+    data object MicAvailable : CaptureEvent
+    data object ExcludedAppPlaying : CaptureEvent
+    data object ExcludedAppStopped : CaptureEvent
     data object Boot : CaptureEvent
     data object ServiceKilled : CaptureEvent
     data class Failure(val message: String) : CaptureEvent
@@ -42,5 +48,7 @@ sealed interface CaptureEvent {
 
 data class CaptureContext(
     val scheduleAllows: Boolean = true,
-    val batteryOk: Boolean = true
+    val batteryOk: Boolean = true,
+    val micBusy: Boolean = false,
+    val excludedAppPlaying: Boolean = false
 )

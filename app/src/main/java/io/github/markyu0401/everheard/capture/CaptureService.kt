@@ -24,7 +24,10 @@ import io.github.markyu0401.everheard.asr.CaptureTranscriber
 import io.github.markyu0401.everheard.asr.SpeechSegmenter
 import io.github.markyu0401.everheard.capture.audio.AudioRecordSource
 import io.github.markyu0401.everheard.capture.audio.RingBuffer
+import io.github.markyu0401.everheard.capture.guards.AudioPlaybackMonitor
+import io.github.markyu0401.everheard.capture.guards.AudioRecordingMonitor
 import io.github.markyu0401.everheard.capture.guards.BatteryGuard
+import io.github.markyu0401.everheard.capture.guards.ForegroundAppMonitor
 import io.github.markyu0401.everheard.capture.guards.MotionDetector
 import io.github.markyu0401.everheard.capture.guards.SilenceTracker
 import io.github.markyu0401.everheard.capture.guards.ThermalGuard
@@ -32,6 +35,7 @@ import io.github.markyu0401.everheard.capture.schedule.ScheduleEvaluator
 import io.github.markyu0401.everheard.capture.schedule.ScheduleRule
 import io.github.markyu0401.everheard.capture.vad.SileroVad
 import io.github.markyu0401.everheard.data.settings.captureStateStore
+import io.github.markyu0401.everheard.data.settings.excludedAppsStore
 import io.github.markyu0401.everheard.data.settings.scheduleStore
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.speaker.VoiceProfileStore
@@ -96,6 +100,17 @@ class CaptureService : Service() {
     private var toneGenerator: ToneGenerator? = null
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
+    private val excludedStore by lazy { excludedAppsStore() }
+    private var playbackMonitor: AudioPlaybackMonitor? = null
+    private var recordingMonitor: AudioRecordingMonitor? = null
+    private var foregroundAppMonitor: ForegroundAppMonitor? = null
+
+    @Volatile
+    private var audioPlaying: Boolean = false
+
+    @Volatile
+    private var micBusy: Boolean = false
+
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             batteryLevel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, batteryLevel) ?: batteryLevel
@@ -106,6 +121,18 @@ class CaptureService : Service() {
     override fun onCreate() {
         super.onCreate()
         CaptureNotification.createChannels(this)
+        foregroundAppMonitor = ForegroundAppMonitor(this)
+        playbackMonitor = AudioPlaybackMonitor(this) { playing ->
+            audioPlaying = playing
+            mainHandler.post { evaluate() }
+        }.also { it.start() }
+        recordingMonitor = AudioRecordingMonitor(
+            this,
+            ownSessionIdProvider = { audioSource?.sessionId ?: 0 }
+        ) { busy ->
+            micBusy = busy
+            mainHandler.post { evaluate() }
+        }.also { it.start() }
         ContextCompat.registerReceiver(
             this,
             batteryReceiver,
@@ -208,9 +235,14 @@ class CaptureService : Service() {
         } else {
             0
         }
+        val micBusyNow = recordingMonitor?.refresh() ?: micBusy
+        val audioPlayingNow = playbackMonitor?.isPlaying() ?: audioPlaying
+        val excludedPlaying = isExcludedAppPlaying(audioPlayingNow)
         val context = CaptureContext(
             scheduleAllows = scheduleAllows,
-            batteryOk = batteryOk
+            batteryOk = batteryOk,
+            micBusy = micBusyNow,
+            excludedAppPlaying = excludedPlaying
         )
 
         var next = state
@@ -251,7 +283,27 @@ class CaptureService : Service() {
             next = CaptureStateMachine.transition(next, CaptureEvent.SilenceTimeout, context)
         }
 
+        if (micBusyNow) {
+            next = CaptureStateMachine.transition(next, CaptureEvent.MicBusy, context)
+        } else if (state == CaptureState.PAUSED_MIC_BUSY) {
+            next = CaptureStateMachine.transition(next, CaptureEvent.MicAvailable, context)
+        }
+
+        if (excludedPlaying) {
+            next = CaptureStateMachine.transition(next, CaptureEvent.ExcludedAppPlaying, context)
+        } else if (state == CaptureState.PAUSED_APP_AUDIO) {
+            next = CaptureStateMachine.transition(next, CaptureEvent.ExcludedAppStopped, context)
+        }
+
         applyState(next)
+    }
+
+    private fun isExcludedAppPlaying(playing: Boolean): Boolean {
+        if (!playing) return false
+        val excluded = excludedStore.load()
+        if (excluded.isEmpty()) return false
+        val packageName = foregroundAppMonitor?.currentPackage() ?: return false
+        return packageName in excluded
     }
 
     /**
@@ -409,6 +461,8 @@ class CaptureService : Service() {
             CaptureState.PAUSED_THERMAL -> getString(R.string.notification_state_paused_thermal)
             CaptureState.PAUSED_SILENCE -> getString(R.string.notification_state_paused_silence)
             CaptureState.PAUSED_USER -> getString(R.string.notification_state_paused_user)
+            CaptureState.PAUSED_APP_AUDIO -> getString(R.string.notification_state_paused_app_audio)
+            CaptureState.PAUSED_MIC_BUSY -> getString(R.string.notification_state_paused_mic_busy)
             CaptureState.ERROR -> getString(R.string.notification_state_error)
         }
         val detail = if (state.isMicrophoneOpen && recordingStartedAt > 0L) {
@@ -460,6 +514,11 @@ class CaptureService : Service() {
         scheduleJob = null
         serviceScope.cancel()
         closeMicrophone()
+        playbackMonitor?.stop()
+        playbackMonitor = null
+        recordingMonitor?.stop()
+        recordingMonitor = null
+        foregroundAppMonitor = null
         toneGenerator?.release()
         toneGenerator = null
         try {

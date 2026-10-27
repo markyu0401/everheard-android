@@ -140,6 +140,8 @@
     <string name="home_service_armed">Ready</string>
     <string name="home_service_stopped">Not recording</string>
     <string name="home_service_paused">Paused</string>
+    <string name="home_service_app_audio">App audio</string>
+    <string name="home_service_mic_busy">Mic in use</string>
 
     <string name="notification_channel_name">Capture</string>
     <string name="notification_channel_description">Shows when Everheard is armed or recording.</string>
@@ -151,6 +153,8 @@
     <string name="notification_state_paused_thermal">Paused — device is hot</string>
     <string name="notification_state_paused_silence">Paused — no speech for 15 min</string>
     <string name="notification_state_paused_user">Paused by you</string>
+    <string name="notification_state_paused_app_audio">Paused — excluded app is playing audio</string>
+    <string name="notification_state_paused_mic_busy">Paused — another app is using the microphone</string>
     <string name="notification_state_error">Capture stopped — open Everheard</string>
     <string name="notification_state_marked">Marked the last 30 seconds</string>
     <string name="notification_detail_recording">%1$d min · %2$d%% battery</string>
@@ -391,6 +395,20 @@
     <string name="settings_voice_people">Voice &amp; people</string>
     <string name="settings_intelligence">Intelligence</string>
     <string name="settings_capture">Capture</string>
+    <string name="settings_excluded_apps">Excluded apps</string>
+    <string name="settings_excluded_apps_none">No apps excluded</string>
+    <string name="settings_excluded_apps_count">%1$d apps</string>
+    <string name="excluded_apps_title">Excluded apps</string>
+    <string name="excluded_apps_subtitle">Pause capture when one of these apps is playing audio.</string>
+    <string name="excluded_apps_usage_title">Usage access</string>
+    <string name="excluded_apps_usage_granted">Granted</string>
+    <string name="excluded_apps_usage_not_granted">Not granted</string>
+    <string name="excluded_apps_usage_body">Android needs Usage access so Everheard can tell which app is in the foreground. Without it, this list cannot pause capture.</string>
+    <string name="excluded_apps_open_settings">Open settings</string>
+    <string name="excluded_apps_search_hint">Search apps</string>
+    <string name="excluded_apps_empty">No launchable apps found.</string>
+    <string name="excluded_apps_loading">Loading apps…</string>
+    <string name="excluded_apps_selected">%1$d selected</string>
     <string name="settings_privacy">Privacy</string>
     <string name="settings_connected">Connected</string>
     <string name="settings_not_configured">Not configured</string>

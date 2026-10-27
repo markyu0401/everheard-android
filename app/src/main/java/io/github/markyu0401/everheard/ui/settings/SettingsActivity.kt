@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Hub
@@ -66,6 +67,7 @@ import io.github.markyu0401.everheard.data.provider.ProviderConfigStore
 import io.github.markyu0401.everheard.data.settings.AppLanguage
 import io.github.markyu0401.everheard.data.settings.ThemeMode
 import io.github.markyu0401.everheard.data.settings.appSettingsStore
+import io.github.markyu0401.everheard.data.settings.excludedAppsStore
 import io.github.markyu0401.everheard.data.settings.scheduleStore
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.mcp.McpConfig
@@ -155,12 +157,14 @@ private fun SettingsScreen(
         McpConfigStore.inDirectory(context.filesDir)
     }
     val scheduleStore = remember(context) { context.scheduleStore() }
+    val excludedStore = remember(context) { context.excludedAppsStore() }
     val scope = rememberCoroutineScope()
 
     var profile by remember { mutableStateOf<VoiceProfile?>(null) }
     var provider by remember { mutableStateOf<ProviderConfig?>(null) }
     var mcp by remember { mutableStateOf<McpConfig?>(null) }
     var rules by remember { mutableStateOf<List<ScheduleRule>>(emptyList()) }
+    var excludedCount by remember { mutableStateOf(0) }
     var showClearDialog by remember { mutableStateOf(false) }
     var showDeleteVoiceDialog by remember { mutableStateOf(false) }
     var appearanceExpanded by remember { mutableStateOf(false) }
@@ -171,6 +175,7 @@ private fun SettingsScreen(
         provider = providerStore.reload()
         mcp = mcpStore.reload()
         rules = scheduleStore.rules.first()
+        excludedCount = excludedStore.load().size
     }
 
     LaunchedEffect(refreshToken) {
@@ -319,9 +324,22 @@ private fun SettingsScreen(
                     icon = Icons.Outlined.Schedule,
                     title = stringResource(R.string.schedule_open),
                     subtitle = scheduleSummary(rules),
-                    showDivider = false,
+                    showDivider = true,
                     onClick = {
                         context.startActivity(Intent(context, ScheduleActivity::class.java))
+                    }
+                )
+                SettingsRow(
+                    icon = Icons.Outlined.Apps,
+                    title = stringResource(R.string.settings_excluded_apps),
+                    subtitle = if (excludedCount == 0) {
+                        stringResource(R.string.settings_excluded_apps_none)
+                    } else {
+                        stringResource(R.string.settings_excluded_apps_count, excludedCount)
+                    },
+                    showDivider = false,
+                    onClick = {
+                        context.startActivity(Intent(context, ExcludedAppsActivity::class.java))
                     }
                 )
             }

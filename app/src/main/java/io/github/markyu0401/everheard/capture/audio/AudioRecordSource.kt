@@ -30,6 +30,10 @@ class AudioRecordSource(
     @Volatile
     private var running = false
 
+    @Volatile
+    var sessionId: Int = 0
+        private set
+
     val isRecording: Boolean
         get() = running
 
@@ -60,6 +64,7 @@ class AudioRecordSource(
 
         audioRecord = record
         running = true
+        sessionId = record.audioSessionId
         record.startRecording()
 
         readThread = Thread({
@@ -87,6 +92,7 @@ class AudioRecordSource(
 
     fun stop() {
         running = false
+        sessionId = 0
 
         audioRecord?.let { record ->
             try {

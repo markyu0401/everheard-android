@@ -139,6 +139,8 @@
     <string name="home_service_armed">待命</string>
     <string name="home_service_stopped">未在录制</string>
     <string name="home_service_paused">已暂停</string>
+    <string name="home_service_app_audio">应用播放中</string>
+    <string name="home_service_mic_busy">麦克风被占用</string>
 
     <string name="notification_channel_name">采集</string>
     <string name="notification_channel_description">显示 Everheard 的待命或录制状态。</string>
@@ -150,6 +152,8 @@
     <string name="notification_state_paused_thermal">已暂停 — 设备过热</string>
     <string name="notification_state_paused_silence">已暂停 — 15 分钟无语音</string>
     <string name="notification_state_paused_user">已由你暂停</string>
+    <string name="notification_state_paused_app_audio">已暂停 — 排除的应用正在播放</string>
+    <string name="notification_state_paused_mic_busy">已暂停 — 其他应用正在使用麦克风</string>
     <string name="notification_state_error">采集已停止 — 打开 Everheard</string>
     <string name="notification_state_marked">已标记最近 30 秒</string>
     <string name="notification_detail_recording">%1$d 分钟 · 电量 %2$d%%</string>
@@ -390,6 +394,20 @@
     <string name="settings_voice_people">声音与人物</string>
     <string name="settings_intelligence">智能</string>
     <string name="settings_capture">采集</string>
+    <string name="settings_excluded_apps">排除的应用</string>
+    <string name="settings_excluded_apps_none">未排除应用</string>
+    <string name="settings_excluded_apps_count">%1$d 个应用</string>
+    <string name="excluded_apps_title">排除的应用</string>
+    <string name="excluded_apps_subtitle">这些应用播放声音时，暂停采集。</string>
+    <string name="excluded_apps_usage_title">使用情况访问权限</string>
+    <string name="excluded_apps_usage_granted">已授权</string>
+    <string name="excluded_apps_usage_not_granted">未授权</string>
+    <string name="excluded_apps_usage_body">Android 需要“使用情况访问”权限，Everheard 才能判断当前前台是哪个应用。没有它，这个列表无法暂停采集。</string>
+    <string name="excluded_apps_open_settings">打开设置</string>
+    <string name="excluded_apps_search_hint">搜索应用</string>
+    <string name="excluded_apps_empty">没有找到可启动的应用。</string>
+    <string name="excluded_apps_loading">正在加载应用…</string>
+    <string name="excluded_apps_selected">已选 %1$d 个</string>
     <string name="settings_privacy">隐私</string>
     <string name="settings_connected">已连接</string>
     <string name="settings_not_configured">未配置</string>

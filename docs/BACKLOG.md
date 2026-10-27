@@ -1,6 +1,6 @@
 # Everheard — Feature Backlog
 
-Updated: 2026-10-26. This is the working backlog for feature parity with the
+Updated: 2026-10-27. This is the working backlog for feature parity with the
 OPPO AI 心力球 / 白鲸 AI loop, plus the engineering gaps behind it. A feature is
 only marked **Shipped** when it works on a real screen and has tests.
 
@@ -32,18 +32,20 @@ only marked **Shipped** when it works on a real screen and has tests.
 | **MCP resources** | **Shipped (M6 slice)** | Resources and tools return evidence quotes, session ids, timestamps; no write tools | Scope consent audit; resource pagination |
 | **IM bridge** | **Blocked** | None | Read-only WeChat/Feishu memory Q&A; requires platform APIs/credentials and a server-side component |
 | **Export / redaction** | **Partial** | Session share as text, Markdown and JSON; JSON includes memory/evidence | Redaction rules, bulk export, delete by project/person |
-| **Today / Library / Projects / Insights / Settings tabs** | **Shipped (M5 slice)** | Five-tab bottom taskbar; Projects and Insights have real destinations; detail screens keep a back affordance | Keep the bar at five tabs; no dead destinations |
+| **Today / Library / Projects / Insights / Settings tabs** | **Shipped (M5 slice)** | Four-tab taskbar (Today / Library / Memory / Settings) with a centered capture orb; Projects and Insights are folded into Memory; detail screens keep a back affordance | Keep the four destinations + orb; no dead destinations |
 | **Voice profile enrollment** | **Shipped** | Settings → Voice profile uses a language dropdown (中文 / Chinese, English / 英文), records one or both languages separately, quality-gates each, and stores encrypted per-language centroids. Re-record and delete supported | Add more language options when prompt sets exist; per-language threshold calibration |
 | **Speaker attribution** | **Partial** | Capture compares a segment against all enrolled centroids, labels `me` at best cosine ≥ 0.72, and logs the score; UI shows “Me”; other speakers are not clustered yet | Real-device precision/recall; online clustering; “not mine” correction; threshold calibration; person graph |
 | **Manual mark at capture time** | **Planned** | Mark action exists only after transcription | Notification/Live mark that attaches to the current segment |
 | **Provider settings (BYO)** | **Shipped (M6 slice)** | Settings → Model provider stores LLM/ASR/embedding base URL, model and API key in an encrypted `providers.bin`; LLM connection test; remote LLM analyzer wired to session detail with rule-based fallback | ASR/embedding providers are config-only; per-task routing/fallback/cost guard |
 | **Calendar bridge** | **Partial (M4)** | Commitments with a recognizable due hint can open a calendar-insert intent from session detail; the user confirms | Bitemporal due dates, dedupe, reminders |
-| **Model manager** | **Blocked** | Models bundled in the debug APK (357 MB) | Runtime download requires a sherpa-onnx file-path API; SHA-256/license screen |
+| **Model manager** | **Blocked** | Models bundled in the debug APK (372 MB) | Runtime download requires a sherpa-onnx file-path API; SHA-256/license screen |
 | **Cloud ASR re-decode** | **Blocked** | Local SenseVoice final decode; audio is deleted by design | Needs an opt-in audio-retention window and consent; not in the current privacy model |
 | **Hotwords / normalization** | **Planned (M2-T6)** | None | People/project names, punctuation, number/date normalization |
 | **FTS search** | **Partial** | Substring search over utterances | SQLite FTS5 + ranking, date/language filters |
 | **Session detail tabs** | **Partial** | Stacked Summary / Timeline / Commitments / Ideas above the transcript; no segmented control | Summary / Transcript / Actions segmented control; tap an event to jump to its quote |
 | **ROM matrix / survival** | **Partial** | S26 Ultra + AOSP emulator; Tailscale install | 8 h/24 h soak, Chinese OEM background guidance, boot recovery |
+| **Excluded-app playback** | **Partial (M1 slice)** | Settings → Capture → Excluded apps: user picks launchable apps; the service pauses when one is in the foreground and playing audible media/communication audio. Needs the user-granted Usage access special permission. | Detect PiP/background playback without foreground package; per-app allow/deny for meetings |
+| **Mic busy / concurrent capture** | **Shipped (M1 slice)** | `AudioRecordingMonitor` detects another active recorder or our own silenced capture; state becomes `PAUSED_MIC_BUSY` and the mic is closed instead of writing silence. Voice input, calls and meeting apps can take the mic; an ordinary app cannot capture concurrently. | MediaProjection internal-audio path for meeting recording (separate consent + foreground type) |
 | **24 h armed** | **Partial** | ARMED + schedule/battery/thermal/silence gates | Soak numbers; charge-during-sleep guidance |
 | **Privacy** | **Shipped** | Persistent notification, visible capture, FLAG_SECURE, AES-256-GCM + Keystore, no raw audio retained, `allowBackup=false` | Log audit; export redaction; MCP scope audit |
 
@@ -51,7 +53,8 @@ only marked **Shipped** when it works on a real screen and has tests.
 
 1. **P0 — trustworthy input**: real-device ASR benchmark (CER/WER), voice-profile
    threshold calibration, speaker clustering/correction, segment merge tuning,
-   mark-at-capture. Everything downstream is worthless if the transcript is wrong.
+   mark-at-capture, and visible mic-busy/app-audio states. Everything downstream
+   is worthless if the transcript is wrong.
 2. **P1 — memory layer**: BYO LLM provider, structured summary + commitments,
    semantic daily timeline (what happened / decision / commitment / risk),
    inspiration notes, Today chips, session detail tabs. This is the actual OPPO
