@@ -33,7 +33,7 @@ The design has three moves:
 2. **One signal.** A deep evergreen is the only chromatic accent in the chrome. It appears on the capture orb, the active state, the timeline nodes, the one data series and the primary action. Semantic colours (decision, commitment, risk, idea) are muted and only appear on labels and dots.
 3. **One spine.** A 1 px vertical line with time nodes runs through Today, a session and a project. It is the product's signature element: memory as a sequence, not a pile of cards.
 
-No gradients. No glass. No coloured icon squares. No card shadows. No dashboard chrome. The only shadow is under the capture orb, because it floats above the taskbar.
+No gradients. No glass. No coloured icon squares. No card shadows. No dashboard chrome. The taskbar and cards are flat; structure comes from hairlines and the spine.
 
 ---
 
