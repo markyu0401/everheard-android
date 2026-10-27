@@ -61,7 +61,9 @@ import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.components.SettingsRow
 import io.github.markyu0401.everheard.ui.components.StatusDot
 import io.github.markyu0401.everheard.ui.components.TranscriptSessionRow
+import io.github.markyu0401.everheard.ui.insight.InsightActivity
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
+import io.github.markyu0401.everheard.ui.project.ProjectsActivity
 import io.github.markyu0401.everheard.ui.settings.SettingsActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardTheme
 import io.github.markyu0401.everheard.ui.theme.LocalSemanticColors
@@ -271,6 +273,12 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 when (tab) {
                     MainTab.LIBRARY -> context.startActivity(
                         Intent(context, TranscriptListActivity::class.java)
+                    )
+                    MainTab.PROJECTS -> context.startActivity(
+                        Intent(context, ProjectsActivity::class.java)
+                    )
+                    MainTab.INSIGHTS -> context.startActivity(
+                        Intent(context, InsightActivity::class.java)
                     )
                     MainTab.SETTINGS -> context.startActivity(
                         Intent(context, SettingsActivity::class.java)

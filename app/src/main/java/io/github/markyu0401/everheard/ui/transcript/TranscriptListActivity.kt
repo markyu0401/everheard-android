@@ -66,7 +66,9 @@ import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.MainTab
 import io.github.markyu0401.everheard.ui.components.PrimaryButton
 import io.github.markyu0401.everheard.ui.components.SettingsRow
+import io.github.markyu0401.everheard.ui.insight.InsightActivity
 import io.github.markyu0401.everheard.ui.live.LiveCaptureActivity
+import io.github.markyu0401.everheard.ui.project.ProjectsActivity
 import io.github.markyu0401.everheard.ui.settings.SettingsActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import java.io.File
@@ -258,8 +260,15 @@ fun TranscriptListScreen(
                 when (tab) {
                     MainTab.TODAY -> context.startActivity(
                         Intent(context, MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP
                         }
+                    )
+                    MainTab.PROJECTS -> context.startActivity(
+                        Intent(context, ProjectsActivity::class.java)
+                    )
+                    MainTab.INSIGHTS -> context.startActivity(
+                        Intent(context, InsightActivity::class.java)
                     )
                     MainTab.SETTINGS -> context.startActivity(
                         Intent(context, SettingsActivity::class.java)

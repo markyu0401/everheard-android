@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -60,6 +61,10 @@ import io.github.markyu0401.everheard.ui.components.LargeTitle
 import io.github.markyu0401.everheard.ui.components.MainTab
 import io.github.markyu0401.everheard.ui.components.SectionHeader
 import io.github.markyu0401.everheard.ui.components.SettingsRow
+import io.github.markyu0401.everheard.ui.insight.InsightActivity
+import io.github.markyu0401.everheard.ui.person.PeopleActivity
+import io.github.markyu0401.everheard.ui.project.ProjectsActivity
+import io.github.markyu0401.everheard.ui.settings.ProviderSettingsActivity
 import io.github.markyu0401.everheard.ui.schedule.ScheduleActivity
 import io.github.markyu0401.everheard.ui.theme.EverheardAppTheme
 import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
@@ -262,6 +267,55 @@ private fun SettingsScreen(
 
         Spacer(Modifier.height(24.dp))
 
+        SectionHeader(stringResource(R.string.settings_people))
+        GroupedCard {
+            SettingsRow(
+                icon = Icons.Filled.Face,
+                title = stringResource(R.string.people_title),
+                subtitle = stringResource(R.string.people_subtitle),
+                showDivider = false,
+                onClick = {
+                    context.startActivity(Intent(context, PeopleActivity::class.java))
+                }
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        SectionHeader(stringResource(R.string.settings_provider))
+        GroupedCard {
+            SettingsRow(
+                icon = Icons.Filled.Settings,
+                title = stringResource(R.string.provider_title),
+                subtitle = stringResource(R.string.settings_provider_subtitle),
+                showDivider = false,
+                onClick = {
+                    context.startActivity(
+                        Intent(context, ProviderSettingsActivity::class.java)
+                    )
+                }
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        SectionHeader(stringResource(R.string.settings_mcp))
+        GroupedCard {
+            SettingsRow(
+                icon = Icons.Filled.Settings,
+                title = stringResource(R.string.mcp_title),
+                subtitle = stringResource(R.string.settings_mcp_subtitle),
+                showDivider = false,
+                onClick = {
+                    context.startActivity(
+                        Intent(context, McpSettingsActivity::class.java)
+                    )
+                }
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
         SectionHeader(stringResource(R.string.settings_schedule))
         GroupedCard {
             SettingsRow(
@@ -312,6 +366,12 @@ private fun SettingsScreen(
                     )
                     MainTab.LIBRARY -> context.startActivity(
                         Intent(context, TranscriptListActivity::class.java)
+                    )
+                    MainTab.PROJECTS -> context.startActivity(
+                        Intent(context, ProjectsActivity::class.java)
+                    )
+                    MainTab.INSIGHTS -> context.startActivity(
+                        Intent(context, InsightActivity::class.java)
                     )
                     MainTab.SETTINGS -> Unit
                 }

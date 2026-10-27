@@ -111,7 +111,8 @@ fun MemoryEventRow(
 @Composable
 fun CommitmentRow(
     commitment: Commitment,
-    showDivider: Boolean = true
+    showDivider: Boolean = true,
+    onAddToCalendar: (() -> Unit)? = null
 ) {
     Column {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
@@ -149,6 +150,15 @@ fun CommitmentRow(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+            if (onAddToCalendar != null) {
+                Spacer(Modifier.height(4.dp))
+                androidx.compose.material3.TextButton(onClick = onAddToCalendar) {
+                    Text(
+                        text = stringResource(R.string.memory_add_calendar),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             }
         }
         if (showDivider) {

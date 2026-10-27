@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".EverheardApp"
@@ -72,6 +73,41 @@
 
         <activity
             android:name=".ui.schedule.ScheduleActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.project.ProjectsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.project.ProjectDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.insight.InsightActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.person.PeopleActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.person.PersonDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.settings.ProviderSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Everheard" />
+
+        <activity
+            android:name=".ui.settings.McpSettingsActivity"
             android:exported="false"
             android:theme="@style/Theme.Everheard" />
 

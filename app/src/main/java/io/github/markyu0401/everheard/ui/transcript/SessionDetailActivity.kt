@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,8 +51,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.memory.SessionMemory
+import io.github.markyu0401.everheard.data.calendar.CommitmentCalendar
+import io.github.markyu0401.everheard.data.provider.LlmMemoryAnalyzer
+import io.github.markyu0401.everheard.data.provider.ProviderConfigStore
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
@@ -70,7 +77,11 @@ import java.io.File
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 
 class SessionDetailActivity : LocalizedActivity() {
 
@@ -103,7 +114,10 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     val memoryStore = remember {
         EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
-    val analyzer = remember { RuleBasedMemoryAnalyzer() }
+    val providerStore = remember {
+        ProviderConfigStore(File(context.filesDir, ProviderConfigStore.FILE_NAME))
+    }
+    var analyzer by remember { mutableStateOf<MemoryAnalyzer>(RuleBasedMemoryAnalyzer()) }
     val scope = rememberCoroutineScope()
     val markColor = LocalSemanticColors.current.commitment
     var session by remember { mutableStateOf<TranscriptSession?>(null) }
@@ -111,16 +125,20 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     var analyzing by remember { mutableStateOf(false) }
     var loaded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showShareMenu by remember { mutableStateOf(false) }
 
     fun analyzeCurrent() {
         val target = session ?: return
         if (target.utterances.isEmpty() || analyzing) return
         scope.launch {
             analyzing = true
-            val generated = analyzer.analyze(target)
-            memoryStore.save(generated)
-            memory = generated
-            analyzing = false
+            try {
+                val generated = withContext(Dispatchers.IO) { analyzer.analyze(target) }
+                memoryStore.save(generated)
+                memory = generated
+            } finally {
+                analyzing = false
+            }
         }
     }
 
@@ -128,13 +146,22 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
         val loadedSession = store.session(sessionId)
         session = loadedSession
         memory = memoryStore.get(sessionId)
+        val providerConfig = providerStore.load()
+        analyzer = if (providerConfig.llmConfigured) {
+            LlmMemoryAnalyzer(providerConfig)
+        } else {
+            RuleBasedMemoryAnalyzer()
+        }
         loaded = true
         if (memory == null && loadedSession?.utterances?.isNotEmpty() == true) {
             analyzing = true
-            val generated = analyzer.analyze(loadedSession)
-            memoryStore.save(generated)
-            memory = generated
-            analyzing = false
+            try {
+                val generated = withContext(Dispatchers.IO) { analyzer.analyze(loadedSession) }
+                memoryStore.save(generated)
+                memory = generated
+            } finally {
+                analyzing = false
+            }
         }
     }
 
@@ -154,15 +181,49 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
         ) {
             BackButton(onClick = onBack)
             Spacer(Modifier.weight(1f))
-            IconButton(
-                onClick = { current?.let { shareSession(context, it, locale) } },
-                enabled = current != null
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Share,
-                    contentDescription = stringResource(R.string.transcript_share),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Box {
+                IconButton(
+                    onClick = { showShareMenu = true },
+                    enabled = current != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Share,
+                        contentDescription = stringResource(R.string.transcript_share),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                DropdownMenu(
+                    expanded = showShareMenu,
+                    onDismissRequest = { showShareMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.transcript_share_text)) },
+                        onClick = {
+                            showShareMenu = false
+                            current?.let {
+                                shareSession(context, it, locale)
+                            }
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.transcript_share_markdown)) },
+                        onClick = {
+                            showShareMenu = false
+                            current?.let {
+                                shareSessionMarkdown(context, it, memory, locale)
+                            }
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.transcript_share_json)) },
+                        onClick = {
+                            showShareMenu = false
+                            current?.let {
+                                shareSessionJson(context, it, memory)
+                            }
+                        }
+                    )
+                }
             }
             IconButton(
                 onClick = { showDeleteDialog = true },
@@ -276,7 +337,23 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
                                 currentMemory.commitments.forEachIndexed { index, commitment ->
                                     CommitmentRow(
                                         commitment = commitment,
-                                        showDivider = index != currentMemory.commitments.lastIndex
+                                        showDivider = index != currentMemory.commitments.lastIndex,
+                                        onAddToCalendar = {
+                                            val intent = CommitmentCalendar.intent(
+                                                context,
+                                                commitment,
+                                                current.startedAt
+                                            )
+                                            if (intent != null) {
+                                                context.startActivity(intent)
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    R.string.memory_no_due_date,
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
                                     )
                                 }
                             }
@@ -451,6 +528,136 @@ private fun shareSession(context: android.content.Context, session: TranscriptSe
         putExtra(Intent.EXTRA_TEXT, body.trim())
     }
     context.startActivity(Intent.createChooser(send, context.getString(R.string.transcript_share)))
+}
+
+private fun shareSessionMarkdown(
+    context: android.content.Context,
+    session: TranscriptSession,
+    memory: SessionMemory?,
+    locale: Locale
+) {
+    val body = buildString {
+        appendLine("# ${session.title.ifBlank { context.getString(R.string.transcript_session_fallback) }}")
+        appendLine()
+        appendLine(formatSessionDate(session.startedAt, locale))
+        if (memory?.summary?.isNotBlank() == true) {
+            appendLine()
+            appendLine("## Summary")
+            appendLine(memory.summary)
+        }
+        if (!memory?.events.isNullOrEmpty()) {
+            appendLine()
+            appendLine("## Timeline")
+            memory!!.events.forEach { event ->
+                appendLine("- ${event.type.name.lowercase()}: ${event.text}")
+                appendLine("  > ${event.evidence.quote} (${formatTime(event.evidence.startMs)})")
+            }
+        }
+        if (!memory?.commitments.isNullOrEmpty()) {
+            appendLine()
+            appendLine("## Commitments")
+            memory!!.commitments.forEach { commitment ->
+                appendLine("- ${commitment.text} (${commitment.status})")
+            }
+        }
+        if (!memory?.inspirations.isNullOrEmpty()) {
+            appendLine()
+            appendLine("## Ideas")
+            memory!!.inspirations.forEach { inspiration ->
+                appendLine("- ${inspiration.text}")
+            }
+        }
+        appendLine()
+        appendLine("## Transcript")
+        session.utterances.forEach { utterance ->
+            append(formatTime(utterance.startMs))
+            append("  ")
+            if (utterance.marked) append("★ ")
+            appendLine(utterance.text)
+        }
+    }
+    shareText(context, session.title, body.trim(), "text/markdown")
+}
+
+private fun shareSessionJson(
+    context: android.content.Context,
+    session: TranscriptSession,
+    memory: SessionMemory?
+) {
+    val root = JSONObject().apply {
+        put("id", session.id)
+        put("title", session.title)
+        put("startedAt", session.startedAt)
+        session.endedAt?.let { put("endedAt", it) }
+        put("utterances", JSONArray().apply {
+            session.utterances.forEach { utterance ->
+                put(JSONObject().apply {
+                    put("id", utterance.id)
+                    put("startMs", utterance.startMs)
+                    put("endMs", utterance.endMs)
+                    put("text", utterance.text)
+                    utterance.speaker?.let { put("speaker", it) }
+                    put("marked", utterance.marked)
+                })
+            }
+        })
+        memory?.let { memoryValue ->
+            put("memory", JSONObject().apply {
+                put("summary", memoryValue.summary)
+                put("generatedAt", memoryValue.generatedAt)
+                put("analyzer", memoryValue.analyzer)
+                put("events", JSONArray().apply {
+                    memoryValue.events.forEach { event ->
+                        put(JSONObject().apply {
+                            put("type", event.type.name.lowercase())
+                            put("text", event.text)
+                            put("quote", event.evidence.quote)
+                            put("startMs", event.evidence.startMs)
+                            put("utteranceId", event.evidence.utteranceId)
+                        })
+                    }
+                })
+                put("commitments", JSONArray().apply {
+                    memoryValue.commitments.forEach { commitment ->
+                        put(JSONObject().apply {
+                            put("text", commitment.text)
+                            put("owner", commitment.owner)
+                            put("dueHint", commitment.dueHint)
+                            put("status", commitment.status)
+                            put("quote", commitment.evidence.quote)
+                            put("utteranceId", commitment.evidence.utteranceId)
+                        })
+                    }
+                })
+                put("inspirations", JSONArray().apply {
+                    memoryValue.inspirations.forEach { inspiration ->
+                        put(JSONObject().apply {
+                            put("text", inspiration.text)
+                            put("quote", inspiration.evidence.quote)
+                            put("utteranceId", inspiration.evidence.utteranceId)
+                        })
+                    }
+                })
+            })
+        }
+    }
+    shareText(context, session.title, root.toString(2), "application/json")
+}
+
+private fun shareText(
+    context: android.content.Context,
+    subject: String,
+    body: String,
+    mimeType: String
+) {
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = mimeType
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, body)
+    }
+    context.startActivity(
+        Intent.createChooser(send, context.getString(R.string.transcript_share))
+    )
 }
 
 private fun formatSessionDate(timestamp: Long, locale: Locale): String =

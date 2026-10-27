@@ -22,23 +22,24 @@ only marked **Shipped** when it works on a real screen and has tests.
 | **Inspiration / idea notes** | **Partial (M4)** | Marked lines and keyword ideas become “Ideas” cards; no manual “save this thought” action yet | Add a capture-time / Live “save idea” action; keep source quote |
 | **Manual highlight** | **Shipped** | Tap any transcript line in Session detail to star/unstar it; marked lines get an amber tint; Today shows the mark count; mark is persisted in the encrypted store | Add a capture-time mark action (notification/Live) and a "Marked" filter |
 | **Session share / delete** | **Shipped** | Share a session as plain text; delete one session with confirmation; Settings → Data → clear all | Add JSON/Markdown export and bulk export |
-| **Structured summary** | **Partial (M4)** | Extractive summary from the first two utterances; every summary/event cites a transcript line; no cloud LLM yet | LLM JSON schema + validator; hierarchical summary; retry/repair; no fabricated item |
+| **Structured summary** | **Partial (M4)** | Local extractive summary plus optional OpenAI-compatible LLM analyzer (JSON schema/evidence validator); rule-based fallback; every item cites a transcript line | Hierarchical summary; retry/repair/cost guard; bitemporal extraction |
 | **Todos / commitments** | **Partial (M4)** | Local rule extractor finds commitments and due hints; encrypted memory store persists them; session detail lists open commitments | Bitemporal commitment model, dedupe, calendar/reminder bridge, completion state |
 | **Memory store** | **Shipped (M4 slice)** | Encrypted `memory.bin` (AES-256-GCM, separate Keystore alias), versioned JSON; save/get/delete/clear; session delete and clear-all remove memory | Room + SQLCipher migration; FTS/vector retrieval; project/person relations |
-| **Projects** | **Planned (M5)** | None | Embedding clustering + entity overlap; project timeline with cross-session progress/decision/commitment/risk events and evidence; merge/split |
-| **Insight / 觉察** | **Planned (M5)** | None | Weekly metrics + O-Mind-style behavior observations with ≥ 2 citations and one action suggestion |
-| **Conversation profile / long-term memory** | **Planned (M5)** | None | Person page with recurring people, topics, open commitments; project/person summaries over time; rename/merge/split; source citations |
-| **Connect / MCP** | **Planned (M6)** | Share/export only | HTTP MCP server with bearer token and per-tool scopes: `search_memory`, `get_daily_timeline`, `list_commitments`, `get_project`, `get_session`, `list_inspirations`, `get_person`, `get_insight`; read-only |
-| **MCP resources** | **Planned (M6)** | None | Resources for summaries, inspirations, conversation profiles, long-term memory; JSON schema + citations; revocable token; no write tools |
-| **IM bridge** | **Planned (M6, optional)** | None | Read-only WeChat/Feishu memory Q&A; phase 2 after MCP; no write and no group eavesdropping |
-| **Export / redaction** | **Partial** | Plain-text share and single-session delete | JSON/Markdown export compatible with MCP schema; redaction; bulk export; delete by project/person |
-| **Today / Library / Insights / Settings tabs** | **Partial** | A persistent bottom taskbar (Today, Library, Settings) is implemented; Schedule is folded into Settings, Live into Today; Insights has no destination yet | Add Insights only when the page exists; keep three tabs until then |
+| **Projects** | **Partial (M5)** | Keyword-based project clustering from transcripts + memory events; Projects tab lists sessions, last activity, open commitments; project detail shows a cross-session timeline, commitments and source sessions | Embedding clustering, merge/split, manual constraints |
+| **Insight / 觉察** | **Partial (M5)** | Deterministic weekly report: sessions, minutes, decisions, commitments, risks, ideas, projects; cited observations with a next action | O-Mind-style LLM observations; talk ratio/interruptions; weekly review UI polish |
+| **Conversation profile / long-term memory** | **Partial (M5)** | People tab from explicit speaker labels; person detail shows sessions, open commitments and quotes; no invented attendees | Online clustering, rename/merge/split, long-term summaries |
+| **Connect / MCP** | **Shipped (M6 slice)** | Local read-only MCP HTTP server bound to 127.0.0.1 with a bearer token; tools: search_memory, get_daily_timeline, list_commitments, get_project, get_session, list_inspirations, get_person, get_insight; resources for summaries/transcripts/ideas/projects/people; Settings UI shows endpoint/token | Per-tool scopes UI; IM bridge; streamable HTTP/SSE compatibility polish |
+| **MCP resources** | **Shipped (M6 slice)** | Resources and tools return evidence quotes, session ids, timestamps; no write tools | Scope consent audit; resource pagination |
+| **IM bridge** | **Blocked** | None | Read-only WeChat/Feishu memory Q&A; requires platform APIs/credentials and a server-side component |
+| **Export / redaction** | **Partial** | Session share as text, Markdown and JSON; JSON includes memory/evidence | Redaction rules, bulk export, delete by project/person |
+| **Today / Library / Projects / Insights / Settings tabs** | **Shipped (M5 slice)** | Five-tab bottom taskbar; Projects and Insights have real destinations; detail screens keep a back affordance | Keep the bar at five tabs; no dead destinations |
 | **Voice profile enrollment** | **Shipped** | Settings → Voice profile uses a language dropdown (中文 / Chinese, English / 英文), records one or both languages separately, quality-gates each, and stores encrypted per-language centroids. Re-record and delete supported | Add more language options when prompt sets exist; per-language threshold calibration |
 | **Speaker attribution** | **Partial** | Capture compares a segment against all enrolled centroids, labels `me` at best cosine ≥ 0.72, and logs the score; UI shows “Me”; other speakers are not clustered yet | Real-device precision/recall; online clustering; “not mine” correction; threshold calibration; person graph |
 | **Manual mark at capture time** | **Planned** | Mark action exists only after transcription | Notification/Live mark that attaches to the current segment |
-| **Provider settings (BYO)** | **Planned (M6)** | None | ASR/LLM/embedding base URL, key, model, test connection, fallback chain |
-| **Model manager** | **Planned (M2-T1)** | Models bundled in the debug APK (357 MB) | Runtime download, SHA-256, license screen, disk check |
-| **Cloud ASR re-decode** | **Planned (M2-T3)** | Local SenseVoice final decode | OpenAI-compatible `/v1/audio/transcriptions`, per-session consent |
+| **Provider settings (BYO)** | **Shipped (M6 slice)** | Settings → Model provider stores LLM/ASR/embedding base URL, model and API key in an encrypted `providers.bin`; LLM connection test; remote LLM analyzer wired to session detail with rule-based fallback | ASR/embedding providers are config-only; per-task routing/fallback/cost guard |
+| **Calendar bridge** | **Partial (M4)** | Commitments with a recognizable due hint can open a calendar-insert intent from session detail; the user confirms | Bitemporal due dates, dedupe, reminders |
+| **Model manager** | **Blocked** | Models bundled in the debug APK (357 MB) | Runtime download requires a sherpa-onnx file-path API; SHA-256/license screen |
+| **Cloud ASR re-decode** | **Blocked** | Local SenseVoice final decode; audio is deleted by design | Needs an opt-in audio-retention window and consent; not in the current privacy model |
 | **Hotwords / normalization** | **Planned (M2-T6)** | None | People/project names, punctuation, number/date normalization |
 | **FTS search** | **Partial** | Substring search over utterances | SQLite FTS5 + ranking, date/language filters |
 | **Session detail tabs** | **Partial** | Stacked Summary / Timeline / Commitments / Ideas above the transcript; no segmented control | Summary / Transcript / Actions segmented control; tap an event to jump to its quote |
@@ -54,12 +55,15 @@ only marked **Shipped** when it works on a real screen and has tests.
 2. **P1 — memory layer**: BYO LLM provider, structured summary + commitments,
    semantic daily timeline (what happened / decision / commitment / risk),
    inspiration notes, Today chips, session detail tabs. This is the actual OPPO
-   parity gap.
-3. **P2 — projects and insight**: clustering, cross-session project timeline,
-   conversation profile / long-term memory, weekly review with citations.
-4. **P3 — connection and distribution**: MCP server + resources, optional IM
-   bridge, export schema + redaction, ROM matrix, model manager, release
-   hardening.
+   parity gap. The local baseline, encrypted memory store, optional LLM analyzer,
+   calendar intent and Markdown/JSON export are in place.
+3. **P2 — projects and insight**: keyword project clustering, cross-session
+   project timeline, conversation profile / long-term memory, deterministic
+   weekly review with citations. Embedding clustering, merge/split and O-Mind
+   style observations remain.
+4. **P3 — connection and distribution**: local MCP server + resources is in
+   place; IM bridge, export redaction, ROM matrix, model manager and release
+   hardening remain.
 
 ## Design backlog
 
@@ -79,16 +83,26 @@ only marked **Shipped** when it works on a real screen and has tests.
 - **Connect**: chat-like memory query; MCP is the first integration, IM later.
   MCP exposes read-only tools and resources (summaries, inspirations, profile,
   long-term memory) with per-tool consent and a revocable token.
-- **Navigation**: persistent bottom taskbar with Today, Library, and Settings;
-  detail screens keep a back button and hide the bar. Schedule is folded into
-  Settings, Live into Today. Do not add an Insights tab until the page exists.
+- **Navigation**: persistent bottom taskbar with Today, Library, Projects,
+  Insights, and Settings; detail screens keep a back button and hide the bar.
+  Schedule is folded into Settings, Live into Today.
 - **Scrolling**: every main surface scrolls vertically above the fixed taskbar;
   voice enrollment and settings must never clip below the fold.
 - **Settings**: Appearance and Language are tap-to-expand dropdown rows; Voice
   profile row (language dropdown, add/select Chinese or English,
-  re-record/delete); Schedule row; Data row for clearing transcripts.
-- **Voice enrollment**: choose a language from a dropdown, record 5–20 seconds,
-  repeat for another language if needed; encrypted vectors only; no audio retained.
+  re-record/delete); People row; Model provider row; MCP server row; Schedule
+  row; Data row for clearing transcripts.
+- **Projects**: keyword clusters from transcripts + memory events; project
+  detail shows a cross-session timeline, open commitments and source sessions.
+  Merge/split and embeddings remain.
+- **Insight**: deterministic weekly metrics and cited observations; an insight
+  never appears without at least two citations.
+- **Connect**: local read-only MCP server bound to 127.0.0.1 with a bearer token;
+  tools and resources expose summaries, transcripts, commitments, ideas,
+  projects and people. IM is blocked on platform APIs.
+- **Provider**: BYO OpenAI-compatible LLM/ASR/embedding configuration; API keys
+  encrypted with a dedicated Keystore alias; LLM extraction falls back to the
+  local rule analyzer on failure.
 - **Privacy**: voiceprint is a biometric; it is used for attribution, never for
   authentication, and can be deleted.
 - **Motion**: restrained; no gradients, no dashboard chrome, no developer
