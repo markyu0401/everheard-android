@@ -26,7 +26,7 @@ Everheard's own code is Apache-2.0. This file lists what actually ships in the a
 | Truth | 1.4.5 | Apache-2.0 |
 | AndroidX Test ext JUnit / Rules / Espresso | 1.3.0 / 1.7.0 / 3.7.0 | Apache-2.0 |
 | kotlinx-coroutines-test | 1.11.0 | Apache-2.0 |
-| org.json | 20240303 | Public domain |
+| org.json | 20240303 | JSON License (test-only) |
 
 ## Models (bundled in the release APK)
 
