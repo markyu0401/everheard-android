@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,6 +32,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -181,21 +182,18 @@ private fun CaptureSlot(
     } else {
         MaterialTheme.colorScheme.primary
     }
-    val labelColor = if (recording) {
-        MaterialTheme.colorScheme.error
+    val captureLabel = if (running) {
+        stringResource(R.string.nav_stop)
     } else {
-        MaterialTheme.colorScheme.primary
+        stringResource(R.string.nav_listen)
     }
     Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .padding(bottom = 2.dp),
+        modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
+        verticalArrangement = Arrangement.Center
     ) {
         Box(
             modifier = Modifier
-                .offset(y = (-16).dp)
                 .size(62.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surface),
@@ -206,7 +204,8 @@ private fun CaptureSlot(
                     .size(54.dp)
                     .clip(CircleShape)
                     .background(orbColor)
-                    .clickable(onClick = onClick),
+                    .clickable(onClick = onClick)
+                    .semantics { contentDescription = captureLabel },
                 contentAlignment = Alignment.Center
             ) {
                 if (running) {
@@ -219,24 +218,12 @@ private fun CaptureSlot(
                 } else {
                     Icon(
                         painter = painterResource(R.drawable.ic_stat_everheard),
-                        contentDescription = stringResource(R.string.nav_listen),
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
         }
-        Text(
-            text = if (running) {
-                stringResource(R.string.nav_stop)
-            } else {
-                stringResource(R.string.nav_listen)
-            },
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 11.sp
-            ),
-            color = labelColor
-        )
     }
 }

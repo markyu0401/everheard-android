@@ -148,16 +148,16 @@ Rules:
 
 - 4 dp base; screen gutters **20 dp**; section gap **22–28 dp**; card padding **16–18 dp**.
 - One left edge and one right edge per screen. Every block shares the 20 dp gutter.
-- Content sits above the taskbar; the capture orb overlaps the taskbar by 16 dp, so scroll content gets 16–20 dp bottom padding.
+- Content sits above the taskbar; the capture orb is centered in the bar on the same centerline as the tab icons, so scroll content gets 16–20 dp bottom padding.
 - Radii: cards **24 dp**, controls **14 dp**, chips/pills **999 dp**, wells **18 dp**. Three radii only.
-- Surfaces: a 1 dp hairline border, no shadow. The only shadow is under the capture orb.
-- Touch targets: 48 dp minimum; nav items 56 dp tall; rows 48–56 dp.
+- Surfaces: a 1 dp hairline border, no shadow.
+- Touch targets: 48 dp minimum; nav items 76 dp tall; rows 48–56 dp.
 
 ### Signature components
 
 **The mark.** Three nested arcs opening upward with a dot at the centre. It reads as a sound wave, an ear, and a horizon at once. Used at 20 dp in the top bar, 56 dp in empty states, and as the 24 dp capture orb glyph.
 
-**The capture orb.** A 54 dp filled circle in the taskbar, centred, overlapping the bar by 16 dp. Idle: accent fill, microphone glyph, label **Listen**. Recording: live fill, stop square, label **Stop**. It is the product's main job, always one tap away.
+**The capture orb.** A 54 dp filled circle inside a 62 dp surface ring, centered in the taskbar on the same centerline as the tab icons. Idle: accent fill, microphone glyph, no visible label (accessibility label **Listen**). Recording: live fill, stop square, accessibility label **Stop**. It is the product's main job, always one tap away.
 
 **The spine.** A 1 px vertical line at x = 54 dp with a 7 dp node per moment. Time on the left in tabular figures; title, one-line evidence and a type label on the right. Used on Today, session detail and project detail. The line is structural, not decorative.
 
@@ -173,7 +173,7 @@ Four destinations plus one primary action:
 
 - **Today** — the day's listening, the thread, open loops. Icon: outlined calendar.
 - **Library** — all sessions, search, filters, grouped by date. Icon: outlined open book.
-- **Listen** — starts/stops background capture from any tab; a separate "Live transcript" text action opens the word-by-word view. The orb is the only filled accent in the taskbar.
+- **Listen** — starts/stops background capture from any tab; a separate "Live transcript" text action opens the word-by-word view. The orb is the only filled accent in the taskbar; it is icon-only, with an accessibility label.
 - **Memory** — folds Projects and the weekly review into one tab with a segmented control, defaulting to **This week**. Icon: outlined spark.
 - **Settings** — Experience, Voice & people, Intelligence (provider/MCP), Capture (schedule), Privacy, Data. Icon: outlined sliders.
 
