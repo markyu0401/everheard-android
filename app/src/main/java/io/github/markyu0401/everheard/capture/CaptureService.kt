@@ -34,6 +34,8 @@ import io.github.markyu0401.everheard.capture.guards.SilenceTracker
 import io.github.markyu0401.everheard.capture.schedule.ScheduleEvaluator
 import io.github.markyu0401.everheard.capture.schedule.ScheduleRule
 import io.github.markyu0401.everheard.capture.vad.SileroVad
+import io.github.markyu0401.everheard.data.settings.AppSettings
+import io.github.markyu0401.everheard.data.settings.appSettingsStore
 import io.github.markyu0401.everheard.data.settings.captureStateStore
 import io.github.markyu0401.everheard.data.settings.excludedAppsStore
 import io.github.markyu0401.everheard.data.settings.scheduleStore
@@ -126,6 +128,9 @@ class CaptureService : Service() {
     private var lastMicAlertAt: Long = 0L
     private var lastNotificationKey: String? = null
 
+    @Volatile
+    private var captureSettings: AppSettings = AppSettings()
+
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             batteryLevel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, batteryLevel) ?: batteryLevel
@@ -151,6 +156,13 @@ class CaptureService : Service() {
     override fun onCreate() {
         super.onCreate()
         CaptureNotification.createChannels(this)
+        captureSettings = appSettingsStore().current
+        serviceScope.launch {
+            appSettingsStore().settings.collect { settings ->
+                captureSettings = settings
+                mainHandler.post { evaluate() }
+            }
+        }
         foregroundAppMonitor = ForegroundAppMonitor(this)
         playbackMonitor = AudioPlaybackMonitor(this) { playing ->
             audioPlaying = playing
@@ -324,6 +336,7 @@ class CaptureService : Service() {
                 pauseUntilMillis = pauseUntilMillis,
                 batteryLevel = batteryLevel,
                 charging = charging,
+                batteryGuardEnabled = captureSettings.batteryGuardEnabled,
                 thermalStatus = thermalStatus,
                 scheduleAllows = scheduleAllows,
                 micContention = contention,
@@ -571,7 +584,10 @@ class CaptureService : Service() {
         )
         notifySafely(
             CaptureNotification.ALERT_NOTIF_ID,
-            CaptureNotification.buildMicAlert(this)
+            CaptureNotification.buildMicAlert(
+                this,
+                vibrate = captureSettings.micAlertVibrationEnabled
+            )
         )
     }
 

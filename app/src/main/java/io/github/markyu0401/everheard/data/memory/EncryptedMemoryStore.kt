@@ -13,6 +13,7 @@ interface MemoryStore {
     suspend fun get(sessionId: String): SessionMemory?
     suspend fun save(memory: SessionMemory)
     suspend fun delete(sessionId: String)
+    suspend fun replaceAll(memories: List<SessionMemory>)
     suspend fun clear()
 }
 
@@ -63,6 +64,13 @@ class EncryptedMemoryStore(
                 file.delete()
                 File(file.parentFile, "${file.name}.tmp").delete()
             }
+        }
+    }
+
+    override suspend fun replaceAll(memories: List<SessionMemory>) {
+        mutex.withLock {
+            persist(memories)
+            cache = memories
         }
     }
 

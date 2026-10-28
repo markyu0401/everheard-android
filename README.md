@@ -36,6 +36,7 @@ Everheard is the phone-only, open-source answer: local-first text, correctable a
 - **Project timelines** built from repeated topics, plus a weekly insight with evidence.
 - **Bring your own model**: any OpenAI-compatible endpoint (LiteLLM, DeepSeek, OpenAI, Ollama, local llama.cpp).
 - **MCP server**: expose your memory to Claude, Cursor, or any MCP client.
+- **Optional encrypted NAS backup**: WebDAV (Synology DSM or any RFC 4918 server); a passphrase-encrypted `.ehb` file with transcripts, memory, schedule and excluded apps, restorable on the same or a new phone.
 - **Text only by default**: audio is deleted after transcription; the store is AES-256-GCM encrypted with a key in Android Keystore.
 
 ## Non-goals for v1
@@ -63,7 +64,7 @@ The capture service is a single `microphone` foreground service that stays armed
 
 ## Install
 
-Download `everheard-0.1.0-alpha.apk` from [Releases](https://github.com/markyu0401/everheard-android/releases). Requires Android 8.0+ (minSdk 26). The on-device models are bundled, so the download is ~360 MB. If you have the debug build installed, uninstall it first — the release is signed with a different key and its data will not carry over.
+Download the latest APK from [Releases](https://github.com/markyu0401/everheard-android/releases). Requires Android 8.0+ (minSdk 26). The on-device models are bundled, so the download is ~360 MB. If you have the debug build installed, uninstall it first — the release is signed with a different key and its data will not carry over.
 
 ## Build
 

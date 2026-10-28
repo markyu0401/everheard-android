@@ -11,6 +11,7 @@ class CaptureEvaluatorTest {
     private fun inputs(
         batteryLevel: Int = 80,
         charging: Boolean = false,
+        batteryGuardEnabled: Boolean = true,
         thermalStatus: Int = 0,
         scheduleAllows: Boolean = true,
         micContention: MicContention = MicContention(),
@@ -24,6 +25,7 @@ class CaptureEvaluatorTest {
         pauseUntilMillis = pauseUntilMillis,
         batteryLevel = batteryLevel,
         charging = charging,
+        batteryGuardEnabled = batteryGuardEnabled,
         thermalStatus = thermalStatus,
         scheduleAllows = scheduleAllows,
         micContention = micContention,
@@ -93,6 +95,24 @@ class CaptureEvaluatorTest {
             inputs(batteryLevel = 14)
         )
         assertThat(decision.state).isEqualTo(CaptureState.PAUSED_BATTERY)
+    }
+
+    @Test
+    fun battery_guard_disabled_keeps_recording_below_fifteen_percent() {
+        val decision = CaptureEvaluator.evaluate(
+            CaptureState.RECORDING,
+            inputs(batteryLevel = 5, batteryGuardEnabled = false)
+        )
+        assertThat(decision.state).isEqualTo(CaptureState.RECORDING)
+    }
+
+    @Test
+    fun battery_guard_disabled_resumes_a_battery_pause() {
+        val decision = CaptureEvaluator.evaluate(
+            CaptureState.PAUSED_BATTERY,
+            inputs(batteryLevel = 5, batteryGuardEnabled = false)
+        )
+        assertThat(decision.state).isEqualTo(CaptureState.RECORDING)
     }
 
     @Test

@@ -25,7 +25,9 @@ enum class AppLanguage(val tag: String?) {
 
 data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val language: AppLanguage = AppLanguage.SYSTEM
+    val language: AppLanguage = AppLanguage.SYSTEM,
+    val batteryGuardEnabled: Boolean = true,
+    val micAlertVibrationEnabled: Boolean = true
 )
 
 /**
@@ -57,6 +59,16 @@ class AppSettingsStore private constructor(context: Context) {
         _settings.value = _settings.value.copy(language = language)
     }
 
+    fun setBatteryGuardEnabled(enabled: Boolean) {
+        preferences.edit().putBoolean(KEY_BATTERY_GUARD, enabled).apply()
+        _settings.value = _settings.value.copy(batteryGuardEnabled = enabled)
+    }
+
+    fun setMicAlertVibrationEnabled(enabled: Boolean) {
+        preferences.edit().putBoolean(KEY_MIC_ALERT_VIBRATION, enabled).apply()
+        _settings.value = _settings.value.copy(micAlertVibrationEnabled = enabled)
+    }
+
     private fun read(): AppSettings {
         val theme = preferences.getString(KEY_THEME, null)
             ?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
@@ -64,12 +76,21 @@ class AppSettingsStore private constructor(context: Context) {
         val language = preferences.getString(KEY_LANGUAGE, null)
             ?.let { runCatching { AppLanguage.valueOf(it) }.getOrNull() }
             ?: AppLanguage.SYSTEM
-        return AppSettings(themeMode = theme, language = language)
+        val batteryGuard = preferences.getBoolean(KEY_BATTERY_GUARD, true)
+        val micAlertVibration = preferences.getBoolean(KEY_MIC_ALERT_VIBRATION, true)
+        return AppSettings(
+            themeMode = theme,
+            language = language,
+            batteryGuardEnabled = batteryGuard,
+            micAlertVibrationEnabled = micAlertVibration
+        )
     }
 
     companion object {
         private const val KEY_THEME = "theme_mode"
         private const val KEY_LANGUAGE = "language"
+        private const val KEY_BATTERY_GUARD = "battery_guard_enabled"
+        private const val KEY_MIC_ALERT_VIBRATION = "mic_alert_vibration_enabled"
 
         @Volatile
         private var instance: AppSettingsStore? = null

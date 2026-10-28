@@ -2,7 +2,7 @@
 
 ## Design rule
 
-The default is **local-only, text-only**. Audio exists only long enough to become text. Nothing leaves the phone unless the user turns on a cloud provider for that session.
+The default is **local-only, text-only**. Audio exists only long enough to become text. Nothing leaves the phone unless the user turns on a cloud provider for that session or explicitly runs a NAS backup.
 
 ## Data inventory
 
@@ -14,6 +14,7 @@ The default is **local-only, text-only**. Audio exists only long enough to becom
 | Commitments / projects / insights | Encrypted store (AES-256-GCM, Keystore key) | Until deleted | Included in a cloud summary request if enabled |
 | API keys | Keystore-wrapped encrypted preferences | Until removed | No |
 | Settings | DataStore | Until app data is cleared | No |
+| NAS backup file | User-configured WebDAV folder | Until the user deletes it on the NAS | Only when the user runs “Back up now”; encrypted with the user passphrase before upload |
 | Crash logs / analytics | Not collected | — | No |
 
 ## Cloud calls
@@ -22,6 +23,7 @@ The default is **local-only, text-only**. Audio exists only long enough to becom
 - The app sends the minimum: one segment for ASR, or the transcript of one session for summarisation. It does not send the whole database.
 - A provider's own retention policy applies once data leaves the device; the app links to it in settings.
 - There is no first-party Everheard server. The project has no backend.
+- NAS backup is a user-initiated upload to the user's own WebDAV server. The `.ehb` file is AES-256-GCM encrypted with a user passphrase (PBKDF2-HMAC-SHA256) before it leaves the phone; it contains transcripts, memory, schedule and excluded apps, not provider API keys or the voiceprint. The NAS password and the backup passphrase are stored in an encrypted `nas.bin` under a dedicated Android Keystore alias.
 
 ## Permissions
 
@@ -41,6 +43,7 @@ The default is **local-only, text-only**. Audio exists only long enough to becom
 - Export Markdown/JSON, then delete.
 - Pause capture for 15 min / 1 h / until tomorrow from the notification.
 - Turn off cloud providers entirely; the app remains functional with on-device ASR and a local LLM (if configured).
+- Back up to a NAS, restore from a backup, or delete the remote files with the NAS tools.
 
 ## What the app will never do
 

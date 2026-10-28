@@ -24,6 +24,7 @@ object CaptureNotification {
     const val CHANNEL_ID = "capture"
     const val RESUME_CHANNEL_ID = "capture_resume"
     const val ALERT_CHANNEL_ID = "capture_alert"
+    const val ALERT_SILENT_CHANNEL_ID = "capture_alert_silent"
     const val NOTIF_ID = 1001
     const val RESUME_NOTIF_ID = 1002
     const val ALERT_NOTIF_ID = 1003
@@ -63,9 +64,23 @@ object CaptureNotification {
             setSound(null, null)
         }
 
+        // Same heads-up importance, no vibration. Used when the user turns the
+        // "vibrate when the mic is taken" setting off; the visual alert stays.
+        val alertSilent = NotificationChannel(
+            ALERT_SILENT_CHANNEL_ID,
+            context.getString(R.string.notification_alert_silent_channel_name),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = context.getString(R.string.notification_alert_channel_description)
+            setShowBadge(true)
+            enableVibration(false)
+            setSound(null, null)
+        }
+
         manager.createNotificationChannel(capture)
         manager.createNotificationChannel(resume)
         manager.createNotificationChannel(alert)
+        manager.createNotificationChannel(alertSilent)
     }
 
     fun build(context: Context, stateText: String, detail: String? = null): Notification {
@@ -128,9 +143,12 @@ object CaptureNotification {
      * waiting for a busy mic. Auto-cancels after 10 s; the ongoing notification
      * keeps the current state afterwards.
      */
-    fun buildMicAlert(context: Context): Notification {
+    fun buildMicAlert(context: Context, vibrate: Boolean = true): Notification {
         val body = context.getString(R.string.notification_mic_alert_body)
-        return NotificationCompat.Builder(context, ALERT_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(
+            context,
+            if (vibrate) ALERT_CHANNEL_ID else ALERT_SILENT_CHANNEL_ID
+        )
             .setSmallIcon(R.drawable.ic_stat_everheard)
             .setContentTitle(context.getString(R.string.notification_mic_alert_title))
             .setContentText(body)
@@ -140,8 +158,10 @@ object CaptureNotification {
             .setTimeoutAfter(10_000L)
             .setCategory(NotificationCompat.CATEGORY_ERROR)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setVibrate(longArrayOf(0, 150, 100, 150))
-            .build()
+        if (vibrate) {
+            builder.setVibrate(longArrayOf(0, 150, 100, 150))
+        }
+        return builder.build()
     }
 
     private fun openAppIntent(context: Context, requestCode: Int): PendingIntent =

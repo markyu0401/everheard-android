@@ -1,6 +1,6 @@
 # Third-party notices
 
-Everheard's own code is Apache-2.0. This file lists what actually ships in the app and in the release APK, with the license of each component. Last verified: 2026-10-27.
+Everheard's own code is Apache-2.0. This file lists what actually ships in the app and in the release APK, with the license of each component. Last verified: 2026-10-28.
 
 ## Libraries (shipped in the APK)
 
@@ -17,6 +17,8 @@ Everheard's own code is Apache-2.0. This file lists what actually ships in the a
 | Material Icons Core + Extended | per BOM | Apache-2.0 | Icons |
 | Kotlin standard library | 2.2.10 | Apache-2.0 | Language runtime |
 | kotlinx.coroutines (android) | 1.11.0 | Apache-2.0 | Concurrency |
+| OkHttp | 4.12.0 | Apache-2.0 | WebDAV client for NAS backup |
+| Okio | 3.6.0 | Apache-2.0 | OkHttp I/O |
 
 ## Test-only (not shipped)
 
@@ -27,6 +29,7 @@ Everheard's own code is Apache-2.0. This file lists what actually ships in the a
 | AndroidX Test ext JUnit / Rules / Espresso | 1.3.0 / 1.7.0 / 3.7.0 | Apache-2.0 |
 | kotlinx-coroutines-test | 1.11.0 | Apache-2.0 |
 | org.json | 20240303 | JSON License (test-only) |
+| MockWebServer | 4.12.0 | Apache-2.0 |
 
 ## Models (bundled in the release APK)
 
@@ -49,7 +52,7 @@ The Hugging Face model cards do not declare a separate license; the upstream rep
 
 ## Not shipped (do not list as dependencies)
 
-Room, SQLCipher, Hilt/Dagger, OkHttp and Ktor are **not** dependencies of the current build. The M2 transcript and memory layers are first-party encrypted JSON documents: AES-256-GCM with a non-exportable Android Keystore key, written atomically. The Room + SQLCipher migration is planned for M4; when it lands, add the rows here in the same PR.
+Room, SQLCipher, Hilt/Dagger and Ktor are **not** dependencies of the current build. The M2 transcript and memory layers are first-party encrypted JSON documents: AES-256-GCM with a non-exportable Android Keystore key, written atomically. The Room + SQLCipher migration is planned for M4; when it lands, add the rows here in the same PR.
 
 ## Rules
 

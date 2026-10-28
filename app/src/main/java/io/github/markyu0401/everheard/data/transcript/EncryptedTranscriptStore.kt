@@ -15,6 +15,7 @@ interface TranscriptStore {
     suspend fun setMarked(sessionId: String, utteranceId: String, marked: Boolean)
     suspend fun deleteSession(sessionId: String)
     suspend fun search(query: String): List<TranscriptHit>
+    suspend fun replaceAll(sessions: List<TranscriptSession>)
     suspend fun clear()
 }
 
@@ -111,6 +112,13 @@ class EncryptedTranscriptStore(
                 file.delete()
                 File(file.parentFile, "${file.name}.tmp").delete()
             }
+        }
+    }
+
+    override suspend fun replaceAll(sessions: List<TranscriptSession>) {
+        mutex.withLock {
+            persist(sessions)
+            cache = sessions
         }
     }
 

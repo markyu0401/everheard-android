@@ -79,6 +79,10 @@
     <string name="language_chinese">简体中文</string>
     <string name="settings_footer">Changes apply immediately.</string>
     <string name="settings_data">Data</string>
+    <string name="settings_nas_backup">NAS backup</string>
+    <string name="settings_nas_backup_not_configured">Not configured</string>
+    <string name="settings_nas_backup_configured">Configured</string>
+    <string name="settings_nas_backup_last">Last backup: %1$s</string>
     <string name="settings_schedule">Schedule</string>
     <string name="settings_clear_title">Clear all transcripts</string>
     <string name="settings_clear_subtitle">Delete every transcript on this device. This cannot be undone.</string>
@@ -177,6 +181,7 @@
     <string name="notification_error_body">Open Everheard to start capture again.</string>
     <string name="notification_alert_channel_name">Capture alerts</string>
     <string name="notification_alert_channel_description">Alerts when another app takes the microphone during a recording.</string>
+    <string name="notification_alert_silent_channel_name">Capture alerts (silent)</string>
     <string name="notification_mic_alert_title">Microphone taken — recording paused</string>
     <string name="notification_mic_alert_body">Another app (voice input, a call, or a recorder) is using the microphone. Recording continues automatically when it is free.</string>
 
@@ -363,8 +368,8 @@
     <string name="privacy_audio_value">Deleted after transcription</string>
     <string name="privacy_transcripts">Transcripts</string>
     <string name="privacy_transcripts_value">AES-256 · Keystore</string>
-    <string name="privacy_backup">Cloud backup</string>
-    <string name="privacy_backup_value">Off</string>
+    <string name="privacy_backup">NAS backup</string>
+    <string name="privacy_backup_value">Optional, encrypted</string>
     <string name="home_heard_today">heard today</string>
     <string name="home_metric_conversations">conversations</string>
     <string name="home_metric_open_loops">open loops</string>
@@ -409,6 +414,10 @@
     <string name="settings_excluded_apps">Excluded apps</string>
     <string name="settings_excluded_apps_none">No apps excluded</string>
     <string name="settings_excluded_apps_count">%1$d apps</string>
+    <string name="settings_battery_guard">Battery guard</string>
+    <string name="settings_battery_guard_subtitle" formatted="false">Pause below 15%, resume at 30% or while charging</string>
+    <string name="settings_mic_alert_vibration">Mic-taken vibration</string>
+    <string name="settings_mic_alert_vibration_subtitle">Vibrate when another app takes the microphone</string>
     <string name="excluded_apps_title">Excluded apps</string>
     <string name="excluded_apps_subtitle">Pause capture when one of these apps is playing audio.</string>
     <string name="excluded_apps_usage_title">Usage access</string>
@@ -456,4 +465,34 @@
     <string name="tutorial_4_body">In Settings → Voice &amp; people, record one sample of your voice. Your segments are labeled “me”; other speakers are clustered, and the People page shows who appeared.</string>
     <string name="tutorial_5_title">Review the week, keep the data local</string>
     <string name="tutorial_5_body">Memory shows project timelines and a weekly review. Audio is deleted after transcription; text is AES-256-GCM encrypted with a key in Android Keystore. Settings → Data can clear everything.</string>
+
+    <string name="nas_title">NAS backup</string>
+    <string name="nas_subtitle">Encrypted backup of transcripts, memory, schedule and excluded apps.</string>
+    <string name="nas_connection">Connection</string>
+    <string name="nas_server_url">Server URL</string>
+    <string name="nas_server_hint">https://nas.local:5006</string>
+    <string name="nas_username">Username</string>
+    <string name="nas_password">Password</string>
+    <string name="nas_folder">Folder</string>
+    <string name="nas_folder_hint">/home/EverheardBackups</string>
+    <string name="nas_trust_self_signed">Trust self-signed certificate</string>
+    <string name="nas_trust_self_signed_subtitle">Accept this NAS certificate without a system CA. Use it only on your own network.</string>
+    <string name="nas_encryption">Encryption</string>
+    <string name="nas_passphrase">Backup passphrase</string>
+    <string name="nas_passphrase_note">The backup file is encrypted with this passphrase. It cannot be recovered if lost. Provider keys and the voiceprint are not included.</string>
+    <string name="nas_save">Save</string>
+    <string name="nas_saved">Saved</string>
+    <string name="nas_test">Test connection</string>
+    <string name="nas_test_ok">Connected. The folder is writable.</string>
+    <string name="nas_backup_section">Backup</string>
+    <string name="nas_backup">Back up now</string>
+    <string name="nas_backup_done">Uploaded %1$s · %2$d sessions · %3$d memories</string>
+    <string name="nas_restore">Restore</string>
+    <string name="nas_refresh">Refresh list</string>
+    <string name="nas_no_backups">No backups in this folder.</string>
+    <string name="nas_file_meta">%1$s · %2$s</string>
+    <string name="nas_restore_confirm_title">Restore this backup?</string>
+    <string name="nas_restore_confirm_body">This replaces the transcripts and memory on this phone with %1$s. Current data will be lost.</string>
+    <string name="nas_restore_done">Restored %1$d sessions and %2$d memories.</string>
+    <string name="nas_error_restore">Restore failed: %1$s</string>
 </resources>

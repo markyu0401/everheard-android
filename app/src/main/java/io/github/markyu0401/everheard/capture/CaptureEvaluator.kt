@@ -13,6 +13,7 @@ data class CaptureInputs(
     val pauseUntilMillis: Long = 0L,
     val batteryLevel: Int = 100,
     val charging: Boolean = false,
+    val batteryGuardEnabled: Boolean = true,
     val thermalStatus: Int = 0,
     val scheduleAllows: Boolean = true,
     val micContention: MicContention = MicContention(),
@@ -49,11 +50,13 @@ object CaptureEvaluator {
         }
 
         // Hysteresis: a battery pause resumes at 30 % (or while charging), while
-        // recording only stops below 15 %.
-        val batteryOk = if (current == CaptureState.PAUSED_BATTERY) {
-            BatteryGuard.canResume(inputs.batteryLevel, inputs.charging)
-        } else {
-            BatteryGuard.isBatteryOk(inputs.batteryLevel)
+        // recording only stops below 15 %. The whole guard is optional in
+        // Settings; disabling it makes the battery level irrelevant.
+        val batteryOk = when {
+            !inputs.batteryGuardEnabled -> true
+            current == CaptureState.PAUSED_BATTERY ->
+                BatteryGuard.canResume(inputs.batteryLevel, inputs.charging)
+            else -> BatteryGuard.isBatteryOk(inputs.batteryLevel)
         }
         val context = CaptureContext(
             scheduleAllows = inputs.scheduleAllows,

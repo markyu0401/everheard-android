@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
@@ -37,6 +38,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -51,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,6 +66,8 @@ import io.github.markyu0401.everheard.BuildConfig
 import io.github.markyu0401.everheard.MainActivity
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.capture.schedule.ScheduleRule
+import io.github.markyu0401.everheard.data.backup.NasBackupConfig
+import io.github.markyu0401.everheard.data.backup.NasConfigStore
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
 import io.github.markyu0401.everheard.data.provider.ProviderConfig
 import io.github.markyu0401.everheard.data.provider.ProviderConfigStore
@@ -93,6 +99,8 @@ import io.github.markyu0401.everheard.ui.transcript.TranscriptListActivity
 import io.github.markyu0401.everheard.ui.tutorial.TutorialActivity
 import io.github.markyu0401.everheard.ui.voice.VoiceEnrollmentActivity
 import java.io.File
+import java.text.DateFormat
+import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -158,6 +166,9 @@ private fun SettingsScreen(
     val mcpStore = remember(context) {
         McpConfigStore.inDirectory(context.filesDir)
     }
+    val nasStore = remember(context) {
+        NasConfigStore.inDirectory(context.filesDir)
+    }
     val scheduleStore = remember(context) { context.scheduleStore() }
     val excludedStore = remember(context) { context.excludedAppsStore() }
     val scope = rememberCoroutineScope()
@@ -165,6 +176,7 @@ private fun SettingsScreen(
     var profile by remember { mutableStateOf<VoiceProfile?>(null) }
     var provider by remember { mutableStateOf<ProviderConfig?>(null) }
     var mcp by remember { mutableStateOf<McpConfig?>(null) }
+    var nas by remember { mutableStateOf<NasBackupConfig?>(null) }
     var rules by remember { mutableStateOf<List<ScheduleRule>>(emptyList()) }
     var excludedCount by remember { mutableStateOf(0) }
     var showClearDialog by remember { mutableStateOf(false) }
@@ -176,6 +188,7 @@ private fun SettingsScreen(
         profile = voiceStore.reload()
         provider = providerStore.reload()
         mcp = mcpStore.reload()
+        nas = nasStore.reload()
         rules = scheduleStore.rules.first()
         excludedCount = excludedStore.load().size
     }
@@ -339,10 +352,24 @@ private fun SettingsScreen(
                     } else {
                         stringResource(R.string.settings_excluded_apps_count, excludedCount)
                     },
-                    showDivider = false,
+                    showDivider = true,
                     onClick = {
                         context.startActivity(Intent(context, ExcludedAppsActivity::class.java))
                     }
+                )
+                SwitchSettingRow(
+                    title = stringResource(R.string.settings_battery_guard),
+                    subtitle = stringResource(R.string.settings_battery_guard_subtitle),
+                    checked = settings.batteryGuardEnabled,
+                    onCheckedChange = { store.setBatteryGuardEnabled(it) },
+                    showDivider = true
+                )
+                SwitchSettingRow(
+                    title = stringResource(R.string.settings_mic_alert_vibration),
+                    subtitle = stringResource(R.string.settings_mic_alert_vibration_subtitle),
+                    checked = settings.micAlertVibrationEnabled,
+                    onCheckedChange = { store.setMicAlertVibrationEnabled(it) },
+                    showDivider = false
                 )
             }
 
@@ -372,6 +399,15 @@ private fun SettingsScreen(
             Spacer(Modifier.height(18.dp))
             SectionLabel(stringResource(R.string.settings_data))
             EverheardCard {
+                SettingsRow(
+                    icon = Icons.Outlined.CloudUpload,
+                    title = stringResource(R.string.settings_nas_backup),
+                    subtitle = nasSubtitle(nas),
+                    showDivider = true,
+                    onClick = {
+                        context.startActivity(Intent(context, NasBackupActivity::class.java))
+                    }
+                )
                 SettingsRow(
                     icon = Icons.Outlined.DeleteOutline,
                     iconTint = MaterialTheme.colorScheme.error,
@@ -484,6 +520,51 @@ private fun SettingsScreen(
             }
         )
     }
+}
+
+@Composable
+private fun SwitchSettingRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    showDivider: Boolean
+) {
+    SettingsRow(
+        title = title,
+        subtitle = subtitle,
+        showDivider = showDivider,
+        showChevron = false,
+        trailingContent = {
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
+        },
+        onClick = { onCheckedChange(!checked) }
+    )
+}
+
+@Composable
+private fun nasSubtitle(config: NasBackupConfig?): String {
+    if (config == null || !config.isConfigured) {
+        return stringResource(R.string.settings_nas_backup_not_configured)
+    }
+    if (config.lastBackupAt <= 0L) {
+        return stringResource(R.string.settings_nas_backup_configured)
+    }
+    val date = DateFormat.getDateTimeInstance(
+        DateFormat.MEDIUM,
+        DateFormat.SHORT,
+        LocalLocale.current.platformLocale
+    ).format(Date(config.lastBackupAt))
+    return stringResource(R.string.settings_nas_backup_last, date)
 }
 
 @Composable

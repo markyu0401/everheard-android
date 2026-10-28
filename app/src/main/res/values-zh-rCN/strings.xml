@@ -78,6 +78,10 @@
     <string name="language_chinese">简体中文</string>
     <string name="settings_footer">修改会立即生效。</string>
     <string name="settings_data">数据</string>
+    <string name="settings_nas_backup">NAS 备份</string>
+    <string name="settings_nas_backup_not_configured">未配置</string>
+    <string name="settings_nas_backup_configured">已配置</string>
+    <string name="settings_nas_backup_last">上次备份：%1$s</string>
     <string name="settings_schedule">时间表</string>
     <string name="settings_clear_title">清空所有转写</string>
     <string name="settings_clear_subtitle">删除本机全部转写，无法恢复。</string>
@@ -176,6 +180,7 @@
     <string name="notification_error_body">打开 Everheard 重新开始采集。</string>
     <string name="notification_alert_channel_name">录音提醒</string>
     <string name="notification_alert_channel_description">录音期间其他应用占用麦克风时提醒。</string>
+    <string name="notification_alert_silent_channel_name">录音提醒（静音）</string>
     <string name="notification_mic_alert_title">麦克风被占用 — 录音已暂停</string>
     <string name="notification_mic_alert_body">另一个应用（语音输入、通话或录音）正在使用麦克风。它结束后会自动继续录音。</string>
 
@@ -362,8 +367,8 @@
     <string name="privacy_audio_value">转写后删除</string>
     <string name="privacy_transcripts">转写</string>
     <string name="privacy_transcripts_value">AES-256 · Keystore</string>
-    <string name="privacy_backup">云备份</string>
-    <string name="privacy_backup_value">关闭</string>
+    <string name="privacy_backup">NAS 备份</string>
+    <string name="privacy_backup_value">可选，加密</string>
     <string name="home_heard_today">今日已聆听</string>
     <string name="home_metric_conversations">段对话</string>
     <string name="home_metric_open_loops">未完成</string>
@@ -408,6 +413,10 @@
     <string name="settings_excluded_apps">排除的应用</string>
     <string name="settings_excluded_apps_none">未排除应用</string>
     <string name="settings_excluded_apps_count">%1$d 个应用</string>
+    <string name="settings_battery_guard">电量保护</string>
+    <string name="settings_battery_guard_subtitle" formatted="false">低于 15% 暂停，30% 或充电时恢复</string>
+    <string name="settings_mic_alert_vibration">麦克风被占用时震动</string>
+    <string name="settings_mic_alert_vibration_subtitle">其他应用占用麦克风时震动提醒</string>
     <string name="excluded_apps_title">排除的应用</string>
     <string name="excluded_apps_subtitle">这些应用播放声音时，暂停采集。</string>
     <string name="excluded_apps_usage_title">使用情况访问权限</string>
@@ -455,4 +464,34 @@
     <string name="tutorial_4_body">设置 → 声音与人：录一次自己的声音。之后你的片段会标成「我」，其他说话人会被聚类，人物页能看到谁出现过。</string>
     <string name="tutorial_5_title">每周复盘，数据留在本机</string>
     <string name="tutorial_5_body">记忆页有项目时间线和每周复盘。音频转写完就删；文字用 AES-256-GCM 加密，密钥在 Android Keystore。设置 → 数据可以一次清空。</string>
+
+    <string name="nas_title">NAS 备份</string>
+    <string name="nas_subtitle">把转写、记忆、时间表和排除的应用加密备份到 NAS。</string>
+    <string name="nas_connection">连接</string>
+    <string name="nas_server_url">服务器地址</string>
+    <string name="nas_server_hint">https://nas.local:5006</string>
+    <string name="nas_username">用户名</string>
+    <string name="nas_password">密码</string>
+    <string name="nas_folder">文件夹</string>
+    <string name="nas_folder_hint">/home/EverheardBackups</string>
+    <string name="nas_trust_self_signed">信任自签名证书</string>
+    <string name="nas_trust_self_signed_subtitle">不通过系统 CA 校验这台 NAS 的证书。只在自己的网络里使用。</string>
+    <string name="nas_encryption">加密</string>
+    <string name="nas_passphrase">备份口令</string>
+    <string name="nas_passphrase_note">备份文件用这个口令加密；丢了就无法恢复。不包含模型 API key 和声纹。</string>
+    <string name="nas_save">保存</string>
+    <string name="nas_saved">已保存</string>
+    <string name="nas_test">测试连接</string>
+    <string name="nas_test_ok">已连接，文件夹可写。</string>
+    <string name="nas_backup_section">备份</string>
+    <string name="nas_backup">立即备份</string>
+    <string name="nas_backup_done">已上传 %1$s · %2$d 条会话 · %3$d 条记忆</string>
+    <string name="nas_restore">恢复</string>
+    <string name="nas_refresh">刷新列表</string>
+    <string name="nas_no_backups">这个文件夹里还没有备份。</string>
+    <string name="nas_file_meta">%1$s · %2$s</string>
+    <string name="nas_restore_confirm_title">恢复这个备份？</string>
+    <string name="nas_restore_confirm_body">这会用 %1$s 替换本机的转写和记忆，当前数据会丢失。</string>
+    <string name="nas_restore_done">已恢复 %1$d 条会话、%2$d 条记忆。</string>
+    <string name="nas_error_restore">恢复失败：%1$s</string>
 </resources>
