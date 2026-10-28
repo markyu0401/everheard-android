@@ -1,0 +1,42 @@
+name: Dependency Submission
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  dependency-submission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools"
+
+      - name: Install SDK platform and build tools
+        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Cache native AAR
+        uses: actions/cache@v4
+        with:
+          path: app/libs/sherpa-onnx-2.0.0.aar
+          key: sherpa-${{ hashFiles('scripts/fetch_sherpa.sh') }}
+
+      - name: Fetch native AAR
+        run: bash scripts/fetch_sherpa.sh
+
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v6
