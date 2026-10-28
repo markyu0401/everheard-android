@@ -16,7 +16,8 @@ import kotlin.math.sqrt
  */
 class MotionDetector(
     context: Context,
-    private val windowMs: Long = 5 * 60_000L
+    private val windowMs: Long = 5 * 60_000L,
+    private val onMotion: () -> Unit = {}
 ) : SensorEventListener {
 
     private val sensorManager = context.getSystemService(SensorManager::class.java)
@@ -53,6 +54,7 @@ class MotionDetector(
         val magnitude = sqrt(x * x + y * y + z * z)
         if (lastMagnitude > 0f && abs(magnitude - lastMagnitude) > 0.8f) {
             window.onMotion(SystemClock.elapsedRealtime())
+            onMotion()
         }
         lastMagnitude = magnitude
     }

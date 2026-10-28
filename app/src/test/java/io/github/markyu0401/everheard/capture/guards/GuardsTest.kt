@@ -12,6 +12,9 @@ class GuardsTest {
         assertThat(BatteryGuard.isBatteryOk(15)).isTrue()
         assertThat(BatteryGuard.canResume(29)).isFalse()
         assertThat(BatteryGuard.canResume(30)).isTrue()
+        assertThat(BatteryGuard.canResume(16)).isFalse()
+        assertThat(BatteryGuard.canResume(16, charging = true)).isTrue()
+        assertThat(BatteryGuard.canResume(14, charging = true)).isFalse()
     }
 
     @Test

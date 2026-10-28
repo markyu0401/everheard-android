@@ -156,8 +156,13 @@
     <string name="notification_state_paused_mic_busy">已暂停 — 其他应用正在使用麦克风</string>
     <string name="notification_state_error">采集已停止 — 打开 Everheard</string>
     <string name="notification_state_marked">已标记最近 30 秒</string>
+    <string name="notification_state_waiting_mic">等待中 — 麦克风正被占用</string>
     <string name="notification_detail_recording">%1$d 分钟 · 电量 %2$d%%</string>
     <string name="notification_detail_battery">电量 %1$d%%</string>
+    <string name="notification_detail_mic_taken">麦克风空闲后自动继续录音</string>
+    <string name="notification_detail_waiting_mic">麦克风空闲后自动开始</string>
+    <string name="notification_marked_detail">已标记最近 30 秒</string>
+    <string name="notification_nothing_to_mark">无可标记内容 — 麦克风未开启</string>
     <string name="notification_action_pause_15">15 分钟</string>
     <string name="notification_action_pause_60">1 小时</string>
     <string name="notification_action_pause_tomorrow">到明天</string>
@@ -167,6 +172,12 @@
     <string name="notification_resume_channel_description">重启或后台启动被拒后，点一下恢复采集。</string>
     <string name="notification_resume_title">需要点一下恢复采集</string>
     <string name="notification_resume_body">Android 拒绝了后台启动。打开 Everheard 恢复。</string>
+    <string name="notification_error_title">采集已停止</string>
+    <string name="notification_error_body">打开 Everheard 重新开始采集。</string>
+    <string name="notification_alert_channel_name">录音提醒</string>
+    <string name="notification_alert_channel_description">录音期间其他应用占用麦克风时提醒。</string>
+    <string name="notification_mic_alert_title">麦克风被占用 — 录音已暂停</string>
+    <string name="notification_mic_alert_body">另一个应用（语音输入、通话或录音）正在使用麦克风。它结束后会自动继续录音。</string>
 
     <string name="quick_tile_label">Everheard 采集</string>
 

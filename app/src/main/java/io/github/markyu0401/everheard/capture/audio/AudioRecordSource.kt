@@ -4,6 +4,7 @@ import android.Manifest
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
 import android.os.Process
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -36,6 +37,20 @@ class AudioRecordSource(
 
     val isRecording: Boolean
         get() = running
+
+    /**
+     * True when the framework is delivering silence to this client because a
+     * higher-priority app took the microphone. This is the authoritative
+     * own-client signal; it does not depend on session-id matching.
+     */
+    val isSilenced: Boolean
+        get() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false
+            val record = audioRecord ?: return false
+            return runCatching {
+                record.activeRecordingConfiguration?.isClientSilenced == true
+            }.getOrDefault(false)
+        }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun start(onFrame: (ShortArray) -> Unit) {

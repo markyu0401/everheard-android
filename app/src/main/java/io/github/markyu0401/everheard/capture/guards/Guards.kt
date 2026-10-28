@@ -1,9 +1,10 @@
 package io.github.markyu0401.everheard.capture.guards
 
 /**
- * Battery policy: pause below 15 %, resume at 30 % or above. Charging is not
- * required to resume, but the UI recommends it; the service uses the same
- * numbers so the behaviour is predictable.
+ * Battery policy with hysteresis: close the microphone below 15 %, and do not
+ * resume a battery pause until 30 % (or while charging and at least 15 %).
+ * Without hysteresis a phone hovering at 15–16 % flaps between RECORDING and
+ * PAUSED_BATTERY on every tick.
  */
 object BatteryGuard {
     const val LOW_PERCENT = 15
@@ -13,7 +14,8 @@ object BatteryGuard {
 
     fun shouldPause(levelPercent: Int): Boolean = levelPercent < LOW_PERCENT
 
-    fun canResume(levelPercent: Int): Boolean = levelPercent >= RESUME_PERCENT
+    fun canResume(levelPercent: Int, charging: Boolean = false): Boolean =
+        levelPercent >= RESUME_PERCENT || (charging && levelPercent >= LOW_PERCENT)
 }
 
 /**

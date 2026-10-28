@@ -13,13 +13,20 @@ import io.github.markyu0401.everheard.R
 /**
  * The visible-capture notification. It is ongoing and silent; the start tone is
  * played by the service. Actions are pause, mark, and stop.
+ *
+ * A second, high-importance channel carries one transient alert when another
+ * app takes the microphone while a recording is running. The ongoing service
+ * notification cannot alert (it is LOW importance and onlyAlertOnce), so
+ * without this channel the pause is invisible unless the user opens the shade.
  */
 object CaptureNotification {
 
     const val CHANNEL_ID = "capture"
     const val RESUME_CHANNEL_ID = "capture_resume"
+    const val ALERT_CHANNEL_ID = "capture_alert"
     const val NOTIF_ID = 1001
     const val RESUME_NOTIF_ID = 1002
+    const val ALERT_NOTIF_ID = 1003
 
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -44,17 +51,25 @@ object CaptureNotification {
             setShowBadge(true)
         }
 
+        val alert = NotificationChannel(
+            ALERT_CHANNEL_ID,
+            context.getString(R.string.notification_alert_channel_name),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = context.getString(R.string.notification_alert_channel_description)
+            setShowBadge(true)
+            enableVibration(true)
+            vibrationPattern = longArrayOf(0, 150, 100, 150)
+            setSound(null, null)
+        }
+
         manager.createNotificationChannel(capture)
         manager.createNotificationChannel(resume)
+        manager.createNotificationChannel(alert)
     }
 
     fun build(context: Context, stateText: String, detail: String? = null): Notification {
-        val openApp = PendingIntent.getActivity(
-            context,
-            0,
-            Intent(context, MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val openApp = openAppIntent(context, requestCode = 0)
         val pause15 = serviceAction(context, 1, CaptureService.ACTION_PAUSE_15)
         val pause60 = serviceAction(context, 2, CaptureService.ACTION_PAUSE_60)
         val pauseTomorrow = serviceAction(context, 6, CaptureService.ACTION_PAUSE_TOMORROW)
@@ -82,21 +97,60 @@ object CaptureNotification {
     }
 
     fun buildResumeNotification(context: Context): Notification {
-        val openApp = PendingIntent.getActivity(
-            context,
-            5,
-            Intent(context, MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
         return NotificationCompat.Builder(context, RESUME_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_everheard)
             .setContentTitle(context.getString(R.string.notification_resume_title))
             .setContentText(context.getString(R.string.notification_resume_body))
-            .setContentIntent(openApp)
+            .setContentIntent(openAppIntent(context, requestCode = 5))
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
     }
+
+    /**
+     * Posted when the service stops on a real capture failure. The foreground
+     * notification is removed with the service, so without this the user would
+     * only see "Not recording" after opening the app.
+     */
+    fun buildErrorNotification(context: Context): Notification {
+        return NotificationCompat.Builder(context, RESUME_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_everheard)
+            .setContentTitle(context.getString(R.string.notification_error_title))
+            .setContentText(context.getString(R.string.notification_error_body))
+            .setContentIntent(openAppIntent(context, requestCode = 8))
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+    }
+
+    /**
+     * Transient heads-up: the recording was actually interrupted, not merely
+     * waiting for a busy mic. Auto-cancels after 10 s; the ongoing notification
+     * keeps the current state afterwards.
+     */
+    fun buildMicAlert(context: Context): Notification {
+        val body = context.getString(R.string.notification_mic_alert_body)
+        return NotificationCompat.Builder(context, ALERT_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_everheard)
+            .setContentTitle(context.getString(R.string.notification_mic_alert_title))
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(openAppIntent(context, requestCode = 7))
+            .setAutoCancel(true)
+            .setTimeoutAfter(10_000L)
+            .setCategory(NotificationCompat.CATEGORY_ERROR)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVibrate(longArrayOf(0, 150, 100, 150))
+            .build()
+    }
+
+    private fun openAppIntent(context: Context, requestCode: Int): PendingIntent =
+        PendingIntent.getActivity(
+            context,
+            requestCode,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
     private fun serviceAction(context: Context, requestCode: Int, action: String): PendingIntent =
         PendingIntent.getService(

@@ -157,8 +157,13 @@
     <string name="notification_state_paused_mic_busy">Paused — another app is using the microphone</string>
     <string name="notification_state_error">Capture stopped — open Everheard</string>
     <string name="notification_state_marked">Marked the last 30 seconds</string>
+    <string name="notification_state_waiting_mic">Waiting — microphone is in use</string>
     <string name="notification_detail_recording">%1$d min · %2$d%% battery</string>
     <string name="notification_detail_battery">%1$d%% battery</string>
+    <string name="notification_detail_mic_taken">Recording continues automatically when the mic is free</string>
+    <string name="notification_detail_waiting_mic">Starts automatically when the mic is free</string>
+    <string name="notification_marked_detail">Marked the last 30 s</string>
+    <string name="notification_nothing_to_mark">Nothing to mark — the microphone is off</string>
     <string name="notification_action_pause_15">15 min</string>
     <string name="notification_action_pause_60">1 h</string>
     <string name="notification_action_pause_tomorrow">Until tomorrow</string>
@@ -168,6 +173,12 @@
     <string name="notification_resume_channel_description">Tap-to-resume reminders after a reboot or a refused background start.</string>
     <string name="notification_resume_title">Capture needs a tap</string>
     <string name="notification_resume_body">Android refused the background start. Open Everheard to resume.</string>
+    <string name="notification_error_title">Capture stopped</string>
+    <string name="notification_error_body">Open Everheard to start capture again.</string>
+    <string name="notification_alert_channel_name">Capture alerts</string>
+    <string name="notification_alert_channel_description">Alerts when another app takes the microphone during a recording.</string>
+    <string name="notification_mic_alert_title">Microphone taken — recording paused</string>
+    <string name="notification_mic_alert_body">Another app (voice input, a call, or a recorder) is using the microphone. Recording continues automatically when it is free.</string>
 
     <string name="quick_tile_label">Everheard capture</string>
 
