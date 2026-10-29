@@ -26,6 +26,12 @@ import kotlinx.coroutines.sync.withLock
  * on-device ASR model, transcribes speech segments in order, and appends the
  * text to the encrypted store. Audio is never persisted.
  *
+ * Three gates sit between ASR and storage, because raw output is not memory:
+ * 1. [TranscriptQuality] drops hallucinated fragments ("嗯。", ".", "B.").
+ * 2. [TranscriptMerger] joins a short pause but never past [TranscriptMerger.MAX_MERGED_MS].
+ * 3. [SessionQuality] holds utterances in memory until there is enough speech
+ *    to be worth a session, so a noise burst does not create one.
+ *
  * Segments go through an unlimited channel so the audio thread never blocks.
  * [stop] closes the channel; the consumer drains queued segments, writes the
  * session end time, and then releases the scope.
@@ -65,10 +71,13 @@ class CaptureTranscriber(
         if (consumerJob != null) return
         consumerJob = scope.launch {
             var sessionCreated = false
-            var lastUtterance: TranscriptUtterance? = null
             var speakerInitialized = false
+            var attributionActive = false
             var voiceProfile: VoiceProfile? = null
             var speakerEmbedder: SpeakerEmbedder? = null
+            var lastUtterance: TranscriptUtterance? = null
+            val pending = mutableListOf<TranscriptUtterance>()
+
             for (segment in queue) {
                 if (segment.pcm16.isEmpty()) continue
                 try {
@@ -79,80 +88,75 @@ class CaptureTranscriber(
                         }
                         asr.transcribe(AsrRequest(pcm16 = segment.pcm16)).text.trim()
                     }
+                    val durationMs = segment.endMs - segment.startMs
                     Log.i(
                         TAG,
                         "segment ${segment.startMs}-${segment.endMs} " +
-                            "samples=${segment.pcm16.size} textLength=${text.length}"
+                            "samples=${segment.pcm16.size} textLength=${text.length} " +
+                            "speechRatio=${"%.2f".format(segment.speechRatio)}"
                     )
-                    if (text.isNotEmpty()) {
-                        if (!speakerInitialized) {
-                            speakerInitialized = true
-                            voiceProfile = voiceProfileStore?.load()
-                            if (voiceProfile != null) {
-                                try {
-                                    speakerEmbedder = speakerFactory()
-                                    Log.i(TAG, "speaker model loaded: ${speakerEmbedder?.id}")
-                                } catch (error: Throwable) {
-                                    Log.e(TAG, "Speaker model unavailable", error)
-                                }
+                    if (!TranscriptQuality.isAcceptable(text, durationMs, segment.speechRatio)) {
+                        Log.i(TAG, "segment rejected by quality gate (hallucination or noise)")
+                        continue
+                    }
+
+                    if (!speakerInitialized) {
+                        speakerInitialized = true
+                        voiceProfile = voiceProfileStore?.load()
+                        if (voiceProfile != null) {
+                            try {
+                                speakerEmbedder = speakerFactory()
+                                attributionActive = true
+                                Log.i(TAG, "speaker model loaded: ${speakerEmbedder?.id}")
+                            } catch (error: Throwable) {
+                                Log.e(TAG, "Speaker model unavailable", error)
                             }
                         }
-                        val speaker = if (
-                            voiceProfile != null &&
-                            segment.pcm16.size >= VoiceMatcher.MIN_SPEAKER_SAMPLES &&
-                            speakerEmbedder != null
-                        ) {
-                            try {
-                                val embedding = speakerEmbedder!!.embed(segment.pcm16)
-                                val score = VoiceMatcher.bestSimilarity(
-                                    embedding,
-                                    voiceProfile!!
-                                )
-                                val label = if (score >= VoiceMatcher.DEFAULT_THRESHOLD) {
-                                    "me"
-                                } else {
-                                    null
-                                }
-                                Log.i(
-                                    TAG,
-                                    "speaker score=${"%.3f".format(score)} " +
-                                        "label=${label ?: "unknown"}"
-                                )
-                                label
-                            } catch (error: Throwable) {
-                                Log.e(TAG, "Speaker attribution failed", error)
-                                null
-                            }
-                        } else {
+                    }
+
+                    val speaker = if (
+                        attributionActive &&
+                        segment.pcm16.size >= VoiceMatcher.MIN_SPEAKER_SAMPLES &&
+                        speakerEmbedder != null
+                    ) {
+                        try {
+                            val embedding = speakerEmbedder!!.embed(segment.pcm16)
+                            val score = VoiceMatcher.bestSimilarity(embedding, voiceProfile!!)
+                            val label = VoiceMatcher.classify(embedding, voiceProfile!!)
+                            Log.i(
+                                TAG,
+                                "speaker score=${"%.3f".format(score)} " +
+                                    "label=${label ?: "unknown"}"
+                            )
+                            label
+                        } catch (error: Throwable) {
+                            Log.e(TAG, "Speaker attribution failed", error)
                             null
                         }
-                        if (!sessionCreated) {
-                            store.createSession(
-                                TranscriptSession(
-                                    id = sessionId,
-                                    startedAt = startedAt,
-                                    title = text.take(40)
-                                )
-                            )
-                            sessionCreated = true
-                        }
-                        val utterance = TranscriptUtterance(
-                            id = UUID.randomUUID().toString(),
-                            sessionId = sessionId,
-                            startMs = segment.startMs,
-                            endMs = segment.endMs,
-                            text = text,
-                            speaker = speaker
+                    } else {
+                        null
+                    }
+
+                    val utterance = TranscriptUtterance(
+                        id = UUID.randomUUID().toString(),
+                        sessionId = sessionId,
+                        startMs = segment.startMs,
+                        endMs = segment.endMs,
+                        text = text,
+                        speaker = speaker
+                    )
+
+                    val previous = lastUtterance
+                    if (previous != null &&
+                        TranscriptMerger.shouldMerge(
+                            previous,
+                            utterance.startMs,
+                            utterance.endMs,
+                            nextSpeaker = speaker
                         )
-                        val previous = lastUtterance
-                        if (previous != null &&
-                            TranscriptMerger.shouldMerge(
-                                previous,
-                                segment.startMs,
-                                nextSpeaker = speaker
-                            )
-                        ) {
-                            val merged = TranscriptMerger.merge(previous, utterance)
+                    ) {
+                        val merged = TranscriptMerger.merge(previous, utterance)
+                        if (sessionCreated) {
                             val existing = store.session(sessionId)
                             if (existing != null) {
                                 store.createSession(
@@ -160,11 +164,32 @@ class CaptureTranscriber(
                                         utterances = existing.utterances.dropLast(1) + merged
                                     )
                                 )
-                                lastUtterance = merged
-                                Log.i(TAG, "merged segment into previous utterance")
-                                continue
                             }
+                        } else if (pending.isNotEmpty()) {
+                            pending[pending.lastIndex] = merged
                         }
+                        lastUtterance = merged
+                        Log.i(TAG, "merged segment into previous utterance")
+                        continue
+                    }
+
+                    if (!sessionCreated) {
+                        pending += utterance
+                        lastUtterance = utterance
+                        if (SessionQuality.qualifies(pending)) {
+                            store.createSession(
+                                TranscriptSession(
+                                    id = sessionId,
+                                    startedAt = startedAt,
+                                    title = SessionQuality.titleFor(pending),
+                                    utterances = pending.toList(),
+                                    voiceProfileActive = attributionActive
+                                )
+                            )
+                            sessionCreated = true
+                            Log.i(TAG, "session created with ${pending.size} utterances")
+                        }
+                    } else {
                         store.appendUtterance(sessionId, utterance)
                         lastUtterance = utterance
                     }
@@ -179,6 +204,8 @@ class CaptureTranscriber(
                 if (existing != null) {
                     store.createSession(existing.copy(endedAt = System.currentTimeMillis()))
                 }
+            } else {
+                Log.i(TAG, "session discarded: ${pending.size} pending utterances")
             }
         }
     }

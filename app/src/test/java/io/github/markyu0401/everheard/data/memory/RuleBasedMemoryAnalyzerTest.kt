@@ -128,6 +128,69 @@ class RuleBasedMemoryAnalyzerTest {
         assertThat(memory.commitments).hasSize(5)
     }
 
+    @Test
+    fun a_session_without_a_matching_voice_produces_no_memory() {
+        // TV drama: every row is somebody else. It must stay transcript-only.
+        val utterances = listOf(
+            utterance("u1", "狮子殿想是这样的，本王决定今晚出兵。", speaker = "other"),
+            utterance("u2", "殿下饶命，我明天再来。", speaker = "other")
+        )
+        val memory = analyzer.analyze(
+            TranscriptSession(
+                id = "tv",
+                startedAt = 1L,
+                utterances = utterances,
+                voiceProfileActive = true
+            )
+        )
+
+        assertThat(memory.summary).isEmpty()
+        assertThat(memory.events).isEmpty()
+        assertThat(memory.commitments).isEmpty()
+        assertThat(memory.inspirations).isEmpty()
+    }
+
+    @Test
+    fun with_attribution_only_confirmed_rows_become_memory() {
+        val utterances = listOf(
+            utterance("u1", "I will send the draft by tomorrow.", speaker = "me"),
+            utterance("u2", "本王决定今晚出兵，明天再议。", speaker = "other")
+        )
+        val memory = analyzer.analyze(
+            TranscriptSession(
+                id = "mixed",
+                startedAt = 1L,
+                utterances = utterances,
+                voiceProfileActive = true
+            )
+        )
+
+        assertThat(memory.commitments).hasSize(1)
+        assertThat(memory.commitments.first().text)
+            .isEqualTo("I will send the draft by tomorrow.")
+        assertThat(memory.commitments.first().owner).isEqualTo("me")
+        assertThat(memory.events).hasSize(1)
+        assertThat(memory.events.first().text)
+            .isEqualTo("I will send the draft by tomorrow.")
+    }
+
+    @Test
+    fun an_unattributed_session_keeps_the_text_heuristic() {
+        val memory = analyzer.analyze(
+            TranscriptSession(
+                id = "no-profile",
+                startedAt = 1L,
+                utterances = listOf(
+                    utterance("u1", "我明天会把方案发给你。", speaker = null)
+                ),
+                voiceProfileActive = false
+            )
+        )
+
+        assertThat(memory.commitments).hasSize(1)
+        assertThat(memory.commitments.first().owner).isEqualTo("me")
+    }
+
     private fun session(vararg texts: String): TranscriptSession =
         TranscriptSession(
             id = "s1",
@@ -141,13 +204,15 @@ class RuleBasedMemoryAnalyzerTest {
         id: String,
         text: String,
         startMs: Long = 0L,
-        marked: Boolean = false
+        marked: Boolean = false,
+        speaker: String? = null
     ) = TranscriptUtterance(
         id = id,
         sessionId = "s1",
         startMs = startMs,
         endMs = startMs + 1_500L,
         text = text,
+        speaker = speaker,
         marked = marked
     )
 }

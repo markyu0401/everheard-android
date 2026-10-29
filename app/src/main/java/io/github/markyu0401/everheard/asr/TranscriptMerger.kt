@@ -11,9 +11,18 @@ object TranscriptMerger {
 
     const val DEFAULT_GAP_MS = 1_200L
 
+    /**
+     * A continuous stream (TV, a lecture, a video) has no real pause, so an
+     * unbounded merge turns an hour into one "utterance": speaker attribution
+     * becomes meaningless and the text loses all structure. Cap the merged
+     * duration instead.
+     */
+    const val MAX_MERGED_MS = 20_000L
+
     fun shouldMerge(
         previous: TranscriptUtterance?,
         nextStartMs: Long,
+        nextEndMs: Long = nextStartMs,
         gapMs: Long = DEFAULT_GAP_MS,
         nextSpeaker: String? = null
     ): Boolean {
@@ -22,7 +31,9 @@ object TranscriptMerger {
             (previous.speaker != null || nextSpeaker != null)
         if (speakersDiffer) return false
         val gap = nextStartMs - previous.endMs
-        return gap <= gapMs
+        if (gap > gapMs) return false
+        val mergedDuration = nextEndMs - previous.startMs
+        return mergedDuration <= MAX_MERGED_MS
     }
 
     fun merge(previous: TranscriptUtterance, next: TranscriptUtterance): TranscriptUtterance =

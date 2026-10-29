@@ -50,4 +50,25 @@ class TranscriptMergerTest {
         assertThat(TranscriptMerger.joinText("Hello", "world")).isEqualTo("Hello world")
         assertThat(TranscriptMerger.joinText("你好", "世界")).isEqualTo("你好世界")
     }
+
+    @Test
+    fun does_not_merge_past_the_duration_cap() {
+        // A continuous stream with no real pause must not become one giant row.
+        val first = utterance(0, 12_000, "First part.")
+        val second = utterance(12_400, 25_000, "Second part.")
+
+        assertThat(
+            TranscriptMerger.shouldMerge(first, second.startMs, second.endMs)
+        ).isFalse()
+    }
+
+    @Test
+    fun merges_when_the_result_stays_under_the_cap() {
+        val first = utterance(0, 8_000, "First part.")
+        val second = utterance(8_400, 15_000, "Second part.")
+
+        assertThat(
+            TranscriptMerger.shouldMerge(first, second.startMs, second.endMs)
+        ).isTrue()
+    }
 }

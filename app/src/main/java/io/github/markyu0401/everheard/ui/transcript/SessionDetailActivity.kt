@@ -762,8 +762,11 @@ private fun speakerLabels(session: TranscriptSession): List<String> {
     return result
 }
 
-private fun speakerLabel(context: Context, speaker: String): String =
-    if (speaker == "me") context.getString(R.string.speaker_me) else speaker
+private fun speakerLabel(context: Context, speaker: String): String = when (speaker) {
+    "me" -> context.getString(R.string.speaker_me)
+    "other" -> context.getString(R.string.speaker_other)
+    else -> speaker
+}
 
 @Composable
 private fun memoryTypeLabel(type: MemoryEventType): String = stringResource(

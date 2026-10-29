@@ -45,6 +45,22 @@ class TranscriptCodecTest {
         val decoded = TranscriptCodec.decode(raw)
 
         assertThat(decoded[0].utterances[0].marked).isFalse()
+        assertThat(decoded[0].voiceProfileActive).isFalse()
+    }
+
+    @Test
+    fun round_trips_the_voice_profile_flag() {
+        val session = TranscriptSession(
+            id = "s1",
+            startedAt = 1L,
+            title = "Attributed",
+            voiceProfileActive = true
+        )
+
+        val decoded = TranscriptCodec.decode(TranscriptCodec.encode(listOf(session)))
+
+        assertThat(decoded).hasSize(1)
+        assertThat(decoded[0].voiceProfileActive).isTrue()
     }
 
     @Test

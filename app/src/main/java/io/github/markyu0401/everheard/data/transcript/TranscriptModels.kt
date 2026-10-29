@@ -9,7 +9,14 @@ data class TranscriptSession(
     val startedAt: Long,
     val endedAt: Long? = null,
     val title: String = "",
-    val utterances: List<TranscriptUtterance> = emptyList()
+    val utterances: List<TranscriptUtterance> = emptyList(),
+    /**
+     * True when the voice profile was enrolled and speaker attribution actually
+     * ran for this session. Memory extraction uses this to decide whether an
+     * utterance must be voiceprint-confirmed ("me") before it can become the
+     * user's commitment; without a profile there is nothing to gate on.
+     */
+    val voiceProfileActive: Boolean = false
 )
 
 data class TranscriptUtterance(

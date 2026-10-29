@@ -136,6 +136,7 @@
     <string name="voice_failed">Could not create the voice profile. Try again.</string>
     <string name="voice_seconds">%1$ds / 30s</string>
     <string name="speaker_me">Me</string>
+    <string name="speaker_other">Other</string>
 
     <string name="home_service_start">Start capture</string>
     <string name="home_service_stop">Stop capture</string>
@@ -370,7 +371,7 @@
     <string name="privacy_transcripts_value">AES-256 · Keystore</string>
     <string name="privacy_backup">NAS backup</string>
     <string name="privacy_backup_value">Optional, encrypted</string>
-    <string name="home_heard_today">heard today</string>
+    <string name="home_heard_today">speech today</string>
     <string name="home_metric_conversations">conversations</string>
     <string name="home_metric_open_loops">open loops</string>
     <string name="home_metric_ideas">ideas</string>

@@ -17,8 +17,18 @@ class SpeechSegmenter(
     data class Segment(
         val pcm16: ShortArray,
         val startMs: Long,
-        val endMs: Long
-    )
+        val endMs: Long,
+        /** Frames the VAD actually called speech inside this segment. */
+        val speechMs: Long = 0L
+    ) {
+        /** Share of the segment that the VAD called speech; noise segments score low. */
+        val speechRatio: Float
+            get() {
+                val duration = endMs - startMs
+                if (duration <= 0L) return 0f
+                return (speechMs.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
+            }
+    }
 
     private val maxSamples = (maxSegmentMs * sampleRate / 1000).toInt()
     private val preRollSamples = (preRollMs * sampleRate / 1000).toInt()
@@ -110,7 +120,8 @@ class SpeechSegmenter(
         emitted += Segment(
             pcm16 = buffer.copyOf(size),
             startMs = segmentStartMs,
-            endMs = segmentStartMs + size * 1000L / sampleRate
+            endMs = segmentStartMs + size * 1000L / sampleRate,
+            speechMs = speechMs
         )
     }
 

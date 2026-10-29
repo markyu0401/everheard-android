@@ -134,7 +134,14 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     val todayIds = todaySessions.map { it.id }.toSet()
     val todayMemories = memories.filter { it.sessionId in todayIds }
     val sessionsById = todaySessions.associateBy { it.id }
-    val totalMinutes = todaySessions.sumOf { sessionMinutes(it) }
+    // Wall-clock "listening" time is not what the user got. Show the speech the
+    // pipeline actually kept, so a 12-hour day of TV noise reads as the few
+    // minutes it really was.
+    val totalMinutes = todaySessions
+        .sumOf { session ->
+            session.utterances.sumOf { (it.endMs - it.startMs).coerceAtLeast(0L) }
+        }
+        .let { (it / 60_000L).toInt() }
     val openCommitments = todayMemories
         .flatMap { it.commitments }
         .filter { it.status == Commitment.STATUS_OPEN }
@@ -628,13 +635,6 @@ private fun formatDurationShort(session: TranscriptSession): String {
     } else {
         stringResource(R.string.duration_seconds, seconds)
     }
-}
-
-private fun sessionMinutes(session: TranscriptSession): Int {
-    val end = session.endedAt
-        ?: session.utterances.lastOrNull()?.let { session.startedAt + it.endMs }
-        ?: session.startedAt
-    return ((end - session.startedAt) / 60_000L).coerceAtLeast(0L).toInt()
 }
 
 private fun Modifier.clickableRow(onClick: () -> Unit): Modifier =

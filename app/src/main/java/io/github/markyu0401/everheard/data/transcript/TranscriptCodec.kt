@@ -22,6 +22,7 @@ object TranscriptCodec {
                     put("startedAt", session.startedAt)
                     session.endedAt?.let { put("endedAt", it) }
                     put("title", session.title)
+                    if (session.voiceProfileActive) put("voiceProfileActive", true)
                     put("utterances", JSONArray().apply {
                         session.utterances.forEach { utterance ->
                             put(
@@ -84,7 +85,8 @@ object TranscriptCodec {
                 startedAt = startedAt,
                 endedAt = endedAt,
                 title = title,
-                utterances = utterances
+                utterances = utterances,
+                voiceProfileActive = item.optBoolean("voiceProfileActive", false)
             )
         }
         return sessions

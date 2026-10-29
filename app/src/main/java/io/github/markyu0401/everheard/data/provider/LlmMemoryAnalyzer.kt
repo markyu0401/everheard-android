@@ -4,6 +4,7 @@ import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
 import io.github.markyu0401.everheard.data.memory.SessionMemory
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -99,9 +100,15 @@ class LlmMemoryAnalyzer(
                 "LLM base URL must start with http:// or https://"
             )
         }
-        val utterances = session.utterances.filter { it.text.isNotBlank() }
+        val utterances = session.utterances.filter { eligible(session, it) }
         if (utterances.isEmpty()) {
-            return LlmAnalysisResult.Failure("Transcript has no utterances to analyze")
+            return LlmAnalysisResult.Failure(
+                if (session.voiceProfileActive) {
+                    "Transcript has no voiceprint-confirmed speech to analyze"
+                } else {
+                    "Transcript has no utterances to analyze"
+                }
+            )
         }
 
         val url = chatCompletionsUrl(baseUrl)
@@ -218,7 +225,7 @@ class LlmMemoryAnalyzer(
         builder.append("Transcript lines:\n")
         var truncated = false
         for (utterance in session.utterances) {
-            if (utterance.text.isBlank()) continue
+            if (!eligible(session, utterance)) continue
             val speaker = utterance.speaker
                 ?.takeIf { it.isNotBlank() }
                 ?.let { " speaker=$it" }
@@ -236,6 +243,10 @@ class LlmMemoryAnalyzer(
         }
         return builder.toString()
     }
+
+    private fun eligible(session: TranscriptSession, utterance: TranscriptUtterance): Boolean =
+        utterance.text.isNotBlank() &&
+            (!session.voiceProfileActive || utterance.speaker == "me" || utterance.marked)
 
     private fun chatCompletionsUrl(baseUrl: String): String {
         val trimmed = baseUrl.trim().trimEnd('/')
