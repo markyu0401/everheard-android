@@ -24,21 +24,34 @@ class RuleBasedMemoryAnalyzer(
 ) : MemoryAnalyzer {
 
     companion object {
-        const val NAME = "rule-v1"
+        const val NAME = "rule-v5"
         private const val MAX_EVENTS = 8
         private const val MAX_COMMITMENTS = 5
         private const val MAX_INSPIRATIONS = 3
         private const val MAX_SUMMARY_CHARS = 220
 
         private val decisionPatterns = listOf(
-            Regex("(?i)\\b(we\\s+)?(decided|agreed|settled|concluded)\\b"),
-            Regex("(?i)\\b(let's|lets)\\b"),
-            Regex("决定|定了|确定|同意|就按|就这么|结论")
+            Regex("(?i)\\b(we\\s+)?(decided|agreed|settled|concluded|chose)\\b"),
+            Regex("(?i)\\b(let's|lets)\\s+(go with|use|do|ship|pick)\\b"),
+            Regex("决定|定了|确定|同意|就按|按这个|按你说的|就这么|采用|结论")
         )
+        // A commitment needs a first-person subject and an action verb close to
+        // it. The old list matched bare "记得", "之前" and "明天", which turned
+        // recollections and TV dialogue into open commitments.
         private val commitmentPatterns = listOf(
-            Regex("(?i)\\b(i|we)\\s+(will|'ll|am going to|are going to|need to|have to|promise)\\b"),
-            Regex("(?i)\\b(by|before)\\s+(tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|the end of)\\b"),
-            Regex("我会|我来|我负责|我得|我要|需要我|答应|记得|明天|下周|周五|月底|之前")
+            Regex("(?i)\\b(i)\\s+(will|'ll|am going to|need to|have to|promise)\\b"),
+            Regex("(?i)\\b(we)\\s+(will|'ll|are going to)\\b"),
+            // "我要/我得/我来" must be adjacent; "我要是" is a conditional and
+            // "我要不要" is a question, not a promise.
+            Regex("(?<![你他她帮请让叫])我((?<!不)(?<![体学机])会|(?<!不)要(?!是|不|干|嘛|什)|(?<!记)得|(?<![起回出])来|负责|帮|安排|处理|改|修|发(?!现)|确认|补|答应|保证|准备|提交|上线)"),
+            // A time word may sit between the subject and a strong action verb
+            // ("我明天会把方案发给你"), but only verbs that are unambiguous in
+            // that position; 发/改/修/帮 are too often part of 发现/修改/帮忙.
+            Regex("(?<![你他她帮请让叫])我[^，。！？；]{1,6}((?<![体学机])会|负责|安排|处理|确认|准备|提交|上线|答应|保证|补)")
+        )
+        private val negationPatterns = listOf(
+            Regex("(?i)\\b(not|never|won't|don't|doesn't)\\b"),
+            Regex("不用|不需要|不必|没打算|不准备|不会")
         )
         private val riskPatterns = listOf(
             Regex("(?i)\\b(risk|risks|concern|worried|blocker|blocked|issue|problem|tight|danger)\\b"),
@@ -49,14 +62,15 @@ class RuleBasedMemoryAnalyzer(
             Regex("完成|做完|搞定|已经|进展|上线|更新了")
         )
         private val inspirationPatterns = listOf(
-            Regex("(?i)\\b(idea|what if|maybe we could|we could try)\\b"),
-            Regex("灵感|想法|或许可以|可以试试|不如")
+            Regex("(?i)\\b(idea|what if|maybe we could|we could try|new direction)\\b"),
+            Regex("灵感|想法|新方向|设想|点子|我想做|我想买|想做|有没有可能|如果能|要是能|我们可以做|不如")
         )
         private val duePatterns = listOf(
             Regex("(?i)\\b(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week|end of (the )?(day|week|month))\\b"),
             Regex("今天|明天|后天|下周|这周|本周|周五|月底|周末")
         )
         private val firstPerson = Regex("(?i)\\b(i|we)\\b|我")
+        private const val MAX_COMMITMENT_CHARS = 240
     }
 
     override fun analyze(session: TranscriptSession): SessionMemory {
@@ -70,7 +84,7 @@ class RuleBasedMemoryAnalyzer(
         if (utterances.isEmpty()) return emptyMemory(session)
 
         val attributed = session.voiceProfileActive
-        val mine = if (attributed) utterances.filter { it.speaker == "me" } else utterances
+        val mine = if (attributed) utterances.filter { isUserLine(it, attributed) } else utterances
         // A session where nobody matched the enrolled voice is TV, a video or a
         // room full of other people. It is transcript, not memory.
         if (attributed && mine.isEmpty()) return emptyMemory(session)
@@ -87,14 +101,14 @@ class RuleBasedMemoryAnalyzer(
             val text = utterance.text.trim()
             val normalized = text.lowercase()
             val evidence = evidenceFor(utterance)
-            val isMine = !attributed || utterance.speaker == "me"
+            val isMine = isUserLine(utterance, attributed)
             val userAuthored = utterance.marked
             // Someone else's line may be marked by the user as evidence, but it
             // must never become the user's own commitment or event.
             if (!isMine && !userAuthored) return@forEachIndexed
 
             val type = if (isMine) classify(text, utterance.marked) else null
-            val commitment = if (isMine && matches(commitmentPatterns, normalized)) {
+            val commitment = if (isMine && isCommitment(text)) {
                 Commitment(
                     id = "${session.id}:commitment:$index",
                     text = text,
@@ -161,11 +175,17 @@ class RuleBasedMemoryAnalyzer(
             generatedAt = now()
         )
 
+    /**
+     * Picks the opening line plus the most informative other line instead of
+     * blindly concatenating the first two. Still extractive: no invented text.
+     */
     private fun extractiveSummary(utterances: List<TranscriptUtterance>): String {
-        val first = utterances.first().text.trim()
-        if (utterances.size == 1) return first.take(MAX_SUMMARY_CHARS)
-        val second = utterances[1].text.trim()
-        val combined = "$first $second"
+        val first = utterances.first()
+        val best = utterances.drop(1)
+            .maxByOrNull { summaryScore(it.text) }
+            ?.takeIf { summaryScore(it.text) >= summaryScore(first.text) }
+        val picked = listOfNotNull(first, best).sortedBy { utterances.indexOf(it) }
+        val combined = picked.joinToString(" ") { it.text.trim() }
         return if (combined.length <= MAX_SUMMARY_CHARS) {
             combined
         } else {
@@ -173,16 +193,56 @@ class RuleBasedMemoryAnalyzer(
         }
     }
 
+    private fun summaryScore(text: String): Int {
+        var score = 0
+        if (matches(decisionPatterns, text)) score += 3
+        if (isCommitment(text)) score += 3
+        if (matches(riskPatterns, text)) score += 2
+        if (matches(progressPatterns, text)) score += 2
+        if (matches(inspirationPatterns, text)) score += 3
+        if (text.any(Char::isDigit)) score += 1
+        if (Regex("[A-Za-z]{3,}").containsMatchIn(text)) score += 1
+        score += (text.length / 60).coerceAtMost(2)
+        return score
+    }
+
     private fun classify(text: String, marked: Boolean): MemoryEventType? {
         val normalized = text.lowercase()
         return when {
             matches(riskPatterns, normalized) -> MemoryEventType.RISK
             matches(decisionPatterns, normalized) -> MemoryEventType.DECISION
-            matches(commitmentPatterns, normalized) -> MemoryEventType.COMMITMENT
+            isCommitment(text) -> MemoryEventType.COMMITMENT
             matches(progressPatterns, normalized) -> MemoryEventType.PROGRESS
             marked || matches(inspirationPatterns, normalized) -> MemoryEventType.INSPIRATION
             else -> null
         }
+    }
+
+    /**
+     * A commitment is a first-person promise or a concrete action verb. Long
+     * merged rows (lectures, TV dialogue) and negated sentences are rejected.
+     */
+    private fun isCommitment(text: String): Boolean {
+        if (text.length > MAX_COMMITMENT_CHARS) return false
+        if (matches(negationPatterns, text)) return false
+        return matches(commitmentPatterns, text)
+    }
+
+    /**
+     * The voice matcher leaves scores in the 0.30-0.58 band unlabelled. Those
+     * rows used to be dropped from memory even when the user said them; a
+     * first-person line is safe to keep, while media speech is labelled
+     * "other" and stays excluded.
+     */
+    private fun isUserLine(utterance: TranscriptUtterance, attributed: Boolean): Boolean {
+        if (!attributed) return true
+        if (utterance.speaker == "me") return true
+        if (utterance.speaker != null) return false
+        // Unlabelled rows sit in the matcher's ambiguous 0.30-0.58 band. Only a
+        // decision or an idea is distinctive enough to keep without a
+        // voiceprint match; a bare "我..." line could be the user or the room.
+        return matches(decisionPatterns, utterance.text) ||
+            matches(inspirationPatterns, utterance.text)
     }
 
     private fun matches(patterns: List<Regex>, text: String): Boolean =

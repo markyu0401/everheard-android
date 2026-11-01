@@ -34,3 +34,24 @@ data class TranscriptHit(
     val sessionTitle: String,
     val utterance: TranscriptUtterance
 )
+
+/**
+ * Conversation bounds. [TranscriptSession.startedAt] is when capture resumed,
+ * which can be minutes before anyone speaks; the conversation itself starts at
+ * the first kept utterance and ends at the last one. Use these for anything a
+ * person reads: list clocks, durations, daily grouping and the insight report.
+ */
+val TranscriptSession.firstSpeechAt: Long
+    get() = utterances.firstOrNull()?.let { startedAt + it.startMs } ?: startedAt
+
+val TranscriptSession.lastSpeechAt: Long
+    get() = utterances.lastOrNull()?.let { startedAt + it.endMs } ?: (endedAt ?: startedAt)
+
+/**
+ * Speech time only. Capture pauses and the silence between segments are
+ * excluded, so a session that sat open for three hours but contains ten minutes
+ * of speech reports ten minutes.
+ */
+val TranscriptSession.speechDurationMs: Long
+    get() = utterances.sumOf { (it.endMs - it.startMs).coerceAtLeast(0L) }
+

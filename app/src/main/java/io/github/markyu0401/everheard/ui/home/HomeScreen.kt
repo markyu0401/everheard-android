@@ -57,10 +57,14 @@ import io.github.markyu0401.everheard.data.memory.Commitment
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
 import io.github.markyu0401.everheard.data.memory.MemoryEvent
 import io.github.markyu0401.everheard.data.memory.MemoryEventType
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzerProvider
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
 import io.github.markyu0401.everheard.data.memory.SessionMemory
+import io.github.markyu0401.everheard.data.memory.backfillMemories
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.data.transcript.firstSpeechAt
 import io.github.markyu0401.everheard.ui.components.ArcMark
 import io.github.markyu0401.everheard.ui.components.BottomBar
 import io.github.markyu0401.everheard.ui.components.BrandBar
@@ -104,14 +108,15 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     val memoryStore = remember(context) {
         EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
-    val analyzer = remember { RuleBasedMemoryAnalyzer() }
+    val analyzer = remember { mutableStateOf<MemoryAnalyzer>(RuleBasedMemoryAnalyzer()) }
     var sessions by remember { mutableStateOf<List<TranscriptSession>>(emptyList()) }
     var memories by remember { mutableStateOf<List<SessionMemory>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         sessions = store.reload()
         memories = memoryStore.reload()
-        analyzeMissingToday(sessions, memories, memoryStore, analyzer)
+        analyzer.value = MemoryAnalyzerProvider.create(context)
+        backfillRecent(sessions, memories, memoryStore, analyzer.value)
         memories = memoryStore.reload()
     }
 
@@ -121,7 +126,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 scope.launch {
                     sessions = store.reload()
                     memories = memoryStore.reload()
-                    analyzeMissingToday(sessions, memories, memoryStore, analyzer)
+                    analyzer.value = MemoryAnalyzerProvider.create(context)
+                    backfillRecent(sessions, memories, memoryStore, analyzer.value)
                     memories = memoryStore.reload()
                 }
             }
@@ -130,7 +136,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    val todaySessions = sessions.filter { isToday(it.startedAt) }
+    val todaySessions = sessions.filter { isToday(it.firstSpeechAt) }
     val todayIds = todaySessions.map { it.id }.toSet()
     val todayMemories = memories.filter { it.sessionId in todayIds }
     val sessionsById = todaySessions.associateBy { it.id }
@@ -580,19 +586,16 @@ private fun memoryTypeColor(type: MemoryEventType, semantic: io.github.markyu040
         MemoryEventType.INSPIRATION -> semantic.insight
     }
 
-private suspend fun analyzeMissingToday(
+private suspend fun backfillRecent(
     sessions: List<TranscriptSession>,
     memories: List<SessionMemory>,
     memoryStore: EncryptedMemoryStore,
-    analyzer: RuleBasedMemoryAnalyzer
+    analyzer: MemoryAnalyzer
 ) {
-    val today = sessions.filter { isToday(it.startedAt) }
-    val missing = today.filter { session ->
-        session.utterances.isNotEmpty() && memories.none { it.sessionId == session.id }
-    }
-    missing.take(5).forEach { session ->
-        runCatching { memoryStore.save(analyzer.analyze(session)) }
-    }
+    // Newest first, including older sessions whose memory came from an older
+    // analyzer, so a rule change or a newly configured LLM reaches history
+    // without opening every session by hand.
+    backfillMemories(sessions, memories, memoryStore, analyzer, 5)
 }
 
 private fun isToday(timestamp: Long): Boolean {

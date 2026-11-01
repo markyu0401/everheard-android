@@ -43,6 +43,15 @@ class ProjectBuilder(
         private val ENGLISH_WORD = Regex("[A-Za-z][A-Za-z0-9_-]{2,}")
         private val CJK_RUN = Regex("[\\u4e00-\\u9fff]{2,}")
         private val CJK_BIGRAM = Regex("[\\u4e00-\\u9fff]{2}")
+
+        /**
+         * Two-character slices that carry no topic: function words, pronouns and
+         * verb particles. Without this filter every CJK session produced
+         * keywords such as "了一", "个一" and "我记".
+         */
+        private val CJK_FUNCTION_CHARS =
+            "的了是在我你他她它这那不也就都要会有个一上下下来去说吗呢吧啊嗯着过得地和与把被给让从到对为以而及或但很太更最还又再才只没无非未别请能可应该想做搞弄买卖好大多少高低新旧前后里外中间时年月日天周次点分秒元块们自己些么什怎样为何如因所如若虽且并等于"
+                .toSet()
     }
 
     fun build(
@@ -167,13 +176,19 @@ class ProjectBuilder(
             val run = match.value
             for (index in 0..run.length - 2) {
                 val bigram = run.substring(index, index + 2)
-                if (bigram !in stopwords && CJK_BIGRAM.matches(bigram)) {
+                if (bigram !in stopwords && CJK_BIGRAM.matches(bigram) &&
+                    bigram.none { it in CJK_FUNCTION_CHARS }
+                ) {
                     counts[bigram] = (counts[bigram] ?: 0) + 1
                 }
             }
         }
         return counts.entries
-            .filter { it.value >= 1 }
+            .filter { entry ->
+                // A Chinese keyword must repeat inside the session; a single
+                // two-character slice is ASR noise, not a topic.
+                if (CJK_BIGRAM.matches(entry.key)) entry.value >= 2 else entry.value >= 1
+            }
             .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }
                 .thenBy { it.key })
             .take(MAX_KEYWORDS)

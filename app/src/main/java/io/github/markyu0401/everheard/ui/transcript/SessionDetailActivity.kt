@@ -65,15 +65,16 @@ import io.github.markyu0401.everheard.data.memory.Commitment
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
 import io.github.markyu0401.everheard.data.memory.Inspiration
 import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzerProvider
 import io.github.markyu0401.everheard.data.memory.MemoryEvent
 import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
 import io.github.markyu0401.everheard.data.memory.SessionMemory
-import io.github.markyu0401.everheard.data.provider.LlmMemoryAnalyzer
-import io.github.markyu0401.everheard.data.provider.ProviderConfigStore
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
+import io.github.markyu0401.everheard.data.transcript.firstSpeechAt
+import io.github.markyu0401.everheard.data.transcript.speechDurationMs
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.EverheardCard
@@ -126,9 +127,6 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     val memoryStore = remember {
         EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
-    val providerStore = remember {
-        ProviderConfigStore.inDirectory(context.filesDir)
-    }
     var analyzer by remember { mutableStateOf<MemoryAnalyzer>(RuleBasedMemoryAnalyzer()) }
     val scope = rememberCoroutineScope()
     var session by remember { mutableStateOf<TranscriptSession?>(null) }
@@ -156,18 +154,17 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     LaunchedEffect(sessionId) {
         val loadedSession = store.session(sessionId)
         session = loadedSession
-        memory = memoryStore.get(sessionId)
-        val providerConfig = providerStore.load()
-        analyzer = if (providerConfig.llmConfigured) {
-            LlmMemoryAnalyzer(providerConfig)
-        } else {
-            RuleBasedMemoryAnalyzer()
-        }
+        val existing = memoryStore.get(sessionId)
+        memory = existing
+        analyzer = MemoryAnalyzerProvider.create(context)
         loaded = true
-        if (memory == null && loadedSession?.utterances?.isNotEmpty() == true) {
+        val target = loadedSession
+        if (target != null && target.utterances.isNotEmpty() &&
+            (existing == null || MemoryAnalyzerProvider.needsUpgrade(analyzer, existing))
+        ) {
             analyzing = true
             try {
-                val generated = withContext(Dispatchers.IO) { analyzer.analyze(loadedSession) }
+                val generated = withContext(Dispatchers.IO) { analyzer.analyze(target) }
                 memoryStore.save(generated)
                 memory = generated
             } finally {
@@ -731,16 +728,13 @@ private fun UtteranceRow(
 
 @Composable
 private fun sessionMeta(context: Context, session: TranscriptSession): String {
-    val date = Instant.ofEpochMilli(session.startedAt)
+    val date = Instant.ofEpochMilli(session.firstSpeechAt)
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
-    val time = Instant.ofEpochMilli(session.startedAt)
+    val time = Instant.ofEpochMilli(session.firstSpeechAt)
         .atZone(ZoneId.systemDefault())
         .format(DateTimeFormatter.ofPattern("HH:mm", Locale.US))
-    val end = session.endedAt
-        ?: session.utterances.lastOrNull()?.let { session.startedAt + it.endMs }
-        ?: session.startedAt
-    val minutes = ((end - session.startedAt) / 60_000L).coerceAtLeast(0L).toInt()
+    val minutes = (session.speechDurationMs / 60_000L).toInt()
     val locale = LocalConfiguration.current.locales[0]
     val datePattern = if (locale.language == "zh") "M月d日 · EEE" else "EEE, d MMM"
     val dateLabel = date.format(DateTimeFormatter.ofPattern(datePattern, locale))
