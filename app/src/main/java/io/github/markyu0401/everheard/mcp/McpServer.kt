@@ -8,6 +8,7 @@ import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.memory.SessionMemory
 import io.github.markyu0401.everheard.data.person.PersonProfile
 import io.github.markyu0401.everheard.data.project.Project
+import io.github.markyu0401.everheard.data.transcript.TextMatch
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.firstSpeechAt
 import io.github.markyu0401.everheard.data.transcript.lastSpeechAt
@@ -344,7 +345,7 @@ class McpServer(
         for (session in sessions.values) {
             for (utterance in session.utterances) {
                 if (count >= limit) break
-                if (!utterance.text.contains(needle, ignoreCase = true)) continue
+                if (!TextMatch.matches(needle, utterance.text)) continue
                 result.put(JSONObject().apply {
                     put("sessionId", session.id)
                     put("sessionTitle", session.title)

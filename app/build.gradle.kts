@@ -18,8 +18,8 @@ android {
         applicationId = "io.github.markyu0401.everheard"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.1.4-alpha"
+        versionCode = 6
+        versionName = "0.1.5-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
