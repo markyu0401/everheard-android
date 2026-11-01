@@ -1,13 +1,18 @@
 package io.github.markyu0401.everheard.mcp
 
 import android.content.Context
+import io.github.markyu0401.everheard.BuildConfig
 import io.github.markyu0401.everheard.data.memory.Commitment
 import io.github.markyu0401.everheard.data.memory.MemoryEvent
 import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.memory.SessionMemory
 import io.github.markyu0401.everheard.data.person.PersonProfile
 import io.github.markyu0401.everheard.data.project.Project
+import io.github.markyu0401.everheard.data.transcript.TextMatch
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.data.transcript.firstSpeechAt
+import io.github.markyu0401.everheard.data.transcript.lastSpeechAt
+import io.github.markyu0401.everheard.data.transcript.speechDurationMs
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.net.InetAddress
@@ -33,7 +38,8 @@ import org.json.JSONObject
 class McpServer(
     private val repository: McpRepository,
     private val token: String,
-    private val requestedPort: Int = McpConfig.DEFAULT_PORT
+    private val requestedPort: Int = McpConfig.DEFAULT_PORT,
+    private val version: String = "0.1.0"
 ) {
 
     private val running = AtomicBoolean(false)
@@ -147,7 +153,7 @@ class McpServer(
                     put("protocolVersion", "2025-06-18")
                     put("serverInfo", JSONObject().apply {
                         put("name", "everheard")
-                        put("version", "0.1.0")
+                        put("version", version)
                     })
                     put("capabilities", JSONObject().apply {
                         put("tools", JSONObject())
@@ -267,6 +273,20 @@ class McpServer(
             }
         ),
         tool(
+            "list_sessions",
+            "List sessions newest first, optionally for one day (YYYY-MM-DD). Includes speech time and speaker counts.",
+            JSONObject().apply {
+                put("type", "object")
+                put("properties", JSONObject().apply {
+                    put("date", JSONObject().apply { put("type", "string") })
+                    put("limit", JSONObject().apply {
+                        put("type", "integer")
+                        put("default", 20)
+                    })
+                })
+            }
+        ),
+        tool(
             "list_inspirations",
             "List saved or extracted ideas with source quotes.",
             JSONObject().apply {
@@ -306,6 +326,10 @@ class McpServer(
         "list_commitments" -> listCommitments(arguments.optString("status", "open"))
         "get_project" -> getProject(arguments.optString("id"))
         "get_session" -> getSession(arguments.optString("id"))
+        "list_sessions" -> listSessions(
+            arguments.optString("date"),
+            arguments.optInt("limit", 20).coerceIn(1, 100)
+        )
         "list_inspirations" -> listInspirations()
         "get_person" -> getPerson(arguments.optString("id"))
         "get_insight" -> getInsight(arguments.optString("id"))
@@ -321,7 +345,7 @@ class McpServer(
         for (session in sessions.values) {
             for (utterance in session.utterances) {
                 if (count >= limit) break
-                if (!utterance.text.contains(needle, ignoreCase = true)) continue
+                if (!TextMatch.matches(needle, utterance.text)) continue
                 result.put(JSONObject().apply {
                     put("sessionId", session.id)
                     put("sessionTitle", session.title)
@@ -392,6 +416,57 @@ class McpServer(
         return ToolResult.Success(sessionJson(session, memory).toString())
     }
 
+    /**
+     * A client could previously reach sessions only by walking resources/list
+     * and calling get_session for each one. That made "what did I talk about
+     * yesterday" impossible without guessing.
+     */
+    private fun listSessions(date: String, limit: Int): ToolResult {
+        val day = if (date.isBlank()) {
+            null
+        } else {
+            runCatching { LocalDate.parse(date) }.getOrNull()
+                ?: return ToolResult.Failure("date must be YYYY-MM-DD")
+        }
+        val memories = repository.memories().associateBy { it.sessionId }
+        val result = JSONArray()
+        repository.sessions()
+            .filter { session ->
+                day == null || java.time.Instant.ofEpochMilli(session.firstSpeechAt)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate() == day
+            }
+            .sortedByDescending { it.firstSpeechAt }
+            .take(limit)
+            .forEach { session ->
+                result.put(JSONObject().apply {
+                    put("id", session.id)
+                    put("title", session.title)
+                    put("startedAt", session.firstSpeechAt)
+                    put("endedAt", session.lastSpeechAt)
+                    put("speechMs", session.speechDurationMs)
+                    put("utteranceCount", session.utterances.size)
+                    put("voiceProfileActive", session.voiceProfileActive)
+                    put("speakers", speakerCounts(session))
+                    memories[session.id]?.let { memory ->
+                        put("summary", memory.summary)
+                        put("eventCount", memory.events.size)
+                        put(
+                            "openCommitmentCount",
+                            memory.commitments.count { it.status == Commitment.STATUS_OPEN }
+                        )
+                    }
+                })
+            }
+        return ToolResult.Success(result.toString())
+    }
+
+    private fun speakerCounts(session: TranscriptSession): JSONObject = JSONObject().apply {
+        put("me", session.utterances.count { it.speaker == "me" })
+        put("other", session.utterances.count { it.speaker == "other" })
+        put("unknown", session.utterances.count { it.speaker == null })
+    }
+
     private fun listInspirations(): ToolResult {
         val result = JSONArray()
         repository.memories().forEach { memory ->
@@ -432,7 +507,8 @@ class McpServer(
             )
             result += resource(
                 "everheard://session/${session.id}/transcript",
-                "Transcript: ${session.title.ifBlank { session.id }}"
+                "Transcript: ${session.title.ifBlank { session.id }}",
+                "text/plain"
             )
         }
         repository.memories().flatMap { it.inspirations }.forEach { inspiration ->
@@ -510,8 +586,11 @@ class McpServer(
         JSONObject().apply {
             put("id", session.id)
             put("title", session.title)
-            put("startedAt", session.startedAt)
-            session.endedAt?.let { put("endedAt", it) }
+            put("startedAt", session.firstSpeechAt)
+            put("endedAt", session.lastSpeechAt)
+            put("speechMs", session.speechDurationMs)
+            put("voiceProfileActive", session.voiceProfileActive)
+            put("speakers", speakerCounts(session))
             put("utterances", JSONArray().apply {
                 session.utterances.forEach { utterance ->
                     put(JSONObject().apply {
@@ -533,6 +612,12 @@ class McpServer(
     ): JSONObject = JSONObject().apply {
         put("sessionId", session.id)
         put("title", session.title)
+        put("startedAt", session.firstSpeechAt)
+        put("endedAt", session.lastSpeechAt)
+        put("speechMs", session.speechDurationMs)
+        put("utteranceCount", session.utterances.size)
+        put("voiceProfileActive", session.voiceProfileActive)
+        put("speakers", speakerCounts(session))
         put("summary", memory?.summary.orEmpty())
         put("events", JSONArray().apply {
             memory?.events.orEmpty().forEach { put(eventJson(it, session)) }
@@ -684,11 +769,12 @@ class McpServer(
             put("inputSchema", inputSchema)
         }
 
-    private fun resource(uri: String, name: String): JSONObject = JSONObject().apply {
-        put("uri", uri)
-        put("name", name)
-        put("mimeType", "application/json")
-    }
+    private fun resource(uri: String, name: String, mimeType: String = "application/json"): JSONObject =
+        JSONObject().apply {
+            put("uri", uri)
+            put("name", name)
+            put("mimeType", mimeType)
+        }
 
     private fun rpcResult(id: Any?, result: JSONObject): JSONObject = JSONObject().apply {
         put("jsonrpc", "2.0")
@@ -793,7 +879,8 @@ object McpServerManager {
             val instance = McpServer(
                 repository = DefaultMcpRepository(context.applicationContext),
                 token = config.token,
-                requestedPort = config.port
+                requestedPort = config.port,
+                version = BuildConfig.VERSION_NAME
             )
             instance.start()
             server = instance

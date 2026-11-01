@@ -248,6 +248,12 @@ class BackupManagerTest {
             marked: Boolean
         ) = Unit
 
+        override suspend fun updateUtteranceText(
+            sessionId: String,
+            utteranceId: String,
+            text: String
+        ) = Unit
+
         override suspend fun deleteSession(sessionId: String) {
             data = data.filterNot { it.id == sessionId }
         }

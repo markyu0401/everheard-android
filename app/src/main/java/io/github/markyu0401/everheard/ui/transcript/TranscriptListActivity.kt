@@ -59,6 +59,8 @@ import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptHit
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.data.transcript.firstSpeechAt
+import io.github.markyu0401.everheard.data.transcript.speechDurationMs
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BottomBar
 import io.github.markyu0401.everheard.ui.components.BrandBar
@@ -148,13 +150,13 @@ fun TranscriptListScreen(
     val filtered = remember(sessions, filter) {
         when (LibraryFilter.entries[filter]) {
             LibraryFilter.ALL -> sessions
-            LibraryFilter.TODAY -> sessions.filter { dateOf(it.startedAt) == today }
-            LibraryFilter.WEEK -> sessions.filter { dateOf(it.startedAt) >= today.minusDays(6) }
+            LibraryFilter.TODAY -> sessions.filter { dateOf(it.firstSpeechAt) == today }
+            LibraryFilter.WEEK -> sessions.filter { dateOf(it.firstSpeechAt) >= today.minusDays(6) }
             LibraryFilter.STARRED -> sessions.filter { it.utterances.any { u -> u.marked } }
         }
     }
     val groups = remember(filtered) {
-        filtered.groupBy { dateOf(it.startedAt) }
+        filtered.groupBy { dateOf(it.firstSpeechAt) }
             .toSortedMap(compareByDescending { it })
     }
 
@@ -337,7 +339,7 @@ private fun SessionRow(session: TranscriptSession, onClick: () -> Unit) {
             verticalAlignment = Alignment.Top
         ) {
             Text(
-                text = formatClock(session.startedAt),
+                text = formatClock(session.firstSpeechAt),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.5.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
@@ -450,10 +452,7 @@ private fun formatClock(timestamp: Long): String =
 
 @Composable
 private fun formatDuration(session: TranscriptSession): String {
-    val end = session.endedAt
-        ?: session.utterances.lastOrNull()?.let { session.startedAt + it.endMs }
-        ?: session.startedAt
-    val seconds = ((end - session.startedAt) / 1_000L).coerceAtLeast(0L).toInt()
+    val seconds = (session.speechDurationMs / 1_000L).toInt()
     return if (seconds >= 60) {
         stringResource(R.string.duration_m, seconds / 60)
     } else {

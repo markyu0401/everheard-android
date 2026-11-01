@@ -77,6 +77,11 @@ class CaptureTranscriber(
             var speakerEmbedder: SpeakerEmbedder? = null
             var lastUtterance: TranscriptUtterance? = null
             val pending = mutableListOf<TranscriptUtterance>()
+            // A long silence ends the conversation and starts a new session with
+            // its own id and time base.
+            var currentSessionId = sessionId
+            var currentStartedAt = startedAt
+            var offsetMs = 0L
 
             for (segment in queue) {
                 if (segment.pcm16.isEmpty()) continue
@@ -137,11 +142,30 @@ class CaptureTranscriber(
                         null
                     }
 
+                    if (SessionSplitter.shouldSplit(lastUtterance?.endMs, segment.startMs - offsetMs)) {
+                        val previous = lastUtterance
+                        if (sessionCreated && previous != null) {
+                            store.session(currentSessionId)?.let { existing ->
+                                store.createSession(
+                                    existing.copy(endedAt = currentStartedAt + previous.endMs)
+                                )
+                            }
+                        } else {
+                            pending.clear()
+                        }
+                        offsetMs = segment.startMs
+                        currentStartedAt = startedAt + offsetMs
+                        currentSessionId = UUID.randomUUID().toString()
+                        sessionCreated = false
+                        lastUtterance = null
+                        Log.i(TAG, "silence split: starting session $currentSessionId")
+                    }
+
                     val utterance = TranscriptUtterance(
                         id = UUID.randomUUID().toString(),
-                        sessionId = sessionId,
-                        startMs = segment.startMs,
-                        endMs = segment.endMs,
+                        sessionId = currentSessionId,
+                        startMs = segment.startMs - offsetMs,
+                        endMs = segment.endMs - offsetMs,
                         text = text,
                         speaker = speaker
                     )
@@ -157,7 +181,7 @@ class CaptureTranscriber(
                     ) {
                         val merged = TranscriptMerger.merge(previous, utterance)
                         if (sessionCreated) {
-                            val existing = store.session(sessionId)
+                            val existing = store.session(currentSessionId)
                             if (existing != null) {
                                 store.createSession(
                                     existing.copy(
@@ -179,8 +203,8 @@ class CaptureTranscriber(
                         if (SessionQuality.qualifies(pending)) {
                             store.createSession(
                                 TranscriptSession(
-                                    id = sessionId,
-                                    startedAt = startedAt,
+                                    id = currentSessionId,
+                                    startedAt = currentStartedAt,
                                     title = SessionQuality.titleFor(pending),
                                     utterances = pending.toList(),
                                     voiceProfileActive = attributionActive
@@ -190,7 +214,7 @@ class CaptureTranscriber(
                             Log.i(TAG, "session created with ${pending.size} utterances")
                         }
                     } else {
-                        store.appendUtterance(sessionId, utterance)
+                        store.appendUtterance(currentSessionId, utterance)
                         lastUtterance = utterance
                     }
                 } catch (error: Exception) {
@@ -200,9 +224,11 @@ class CaptureTranscriber(
                 }
             }
             if (sessionCreated) {
-                val existing = store.session(sessionId)
+                val existing = store.session(currentSessionId)
                 if (existing != null) {
-                    store.createSession(existing.copy(endedAt = System.currentTimeMillis()))
+                    val end = lastUtterance?.let { currentStartedAt + it.endMs }
+                        ?: System.currentTimeMillis()
+                    store.createSession(existing.copy(endedAt = end))
                 }
             } else {
                 Log.i(TAG, "session discarded: ${pending.size} pending utterances")

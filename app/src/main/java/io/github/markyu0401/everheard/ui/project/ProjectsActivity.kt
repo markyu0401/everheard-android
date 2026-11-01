@@ -37,8 +37,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.markyu0401.everheard.MainActivity
 import io.github.markyu0401.everheard.R
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzerProvider
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
 import io.github.markyu0401.everheard.data.memory.SessionMemory
+import io.github.markyu0401.everheard.data.memory.backfillMemories
 import io.github.markyu0401.everheard.data.project.Project
 import io.github.markyu0401.everheard.data.project.ProjectBuilder
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
@@ -91,7 +94,7 @@ fun ProjectsScreen(onOpen: (String) -> Unit) {
     val memoryStore = remember {
         EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
-    val analyzer = remember { RuleBasedMemoryAnalyzer() }
+    val analyzer = remember { mutableStateOf<MemoryAnalyzer>(RuleBasedMemoryAnalyzer()) }
     val projectBuilder = remember { ProjectBuilder() }
     var projects by remember { mutableStateOf<List<Project>>(emptyList()) }
     var loaded by remember { mutableStateOf(false) }
@@ -99,14 +102,8 @@ fun ProjectsScreen(onOpen: (String) -> Unit) {
     suspend fun load() {
         val sessions = transcriptStore.reload()
         var memories = memoryStore.reload()
-        val missing = sessions.filter { session ->
-            session.utterances.isNotEmpty() &&
-                memories.none { it.sessionId == session.id }
-        }
-        if (missing.isNotEmpty()) {
-            missing.forEach { session ->
-                runCatching { memoryStore.save(analyzer.analyze(session)) }
-            }
+        analyzer.value = MemoryAnalyzerProvider.create(context)
+        if (backfillMemories(sessions, memories, memoryStore, analyzer.value, 20) > 0) {
             memories = memoryStore.reload()
         }
         projects = projectBuilder.build(sessions, memories)

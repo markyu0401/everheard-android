@@ -44,7 +44,10 @@ import io.github.markyu0401.everheard.data.insight.InsightCitation
 import io.github.markyu0401.everheard.data.insight.InsightObservation
 import io.github.markyu0401.everheard.data.insight.InsightReport
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzerProvider
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.backfillMemories
 import io.github.markyu0401.everheard.data.project.ProjectBuilder
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
@@ -90,7 +93,7 @@ private fun InsightScreen() {
     val memoryStore = remember {
         EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
-    val analyzer = remember { RuleBasedMemoryAnalyzer() }
+    val analyzer = remember { mutableStateOf<MemoryAnalyzer>(RuleBasedMemoryAnalyzer()) }
     val projectBuilder = remember { ProjectBuilder() }
     val insightBuilder = remember { InsightBuilder() }
     var sessions by remember { mutableStateOf<List<TranscriptSession>>(emptyList()) }
@@ -100,14 +103,8 @@ private fun InsightScreen() {
     suspend fun load() {
         val loadedSessions = transcriptStore.reload()
         var memories = memoryStore.reload()
-        val missing = loadedSessions.filter { session ->
-            session.utterances.isNotEmpty() &&
-                memories.none { it.sessionId == session.id }
-        }
-        if (missing.isNotEmpty()) {
-            missing.forEach { session ->
-                runCatching { memoryStore.save(analyzer.analyze(session)) }
-            }
+        analyzer.value = MemoryAnalyzerProvider.create(context)
+        if (backfillMemories(loadedSessions, memories, memoryStore, analyzer.value, 20) > 0) {
             memories = memoryStore.reload()
         }
         sessions = loadedSessions

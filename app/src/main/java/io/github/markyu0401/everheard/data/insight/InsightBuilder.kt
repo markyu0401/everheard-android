@@ -5,6 +5,8 @@ import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.memory.SessionMemory
 import io.github.markyu0401.everheard.data.project.Project
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
+import io.github.markyu0401.everheard.data.transcript.firstSpeechAt
+import io.github.markyu0401.everheard.data.transcript.speechDurationMs
 import java.util.concurrent.TimeUnit
 
 /**
@@ -27,7 +29,9 @@ class InsightBuilder(
     ): InsightReport {
         val periodEnd = now()
         val periodStart = periodEnd - TimeUnit.DAYS.toMillis(PERIOD_DAYS)
-        val periodSessions = sessions.filter { it.startedAt in periodStart..periodEnd }
+        // Group by when the conversation happened, not by when capture resumed:
+        // a session opened before midnight can speak only after it.
+        val periodSessions = sessions.filter { it.firstSpeechAt in periodStart..periodEnd }
         val periodIds = periodSessions.map { it.id }.toSet()
         val periodMemories = memories.filter { it.sessionId in periodIds }
         val events = periodMemories.flatMap { it.events }
@@ -36,23 +40,33 @@ class InsightBuilder(
         val projectsTouched = projects.count { project ->
             project.sessionIds.any { it in periodIds }
         }
-        val minutes = periodSessions.sumOf { session ->
-            val end = session.endedAt
-                ?: session.utterances.lastOrNull()?.let { session.startedAt + it.endMs }
-                ?: session.startedAt
-            ((end - session.startedAt) / 60_000L).coerceAtLeast(0L).toInt()
-        }
+        // Speech time, matching the Today screen. Session span (capture start to
+        // capture pause) counted silence and produced absurd weekly totals.
+        val minutes = (periodSessions.sumOf { it.speechDurationMs } / 60_000L).toInt()
 
         val observations = mutableListOf<InsightObservation>()
-        val sessionCitations = periodSessions.mapNotNull { session ->
-            session.utterances.firstOrNull()?.let { utterance ->
-                InsightCitation(
-                    sessionId = session.id,
-                    sessionTitle = session.title.ifBlank { "Conversation" },
-                    quote = utterance.text,
-                    startMs = utterance.startMs
-                )
-            }
+        val memoryById = periodMemories.associateBy { it.sessionId }
+        // A session with no voiceprint-confirmed line is background media (TV,
+        // a lecture video). It keeps its transcript but must not be quoted as
+        // evidence of the user's week.
+        val citableSessions = periodSessions.filter { session ->
+            session.utterances.isNotEmpty() &&
+                (!session.voiceProfileActive || session.utterances.any { it.speaker == "me" })
+        }.sortedWith(
+            compareByDescending<TranscriptSession> { memoryById[it.id]?.events?.isNotEmpty() == true }
+                .thenByDescending { it.firstSpeechAt }
+        )
+        val sessionCitations = citableSessions.mapNotNull { session ->
+            val event = memoryById[session.id]?.events?.firstOrNull()?.evidence
+            val quote = event?.quote ?: session.utterances.firstOrNull()?.text
+            val startMs = event?.startMs ?: session.utterances.firstOrNull()?.startMs
+            if (quote.isNullOrBlank() || startMs == null) return@mapNotNull null
+            InsightCitation(
+                sessionId = session.id,
+                sessionTitle = session.title.ifBlank { "Conversation" },
+                quote = quote,
+                startMs = startMs
+            )
         }
 
         if (periodSessions.isNotEmpty() && sessionCitations.size >= MIN_CITATIONS) {

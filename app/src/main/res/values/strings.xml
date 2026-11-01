@@ -236,6 +236,10 @@
     <string name="transcript_marked_count">%1$d marked</string>
     <string name="transcript_mark">Mark this line</string>
     <string name="transcript_unmark">Remove mark</string>
+    <string name="transcript_edit_title">Edit line</string>
+    <string name="transcript_edit_body">Fix a name or a misheard word. Memory is re-analyzed after saving.</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
     <string name="transcript_share">Share transcript</string>
     <string name="transcript_share_text">Share as text</string>
     <string name="transcript_share_markdown">Share as Markdown</string>

@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -65,15 +66,16 @@ import io.github.markyu0401.everheard.data.memory.Commitment
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
 import io.github.markyu0401.everheard.data.memory.Inspiration
 import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzerProvider
 import io.github.markyu0401.everheard.data.memory.MemoryEvent
 import io.github.markyu0401.everheard.data.memory.MemoryEventType
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
 import io.github.markyu0401.everheard.data.memory.SessionMemory
-import io.github.markyu0401.everheard.data.provider.LlmMemoryAnalyzer
-import io.github.markyu0401.everheard.data.provider.ProviderConfigStore
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
 import io.github.markyu0401.everheard.data.transcript.TranscriptSession
 import io.github.markyu0401.everheard.data.transcript.TranscriptUtterance
+import io.github.markyu0401.everheard.data.transcript.firstSpeechAt
+import io.github.markyu0401.everheard.data.transcript.speechDurationMs
 import io.github.markyu0401.everheard.ui.LocalizedActivity
 import io.github.markyu0401.everheard.ui.components.BackButton
 import io.github.markyu0401.everheard.ui.components.EverheardCard
@@ -126,9 +128,6 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     val memoryStore = remember {
         EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
-    val providerStore = remember {
-        ProviderConfigStore.inDirectory(context.filesDir)
-    }
     var analyzer by remember { mutableStateOf<MemoryAnalyzer>(RuleBasedMemoryAnalyzer()) }
     val scope = rememberCoroutineScope()
     var session by remember { mutableStateOf<TranscriptSession?>(null) }
@@ -137,6 +136,7 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     var loaded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showShareMenu by remember { mutableStateOf(false) }
+    var editingUtterance by remember { mutableStateOf<TranscriptUtterance?>(null) }
 
     fun analyzeCurrent() {
         val target = session ?: return
@@ -156,18 +156,17 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
     LaunchedEffect(sessionId) {
         val loadedSession = store.session(sessionId)
         session = loadedSession
-        memory = memoryStore.get(sessionId)
-        val providerConfig = providerStore.load()
-        analyzer = if (providerConfig.llmConfigured) {
-            LlmMemoryAnalyzer(providerConfig)
-        } else {
-            RuleBasedMemoryAnalyzer()
-        }
+        val existing = memoryStore.get(sessionId)
+        memory = existing
+        analyzer = MemoryAnalyzerProvider.create(context)
         loaded = true
-        if (memory == null && loadedSession?.utterances?.isNotEmpty() == true) {
+        val target = loadedSession
+        if (target != null && target.utterances.isNotEmpty() &&
+            (existing == null || MemoryAnalyzerProvider.needsUpgrade(analyzer, existing))
+        ) {
             analyzing = true
             try {
-                val generated = withContext(Dispatchers.IO) { analyzer.analyze(loadedSession) }
+                val generated = withContext(Dispatchers.IO) { analyzer.analyze(target) }
                 memoryStore.save(generated)
                 memory = generated
             } finally {
@@ -441,7 +440,8 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
                                 )
                                 session = store.session(sessionId)
                             }
-                        }
+                        },
+                        onEdit = { editingUtterance = utterance }
                     )
                 }
             }
@@ -483,6 +483,72 @@ fun SessionDetailScreen(sessionId: String, onBack: () -> Unit) {
             }
         )
     }
+
+    editingUtterance?.let { target ->
+        EditUtteranceDialog(
+            initialText = target.text,
+            onDismiss = { editingUtterance = null },
+            onSave = { updated ->
+                editingUtterance = null
+                if (updated.isNotBlank() && updated != target.text) {
+                    scope.launch {
+                        store.updateUtteranceText(sessionId, target.id, updated)
+                        val reloaded = store.session(sessionId) ?: return@launch
+                        session = reloaded
+                        analyzing = true
+                        try {
+                            val generated = withContext(Dispatchers.IO) { analyzer.analyze(reloaded) }
+                            memoryStore.save(generated)
+                            memory = generated
+                        } finally {
+                            analyzing = false
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun EditUtteranceDialog(
+    initialText: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var value by remember(initialText) { mutableStateOf(initialText) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
+        title = { Text(stringResource(R.string.transcript_edit_title)) },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(R.string.transcript_edit_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = { value = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(value.trim()) }, enabled = value.isNotBlank()) {
+                Text(stringResource(R.string.action_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        }
+    )
 }
 
 @Composable
@@ -667,7 +733,8 @@ private fun InspirationDetailRow(
 private fun UtteranceRow(
     utterance: TranscriptUtterance,
     markColor: Color,
-    onToggleMark: () -> Unit
+    onToggleMark: () -> Unit,
+    onEdit: () -> Unit
 ) {
     val context = LocalContext.current
     Column(
@@ -676,7 +743,7 @@ private fun UtteranceRow(
             .background(
                 if (utterance.marked) markColor.copy(alpha = 0.10f) else Color.Transparent
             )
-            .clickable(onClick = onToggleMark)
+            .clickable(onClick = onEdit)
             .padding(vertical = 9.dp)
     ) {
         Row(
@@ -712,7 +779,10 @@ private fun UtteranceRow(
                 } else {
                     MaterialTheme.colorScheme.outline
                 },
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier
+                    .size(28.dp)
+                    .clickable(onClick = onToggleMark)
+                    .padding(7.dp)
             )
         }
         Spacer(Modifier.height(3.dp))
@@ -731,16 +801,13 @@ private fun UtteranceRow(
 
 @Composable
 private fun sessionMeta(context: Context, session: TranscriptSession): String {
-    val date = Instant.ofEpochMilli(session.startedAt)
+    val date = Instant.ofEpochMilli(session.firstSpeechAt)
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
-    val time = Instant.ofEpochMilli(session.startedAt)
+    val time = Instant.ofEpochMilli(session.firstSpeechAt)
         .atZone(ZoneId.systemDefault())
         .format(DateTimeFormatter.ofPattern("HH:mm", Locale.US))
-    val end = session.endedAt
-        ?: session.utterances.lastOrNull()?.let { session.startedAt + it.endMs }
-        ?: session.startedAt
-    val minutes = ((end - session.startedAt) / 60_000L).coerceAtLeast(0L).toInt()
+    val minutes = (session.speechDurationMs / 60_000L).toInt()
     val locale = LocalConfiguration.current.locales[0]
     val datePattern = if (locale.language == "zh") "M月d日 · EEE" else "EEE, d MMM"
     val dateLabel = date.format(DateTimeFormatter.ofPattern(datePattern, locale))

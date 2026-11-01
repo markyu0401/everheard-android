@@ -13,6 +13,7 @@ interface TranscriptStore {
     suspend fun createSession(session: TranscriptSession)
     suspend fun appendUtterance(sessionId: String, utterance: TranscriptUtterance)
     suspend fun setMarked(sessionId: String, utteranceId: String, marked: Boolean)
+    suspend fun updateUtteranceText(sessionId: String, utteranceId: String, text: String)
     suspend fun deleteSession(sessionId: String)
     suspend fun search(query: String): List<TranscriptHit>
     suspend fun replaceAll(sessions: List<TranscriptSession>)
@@ -87,6 +88,29 @@ class EncryptedTranscriptStore(
         }
     }
 
+    override suspend fun updateUtteranceText(
+        sessionId: String,
+        utteranceId: String,
+        text: String
+    ) = mutex.withLock {
+        val list = load().toMutableList()
+        val sessionIndex = list.indexOfFirst { it.id == sessionId }
+        if (sessionIndex >= 0) {
+            val session = list[sessionIndex]
+            val utteranceIndex = session.utterances.indexOfFirst { it.id == utteranceId }
+            if (utteranceIndex >= 0) {
+                val utterances = session.utterances.toMutableList()
+                utterances[utteranceIndex] = utterances[utteranceIndex].copy(text = text)
+                // The title is the first line; keep it in sync when that line is
+                // corrected, otherwise the library shows the old ASR spelling.
+                val title = if (utteranceIndex == 0) text.take(40) else session.title
+                list[sessionIndex] = session.copy(utterances = utterances, title = title)
+                persist(list)
+                cache = list
+            }
+        }
+    }
+
     override suspend fun deleteSession(sessionId: String) {
         mutex.withLock {
             val list = load().filterNot { it.id == sessionId }
@@ -100,7 +124,7 @@ class EncryptedTranscriptStore(
         if (needle.isEmpty()) return@withLock emptyList()
         load().flatMap { session ->
             session.utterances
-                .filter { it.text.contains(needle, ignoreCase = true) }
+                .filter { TextMatch.matches(needle, it.text) }
                 .map { TranscriptHit(session.id, session.title, it) }
         }
     }

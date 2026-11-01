@@ -235,6 +235,10 @@
     <string name="transcript_marked_count">%1$d 处标记</string>
     <string name="transcript_mark">标记这一句</string>
     <string name="transcript_unmark">取消标记</string>
+    <string name="transcript_edit_title">编辑这句</string>
+    <string name="transcript_edit_body">修正专名或听错的字，保存后会重新分析这段记忆。</string>
+    <string name="action_save">保存</string>
+    <string name="action_cancel">取消</string>
     <string name="transcript_share">分享转写</string>
     <string name="transcript_share_text">分享为文本</string>
     <string name="transcript_share_markdown">分享为 Markdown</string>

@@ -55,7 +55,10 @@ import io.github.markyu0401.everheard.data.insight.InsightCitation
 import io.github.markyu0401.everheard.data.insight.InsightObservation
 import io.github.markyu0401.everheard.data.insight.InsightReport
 import io.github.markyu0401.everheard.data.memory.EncryptedMemoryStore
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.MemoryAnalyzerProvider
 import io.github.markyu0401.everheard.data.memory.RuleBasedMemoryAnalyzer
+import io.github.markyu0401.everheard.data.memory.backfillMemories
 import io.github.markyu0401.everheard.data.project.Project
 import io.github.markyu0401.everheard.data.project.ProjectBuilder
 import io.github.markyu0401.everheard.data.transcript.EncryptedTranscriptStore
@@ -110,7 +113,7 @@ private fun MemoryScreen() {
     val memoryStore = remember {
         EncryptedMemoryStore(File(context.filesDir, "memory.bin"))
     }
-    val analyzer = remember { RuleBasedMemoryAnalyzer() }
+    val analyzer = remember { mutableStateOf<MemoryAnalyzer>(RuleBasedMemoryAnalyzer()) }
     val projectBuilder = remember { ProjectBuilder() }
     val insightBuilder = remember { InsightBuilder() }
 
@@ -123,13 +126,10 @@ private fun MemoryScreen() {
     suspend fun load() {
         val loadedSessions = transcriptStore.reload()
         var memories = memoryStore.reload()
-        val missing = loadedSessions.filter { session ->
-            session.utterances.isNotEmpty() && memories.none { it.sessionId == session.id }
+        analyzer.value = MemoryAnalyzerProvider.create(context)
+        if (backfillMemories(loadedSessions, memories, memoryStore, analyzer.value, 20) > 0) {
+            memories = memoryStore.reload()
         }
-        missing.take(20).forEach { session ->
-            runCatching { memoryStore.save(analyzer.analyze(session)) }
-        }
-        if (missing.isNotEmpty()) memories = memoryStore.reload()
         sessions = loadedSessions
         projects = projectBuilder.build(loadedSessions, memories)
         report = insightBuilder.build(loadedSessions, memories, projects)
